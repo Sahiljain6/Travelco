@@ -6,7 +6,15 @@ import App from "./App";
 import axios from "axios";
 import { AuthContextProvider } from "./context/authContext";
 
-const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:5000/api";
+let rawBase = process.env.REACT_APP_API_URL || "http://localhost:5000/api";
+if (!rawBase.startsWith("http://") && !rawBase.startsWith("https://")) {
+  rawBase = `https://${rawBase}`;
+}
+rawBase = rawBase.replace(/\/+$/, "");
+if (!rawBase.endsWith("/api")) {
+  rawBase = `${rawBase}/api`;
+}
+const API_BASE = rawBase;
 
 axios.interceptors.request.use((config) => {
   if (config.url && !config.url.startsWith("http://") && !config.url.startsWith("https://")) {
@@ -14,8 +22,7 @@ axios.interceptors.request.use((config) => {
     if (cleanUrl.startsWith("api/")) {
       cleanUrl = cleanUrl.slice(4);
     }
-    const base = API_BASE.endsWith("/") ? API_BASE : `${API_BASE}/`;
-    config.url = `${base}${cleanUrl}`;
+    config.url = `${API_BASE}/${cleanUrl}`;
   }
   return config;
 });
