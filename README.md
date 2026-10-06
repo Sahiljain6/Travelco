@@ -1,8 +1,8 @@
-﻿# Project Name - Tourism and Travel management system (Travelco)
+# Project Name - Tourism and Travel management system (Travelco)
 
 *Original one is integrated in SLIIT organization's private repository
 
-Travelco Live Website - https://travelcolk.netlify.app/
+Travelco Live Website - https://travelxco.netlify.app/
 
 (Frontend hosted using Netlify and Heroku used for backend)
 
