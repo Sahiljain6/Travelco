@@ -23,7 +23,7 @@ const categories = [
     icon: <FaTrain />,
   },
   {
-    name: "Restaurent Reservation",
+    name: "Restaurant Reservation",
     icon: <BiRestaurant />,
   },
   {
@@ -34,35 +34,57 @@ const categories = [
 const Services = () => {
   return (
     <>
-      <div class="lg:px-36 lg:pt-5 lg:pb-[90px]">
+      <div
+        id="services"
+        className="bg-gradient-to-b from-white to-orange-50 px-5 py-12 lg:px-24 lg:py-20"
+      >
         <div class="container mx-auto">
           <div class="-mx-4 flex flex-wrap">
             <div class="w-full px-4">
               <div class="mx-auto mb-12 max-w-[510px] text-center lg:mb-20">
-                <span class="text-primary mb-2 block text-lg font-semibold">
-                  Our Services
+                <span class="mb-2 block text-lg font-bold text-orange-500">
+                  Your Journey Starts Here
                 </span>
-                <h2 class="text-dark mb-4 text-3xl font-bold sm:text-4xl md:text-[40px]">
-                  What We Offer
+                <h2 class="mb-4 text-3xl font-extrabold text-slate-900 sm:text-4xl md:text-[40px]">
+                  Everything You Need to Travel
                 </h2>
-                <p class="text-body-color text-base">
-                  Lorem ipsum dolor sit, amet consectetur adipisicing elit.
-                  Quaerat reprehenderit autem ea ab repellat eum, quasi modi,
+                <p class="text-base leading-7 text-slate-600">
+                  From finding the perfect stay to arranging transport and
+                  planning activities, explore travel services designed to
+                  make your journey more convenient. Discover available options
+                  and bring every part of your trip together in one place.
                 </p>
               </div>
             </div>
           </div>
-          <div class="-mx-4 grid lg:grid-cols-3 gap-6">
-            {categories.map((category) => (
-              <div class="mb-8 rounded-[20px] bg-white p-2 shadow-md  hover:shadow-lg md:px-7  grid grid-cols-2 justify-center">
-                <div class=" text-black text-3xl mb-8 flex h-[70px] w-[70px] items-center justify-center rounded-2xl">
-                  {category.icon}
+          <div className="-mx-4 grid gap-6 lg:grid-cols-3">
+            {categories.map((category, index) => {
+              const colors = [
+                "bg-blue-100 text-blue-700",
+                "bg-orange-100 text-orange-700",
+                "bg-emerald-100 text-emerald-700",
+                "bg-violet-100 text-violet-700",
+                "bg-pink-100 text-pink-700",
+                "bg-amber-100 text-amber-700",
+              ];
+
+              return (
+                <div
+                  key={category.name}
+                  className="group mb-4 grid grid-cols-[70px_1fr] items-center gap-4 rounded-2xl border border-slate-100 bg-white p-5 shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl md:p-7"
+                >
+                  <div
+                    className={`flex h-[70px] w-[70px] items-center justify-center rounded-2xl text-3xl transition group-hover:scale-105 ${colors[index % colors.length]}`}
+                  >
+                    {category.icon}
+                  </div>
+
+                  <h4 className="text-lg font-bold text-slate-800">
+                    {category.name}
+                  </h4>
                 </div>
-                <h4 class="text-dark mb-3 mt-5 text-lg font-semibold">
-                  {category.name}
-                </h4>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </div>
