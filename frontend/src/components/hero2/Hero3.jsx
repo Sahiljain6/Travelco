@@ -8,21 +8,24 @@ const Hero3 = () => {
           <div className="-mx-4 flex flex-wrap items-center justify-between">
             <div className="w-full px-4 lg:w-1/2 xl:w-5/12">
               <div className="mt-10 lg:mt-0">
-                <span className="text-[#41A4FF] mb-2 block text-lg font-semibold">
-                  Trvel with us
+                <span className="mb-2 block text-lg font-bold text-emerald-600">
+                  Travel With Purpose
                 </span>
-                <h2 className="text-dark mb-8 text-3xl font-bold sm:text-4xl">
-                  TAKE ONLY MEMORIES, LEAVE ONLY FOOTPRINTS
+                <h2 className="mb-8 text-3xl font-extrabold leading-tight text-slate-900 sm:text-4xl">
+                  Take Only Memories,
+                  <span className="block text-emerald-600">
+                    Leave Only Footprints.
+                  </span>
                 </h2>
-                <p className="text-body-color mb-8 text-base">
-                  Lorem ipsum dolor sit amet, consectetur adipisicing elit. Esse
-                  nulla enim aperiam culpa cupiditate quas animi ducimus
-                  blanditiis! Dolorum, perspiciatis.
+                <p className="mb-8 text-base leading-7 text-slate-600">
+                  The best journeys connect us with the world around us.
+                  Explore remarkable landscapes, experience local cultures,
+                  and discover the places that make every destination unique.
                 </p>
-                <p className="text-body-color mb-12 text-base">
-                  Lorem ipsum dolor sit amet, consectetur adipisicing elit. Esse
-                  nulla enim aperiam culpa cupiditate quas animi ducimus
-                  blanditiis! Dolorum, perspiciatis.
+                <p className="mb-12 text-base leading-7 text-slate-600">
+                  Travel thoughtfully, respect local communities, and help
+                  preserve the beauty of the places you visit for generations
+                  to come.
                 </p>
               </div>
             </div>
