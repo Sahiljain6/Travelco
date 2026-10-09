@@ -37,21 +37,21 @@ const Aboutus = () => {
             </div>
             <div className="w-full px-4 lg:w-1/2 xl:w-5/12">
               <div className="mt-10 lg:mt-0">
-                <span className="text-[#41A4FF] mb-2 block text-lg font-semibold">
-                  Why Choose Us
+                <span className="mb-2 block text-lg font-semibold text-orange-500">
+                  Why Choose Travelco
                 </span>
-                <h2 className="text-dark mb-8 text-3xl font-bold sm:text-4xl">
-                  Lorem ipsum dolor sit amet
+                <h2 className="mb-8 text-3xl font-extrabold text-slate-900 sm:text-4xl">
+                  Your Journey, Your Way
                 </h2>
-                <p className="text-body-color mb-8 text-base">
-                  Lorem ipsum dolor sit amet, consectetur adipisicing elit. Esse
-                  nulla enim aperiam culpa cupiditate quas animi ducimus
-                  blanditiis! Dolorum, perspiciatis.
+                <p className="mb-8 text-base leading-7 text-slate-600">
+                  Travel is about more than reaching a destination. It is about
+                  discovering new cultures, meeting people, and creating memories
+                  that stay with you.
                 </p>
-                <p className="text-body-color mb-12 text-base">
-                  Lorem ipsum dolor sit amet, consectetur adipisicing elit. Esse
-                  nulla enim aperiam culpa cupiditate quas animi ducimus
-                  blanditiis! Dolorum, perspiciatis.
+                <p className="mb-12 text-base leading-7 text-slate-600">
+                  Travelco brings travel planning and reservation services
+                  together to help make every journey easier, more inspiring,
+                  and more memorable.
                 </p>
               </div>
             </div>
