@@ -42,3 +42,33 @@ The backend intentionally refuses new account registrations if SMTP is not confi
 - Currency and country data are delivered by third-party public APIs and can be unavailable. Rate results are indicative, not a bank/payment quote.
 - Account preferences are stored now; personalized ranking, real saved-booking linkage, actual booking history, loyalty balances, and notification delivery require their own tested data/workflows. No artificial loyalty points are shown.
 - These policy pages are a strong initial draft, not a substitute for jurisdiction-specific legal advice.
+
+
+## Image uploads through the backend
+
+Image uploads are now proxied through `POST /api/uploads/profile-image` (public registration flow, rate-limited) and `POST /api/uploads/image` (authenticated session). Files are limited by size, MIME and file signature; SVG/HTML and unrecognized files are rejected. The backend sends accepted images to Cloudinary using server-side Basic Auth and returns only the secure image URL and asset metadata. The Cloudinary API secret is never sent to the frontend.
+
+Configure these variables in Railway's **backend service → Variables**:
+
+- `CLOUDINARY_CLOUD_NAME`: your Cloudinary cloud name.
+- `CLOUDINARY_API_KEY`: your Cloudinary API key.
+- `CLOUDINARY_API_SECRET`: your Cloudinary API secret. Keep it server-only; do not prefix it with `REACT_APP_` and do not place it in Netlify variables.
+
+The existing registration upload is public because the user does not have a session yet; it is limited to 8 requests per 15 minutes per client IP. That in-memory limiter is a small first layer, not distributed protection. Before scaling to multiple backend replicas, replace it with a shared Redis/database-backed rate limiter and add observability/abuse alerts. Authenticated tour-image uploads are restricted to administrators, tour guides and event organizers.
+
+The backend must run Node.js 18 or newer for its built-in `fetch`, `FormData` and `Blob` APIs. If Cloudinary credentials are missing, the application starts with a warning and image uploads respond with HTTP 503 until configured. In production, CORS allows only the configured frontend origin(s); localhost origins are enabled only outside production.
+
+## Provider integration status
+
+- **Active:** MongoDB Atlas, SMTP email, Cloudinary backend image uploads, REST Countries and Frankfurter currency reference data.
+- **Now wired:** current-city weather through `GET /api/integrations/weather?city=...` using the server-only `OPENWEATHER_API_KEY`; interactive country map through React Leaflet and MapTiler tiles when a restricted public `REACT_APP_MAPTILER_API_KEY` is set in Netlify. In development, the map falls back to OpenStreetMap tiles with attribution.
+- **Not activated:** flight inventory/booking or payment gateway. These require provider selection, credentials, tested booking/payment flows and webhook verification.
+
+
+## Weather and map setup
+
+Add `OPENWEATHER_API_KEY` to the Railway backend service Variables. The weather endpoint limits requests per client IP, times out upstream calls, normalizes the provider response, and never sends the API key to the browser. Without a key it returns HTTP 503 and the UI displays a configuration message. Get a key through OpenWeather and verify the account/API access before testing.
+
+Add `REACT_APP_MAPTILER_API_KEY` to Netlify's frontend environment variables to use MapTiler tiles. This is a browser-visible public key, not a private API secret: restrict its allowed HTTP origins to the exact Travelco production domain and localhost only for local development. The frontend map displays approximate country-centroid markers and is not a turn-by-turn route planner. Without a key, OpenStreetMap tiles are used only for local development; production tiles remain disabled until a provider key is configured. This avoids relying on the community tile service for a public production site.
+
+The frontend environment template is `frontend/.env.example`. Any change to `REACT_APP_*` variables requires a new frontend build in Netlify.

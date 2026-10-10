@@ -1,0 +1,48 @@
+name: Validate Travelco
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  frontend-production-build:
+    name: Frontend production build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+      - name: Install frontend dependencies
+        run: npm install
+        working-directory: frontend
+      - name: Build frontend
+        run: npm run build
+        working-directory: frontend
+        env:
+          CI: "false"
+
+  backend-syntax:
+    name: Backend dependency install and syntax check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+      - name: Install backend dependencies
+        run: npm ci
+        working-directory: backend
+      - name: Parse backend JavaScript files
+        run: |
+          find . -path ./node_modules -prune -o -type f -name "*.js" -print0 | xargs -0 -n1 node --check
+        working-directory: backend
