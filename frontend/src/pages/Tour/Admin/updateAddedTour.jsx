@@ -5,6 +5,7 @@ import { Ripple, initTE } from "tw-elements";
 import Swal from "sweetalert2";
 import axios from "axios";
 import { AuthContext } from "../../../context/authContext";
+import { uploadImage } from "../../../utils/uploadImage";
 import { useLocation } from "react-router-dom";
 
 const AddTourPackage = () => {
@@ -47,16 +48,7 @@ const AddTourPackage = () => {
     if (result.isConfirmed) {
       try {
         if (file) {
-          const data = new FormData();
-          data.append("file", file);
-          data.append("upload_preset", "upload");
-
-          const uploadRes = await axios.post(
-            "https://api.cloudinary.com/v1_1/dpgelkpd4/image/upload",
-            data
-          );
-
-          const { url } = uploadRes.data;
+          const { url } = await uploadImage(file, "tour");
 
           const response = await axios.patch(
             `/tours/${state.data.oneTour._id}`,

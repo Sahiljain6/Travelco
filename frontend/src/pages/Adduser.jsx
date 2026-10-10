@@ -4,6 +4,7 @@ import Swal from "sweetalert2";
 import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
 import Spinner from "../components/spinner/LoadingSpinner";
+import { uploadProfileImage } from "../utils/uploadImage";
 
 const Adduser = () => {
   const [loading2, setLoading2] = useState(false);
@@ -70,19 +71,10 @@ const Adduser = () => {
     }
 
     if (result.isConfirmed) {
-      const data = new FormData();
-      data.append("file", file);
-      data.append("upload_preset", "upload");
-
       try {
         setLoading2(true);
         if (file) {
-          const uploadRes = await axios.post(
-            "https://api.cloudinary.com/v1_1/dpgelkpd4/image/upload",
-            data
-          );
-
-          const { url } = uploadRes.data;
+          const { url } = await uploadProfileImage(file);
 
           const response = await axios.post("auth/register", {
             name,

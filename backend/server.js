@@ -3,6 +3,8 @@ const express = require("express");
 require("dotenv").config();
 const path = require("path");
 const app = express();
+// Railway sits behind a trusted reverse proxy; use its forwarded client IP for rate limits.
+app.set("trust proxy", 1);
 const bodyParser = require("body-parser");
 const colors = require("colors");
 const userRoutes = require("./routes/userRoutes");
@@ -10,6 +12,17 @@ const messageRoutes = require("./routes/messageRoutes");
 const chatRoutes = require("./routes/chatRoutes");
 const cors = require("cors");
 const connectDB = require("./config/db");
+
+if (process.env.NODE_ENV === "production" && !process.env.JWT) {
+  console.error("Startup blocked: set a strong JWT secret in the backend environment.");
+  process.exit(1);
+}
+if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASS) {
+  console.warn("Email verification/password reset are unavailable until SMTP_HOST, SMTP_USER and SMTP_PASS are configured.");
+}
+if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
+  console.warn("Image uploads are unavailable until CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY and CLOUDINARY_API_SECRET are configured.");
+}
 
 connectDB();
 
@@ -31,6 +44,7 @@ app.use(express.urlencoded({ limit: "5mb", extended: true }));
 app.use(bodyParser.json({ limit: "5mb" }));
 app.use(bodyParser.urlencoded({ limit: "5mb", extended: true }));
 app.use(cookieParser());
+app.use("/api/uploads", require("./routes/uploadRoutes"));
 
 app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/api/users", require("./routes/userRoutes"));

@@ -5,6 +5,7 @@ import DriveFolderUploadOutlinedIcon from "@mui/icons-material/DriveFolderUpload
 import moment from "moment";
 import Swal from "sweetalert2";
 import Spinner from "../components/spinner/LoadingSpinner";
+import { uploadImage } from "../utils/uploadImage";
 
 const UpdateuserA = () => {
   const { state } = useLocation();
@@ -43,16 +44,7 @@ const UpdateuserA = () => {
       try {
         setLoading2(true);
         if (file) {
-          const data = new FormData();
-          data.append("file", file);
-          data.append("upload_preset", "upload");
-
-          const uploadRes = await axios.post(
-            "https://api.cloudinary.com/v1_1/dpgelkpd4/image/upload",
-            data
-          );
-
-          const { url } = uploadRes.data;
+          const { url } = await uploadImage(file, "profile");
 
           const response = await axios.put(`users/${state._id}`, {
             ...state, // Pass the entire state object to be updated

@@ -6,6 +6,7 @@ import Swal from "sweetalert2";
 import backgroundImage from "../assets/images/bg.jpg";
 import Spinner from "../components/spinner/LoadingSpinner";
 import countries from "../data/countries";
+import { uploadProfileImage } from "../utils/uploadImage";
 
 const Register = () => {
   const [loading2, setLoading2] = useState(false);
@@ -91,17 +92,8 @@ const Register = () => {
         return;
       }
 
-      const data = new FormData();
-      data.append("file", file);
-      data.append("upload_preset", "upload");
-
       if (file) {
-        const uploadRes = await axios.post(
-          "https://api.cloudinary.com/v1_1/dpgelkpd4/image/upload",
-          data
-        );
-
-        const { url } = uploadRes.data;
+        const { url } = await uploadProfileImage(file);
 
         const response = await axios.post("auth/register", {
           name,
