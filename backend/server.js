@@ -91,7 +91,7 @@ app.use("/api/user", userRoutes);
 app.use("/api/chat", chatRoutes);
 
 const port = process.env.PORT || 5000;
-const server = app.listen(port, () => console.log(\`Server running on port \${port} 🔥\`));
+const server = app.listen(port, () => console.log(`Server running on port ${port} 🔥`));
 
 const io = require("socket.io")(server, {
   pingTimeout: 60000,

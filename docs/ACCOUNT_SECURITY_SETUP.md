@@ -4,13 +4,13 @@
 
 Set these values in the backend host's environment settings (for example, Render); do not commit credentials into source control:
 
-- \`MONGO_URI\`: the production MongoDB connection string.
-- \`JWT\`: a unique random signing secret with at least 32 random bytes. Do not reuse a source-code default.
-- \`NODE_ENV=production\`: enables secure, cross-site HTTP-only session cookies.
-- \`FRONTEND_URL=https://travelxco.netlify.app\`: the public frontend origin used to build verification and password-reset links.
-- \`CORS_ORIGINS=https://travelxco.netlify.app\`: comma-separated exact frontend origins allowed to call the credentialed API.
-- \`SMTP_HOST\`, \`SMTP_PORT\`, \`SMTP_SECURE\`, \`SMTP_USER\`, \`SMTP_PASS\`: credentials for a verified transactional email provider.
-- \`MAIL_FROM\`: sender address approved by the email provider.
+- `MONGO_URI`: the production MongoDB connection string.
+- `JWT`: a unique random signing secret with at least 32 random bytes. Do not reuse a source-code default.
+- `NODE_ENV=production`: enables secure, cross-site HTTP-only session cookies.
+- `FRONTEND_URL=https://travelxco.netlify.app`: the public frontend origin used to build verification and password-reset links.
+- `CORS_ORIGINS=https://travelxco.netlify.app`: comma-separated exact frontend origins allowed to call the credentialed API.
+- `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASS`: credentials for a verified transactional email provider.
+- `MAIL_FROM`: sender address approved by the email provider.
 
 The backend intentionally refuses new account registrations if SMTP is not configured, because an unverified account otherwise cannot complete sign-up. Deploy and test SMTP delivery before reopening registration. Existing accounts created before verification was added are treated as verified for compatibility; newly registered accounts must verify before login.
 
@@ -34,7 +34,7 @@ The backend intentionally refuses new account registrations if SMTP is not confi
 7. Complete a privacy/data inventory, retention schedule, cookie/analytics disclosure, data-subject request process, and incident-response procedure.
 8. Have counsel review the Terms & Conditions and Privacy Policy. Replace/confirm the operator's legal name, registered address, governing law, dispute process, age rules, retention periods, and applicable consumer/privacy disclosures before public launch.
 9. Run dependency and secret scanning, production frontend/backend builds, accessibility checks, and end-to-end tests.
-10. Do not run \`backend/seed.js\` against production data; it can delete collections.
+10. Do not run `backend/seed.js` against production data; it can delete collections.
 
 ## Known implementation boundaries
 
