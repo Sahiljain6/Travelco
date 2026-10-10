@@ -1,9 +1,8 @@
-﻿const jwt = require("jsonwebtoken");
+const jwt = require("jsonwebtoken");
 
 const generateToken = (id) => {
-  return jwt.sign({ id }, "travelcoVerification", {
-    expiresIn: "30d",
-  });
+  if (!process.env.JWT) throw new Error("JWT environment variable is required");
+  return jwt.sign({ id: String(id) }, process.env.JWT, { expiresIn: "30d" });
 };
 
 module.exports = generateToken;

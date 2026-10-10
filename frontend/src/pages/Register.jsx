@@ -5,6 +5,7 @@ import DriveFolderUploadOutlinedIcon from "@mui/icons-material/DriveFolderUpload
 import Swal from "sweetalert2";
 import backgroundImage from "../assets/images/bg.jpg";
 import Spinner from "../components/spinner/LoadingSpinner";
+import countries from "../data/countries";
 
 const Register = () => {
   const [loading2, setLoading2] = useState(false);
@@ -18,6 +19,7 @@ const Register = () => {
   const [type, setType] = useState("traveler");
   const [password, setPassword] = useState("");
   const [repeatPassword, setRepeatPassword] = useState("");
+  const [termsAccepted, setTermsAccepted] = useState(false);
 
   const navigate = useNavigate();
 
@@ -30,6 +32,12 @@ const Register = () => {
       confirmButtonText: "Save",
       denyButtonText: `Don't save`,
     });
+    if (!result.isConfirmed) return;
+
+    if (!termsAccepted) {
+      Swal.fire("Please accept the Terms and Conditions and Privacy Policy", "", "error");
+      return;
+    }
 
     if (password !== repeatPassword) {
       Swal.fire({
@@ -51,7 +59,7 @@ const Register = () => {
       Swal.fire("Please enter a valid email address", "", "error");
       return;
     }
-    if (mobile.length !== 10) {
+    if (!/^\+?[1-9]\d{6,14}$/.test(mobile.replace(/[\s()-]/g, ""))) {
       Swal.fire({
         icon: "error",
         title: "Oops...",
@@ -59,11 +67,11 @@ const Register = () => {
       });
       return;
     }
-    if (password.length <= 6) {
+    if (password.length < 8) {
       Swal.fire({
         icon: "error",
         title: "Oops...",
-        text: "password must at least have 6 charaters",
+        text: "password must be at least 8 characters long",
       });
       return;
     }
@@ -102,6 +110,7 @@ const Register = () => {
           country,
           type,
           password,
+          termsAccepted,
           img: url,
         });
 
@@ -110,7 +119,7 @@ const Register = () => {
           "",
           "success"
         );
-        navigate("/login");
+        navigate("/verify-email?email=" + encodeURIComponent(email));
       } else {
         const response = await axios.post("auth/register", {
           name,
@@ -119,6 +128,7 @@ const Register = () => {
           country,
           type,
           password,
+          termsAccepted,
         });
 
         Swal.fire(
@@ -131,7 +141,13 @@ const Register = () => {
 
       setLoading2(false);
     } catch (err) {
-      if (err.message === "Request failed with status code 409") {
+      if (err.response?.data?.code === "EMAIL_DELIVERY_FAILED") {
+        Swal.fire({ icon: "warning", title: "Account created", text: err.response.data.message });
+        navigate("/verify-email?email=" + encodeURIComponent(email));
+        setLoading2(false);
+        return;
+      }
+      if (err.message === "Request failed with status code 409" || err.response?.status === 409) {
         Swal.fire({
           icon: "error",
           title: "Oops...",
@@ -142,8 +158,8 @@ const Register = () => {
       }
       Swal.fire({
         icon: "error",
-        title: "Oops...",
-        text: err.message,
+        title: "Unable to sign up",
+        text: err.response?.data?.message || err.message || "Please try again.",
       });
       setLoading2(false);
     }
@@ -228,14 +244,19 @@ const Register = () => {
               />
             </div>
             <div className="mb-6">
-              <input
-                placeholder="Country"
-                type="text"
+              <label htmlFor="country" className="sr-only">Country of residence</label>
+              <select
                 id="country"
+                required
                 value={country}
                 onChange={(e) => setCountry(e.target.value)}
-                className="bordder-[#E9EDF4] w-full rounded-3xl border bg-[#FCFDFE] py-3 px-5 text-base text-body-color placeholder-[#ACB6BE] focus:ring outline-none focus:border-[#41A4FF] focus-visible:shadow-none"
-              />
+                className="w-full rounded-3xl border border-slate-300 bg-[#FCFDFE] py-3 px-5 text-base text-slate-700 outline-none focus:ring focus:border-[#41A4FF]"
+              >
+                <option value="">Select your country</option>
+                {countries.map((countryName) => (
+                  <option key={countryName} value={countryName}>{countryName}</option>
+                ))}
+              </select>
             </div>
             <div className="mb-6">
               <div className="relative">
@@ -282,6 +303,20 @@ const Register = () => {
                 onChange={(e) => setRepeatPassword(e.target.value)}
                 className="bordder-[#E9EDF4] w-full text-base rounded-3xl border bg-[#FCFDFE] py-3 px-5 text-body-color focus:ring placeholder-[#ACB6BE] outline-none focus:border-[#41A4FF] focus-visible:shadow-none"
               />
+            </div>
+            <div className="mb-6 text-left">
+              <label className="flex items-start gap-3 text-sm leading-6 text-slate-600">
+                <input
+                  type="checkbox"
+                  checked={termsAccepted}
+                  onChange={(e) => setTermsAccepted(e.target.checked)}
+                  className="mt-1 h-4 w-4 accent-blue-600"
+                  required
+                />
+                <span>
+                  I agree to Travelco's <Link to="/terms" target="_blank" rel="noreferrer" className="font-semibold text-blue-700 hover:underline">Terms &amp; Conditions</Link> and acknowledge the <Link to="/privacy" target="_blank" rel="noreferrer" className="font-semibold text-blue-700 hover:underline">Privacy Policy</Link>.
+                </span>
+              </label>
             </div>
             <div className="mb-10">
               <button

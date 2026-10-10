@@ -9,16 +9,13 @@ const ResetPassword = () => {
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
   const token2 = searchParams.get("token");
-  console.log(token2);
 
   const [loading2, setLoading2] = useState(false);
 
   const navigate = useNavigate();
 
   const [email, setEmail] = useState("");
-  const [token, setToken] = useState("");
   const [password, setPassword] = useState("");
-  const [message, setMessage] = useState("");
 
   const handleForgotPassword = async (event) => {
     event.preventDefault();
@@ -34,21 +31,21 @@ const ResetPassword = () => {
 
     try {
       setLoading2(true);
-      const response = await axios.post("auth/forgot-password", {
+      await axios.post("auth/forgot-password", {
         email: email,
       });
-      setToken(response.data.token);
       setLoading2(false);
       Swal.fire({
         icon: "success",
         title: "Done",
-        text: "Password reset link sent to your email",
+        text: "If an account exists for this address, a password reset link has been sent.",
       });
     } catch (error) {
+      setLoading2(false);
       Swal.fire({
         icon: "error",
         title: "Oops...",
-        text: error.response.data.message,
+        text: error.response?.data?.message || "Please try again shortly.",
       });
     }
   };
@@ -56,11 +53,11 @@ const ResetPassword = () => {
   const handleResetPassword = async (event) => {
     event.preventDefault();
 
-    if (!password || password.length < 6) {
+    if (!password || password.length < 8) {
       Swal.fire({
         icon: "error",
         title: "Oops...",
-        text: "Password must be at least 6 characters long",
+        text: "Password must be at least 8 characters long",
       });
       return;
     }
