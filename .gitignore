@@ -24,3 +24,14 @@ frontend/.env
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# Local environment files and secrets (keep example templates only)
+.env
+.env.*
+!.env.example
+backend/.env
+backend/.env.*
+!backend/.env.example
+frontend/.env
+frontend/.env.*
+!frontend/.env.example
