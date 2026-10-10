@@ -30,7 +30,10 @@ const configuredOrigins = (process.env.CORS_ORIGINS || process.env.FRONTEND_URL 
   .split(",")
   .map((origin) => origin.trim().replace(/\/+$/, ""))
   .filter(Boolean);
-const allowedOrigins = new Set([...configuredOrigins, "http://localhost:3000", "http://127.0.0.1:3000"]);
+const localDevelopmentOrigins = process.env.NODE_ENV === "production"
+  ? []
+  : ["http://localhost:3000", "http://127.0.0.1:3000"];
+const allowedOrigins = new Set([...configuredOrigins, ...localDevelopmentOrigins]);
 
 app.use(cors({
   origin(origin, callback) {

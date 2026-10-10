@@ -56,7 +56,7 @@ Configure these variables in Railway's **backend service → Variables**:
 
 The existing registration upload is public because the user does not have a session yet; it is limited to 8 requests per 15 minutes per client IP. That in-memory limiter is a small first layer, not distributed protection. Before scaling to multiple backend replicas, replace it with a shared Redis/database-backed rate limiter and add observability/abuse alerts. Authenticated tour-image uploads are restricted to administrators, tour guides and event organizers.
 
-The backend must run Node.js 18 or newer for its built-in `fetch`, `FormData` and `Blob` APIs. If Cloudinary credentials are missing, the application starts with a warning and image uploads respond with HTTP 503 until configured.
+The backend must run Node.js 18 or newer for its built-in `fetch`, `FormData` and `Blob` APIs. If Cloudinary credentials are missing, the application starts with a warning and image uploads respond with HTTP 503 until configured. In production, CORS allows only the configured frontend origin(s); localhost origins are enabled only outside production.
 
 ## Provider integration status
 
