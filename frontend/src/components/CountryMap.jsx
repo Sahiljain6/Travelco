@@ -23,9 +23,10 @@ const MapViewport = ({ country }) => {
 
 const CountryMap = ({ countries = [], selectedCountry = null, onSelectCountry = () => {} }) => {
   const mapTilerKey = process.env.REACT_APP_MAPTILER_API_KEY;
+  const useOpenStreetMapFallback = !mapTilerKey && process.env.NODE_ENV !== "production";
   const tileUrl = mapTilerKey
     ? "https://api.maptiler.com/maps/streets-v2/{z}/{x}/{y}.png?key=" + encodeURIComponent(mapTilerKey)
-    : "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
+    : "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
   const attribution = mapTilerKey
     ? '&copy; <a href="https://www.maptiler.com/copyright/">MapTiler</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>'
     : '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>';
@@ -45,7 +46,9 @@ const CountryMap = ({ countries = [], selectedCountry = null, onSelectCountry = 
         style={{ height: "420px", width: "100%", zIndex: 0 }}
         aria-label="Interactive map of world destinations"
       >
-        <TileLayer url={tileUrl} attribution={attribution} maxZoom={19} />
+        {(mapTilerKey || useOpenStreetMapFallback) && (
+          <TileLayer url={tileUrl} attribution={attribution} maxZoom={19} />
+        )}
         <MapViewport country={selectedCountry} />
         {mappedCountries.map(({ country, coordinates }) => {
           const selected = selectedCountry && selectedCountry.cca2 === country.cca2;
@@ -81,7 +84,9 @@ const CountryMap = ({ countries = [], selectedCountry = null, onSelectCountry = 
       </MapContainer>
       {!mapTilerKey && (
         <p className="border-t border-slate-200 bg-amber-50 px-4 py-2 text-xs leading-5 text-amber-900">
-          Development map tiles are using OpenStreetMap. Configure a domain-restricted REACT_APP_MAPTILER_API_KEY in Netlify before production traffic grows.
+          {useOpenStreetMapFallback
+            ? "Development map tiles are using OpenStreetMap. Configure a domain-restricted REACT_APP_MAPTILER_API_KEY in Netlify before deployment."
+            : "Map tiles are disabled until REACT_APP_MAPTILER_API_KEY is configured in Netlify. Country markers remain available."}
         </p>
       )}
     </div>

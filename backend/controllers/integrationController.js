@@ -38,8 +38,18 @@ const getWeather = async (req, res) => {
   }
 
   try {
+    // Use OpenWeather's dedicated geocoding API instead of the legacy built-in city geocoder.
+    const geocoded = await axios.get("https://api.openweathermap.org/geo/1.0/direct", {
+      params: { q: city, limit: 1, appid: apiKey },
+      timeout: 8000,
+    });
+    const place = Array.isArray(geocoded.data) ? geocoded.data[0] : null;
+    if (!place || !Number.isFinite(place.lat) || !Number.isFinite(place.lon)) {
+      return res.status(404).json({ message: "We couldn't find that city. Try adding the country code." });
+    }
+
     const response = await axios.get("https://api.openweathermap.org/data/2.5/weather", {
-      params: { q: city, appid: apiKey, units: "metric" },
+      params: { lat: place.lat, lon: place.lon, appid: apiKey, units: "metric" },
       timeout: 8000,
     });
     const data = response.data || {};
@@ -50,10 +60,10 @@ const getWeather = async (req, res) => {
 
     res.set("Cache-Control", "public, max-age=300");
     return res.status(200).json({
-      city: data.name || city,
-      countryCode: data.sys && data.sys.country ? data.sys.country : null,
-      latitude: Number.isFinite(data.coord && data.coord.lat) ? data.coord.lat : null,
-      longitude: Number.isFinite(data.coord && data.coord.lon) ? data.coord.lon : null,
+      city: place.name || data.name || city,
+      countryCode: place.country || (data.sys && data.sys.country ? data.sys.country : null),
+      latitude: Number.isFinite(place.lat) ? place.lat : (Number.isFinite(data.coord && data.coord.lat) ? data.coord.lat : null),
+      longitude: Number.isFinite(place.lon) ? place.lon : (Number.isFinite(data.coord && data.coord.lon) ? data.coord.lon : null),
       temperatureC: Number.isFinite(data.main && data.main.temp) ? Math.round(data.main.temp * 10) / 10 : null,
       feelsLikeC: Number.isFinite(data.main && data.main.feels_like) ? Math.round(data.main.feels_like * 10) / 10 : null,
       humidity: Number.isFinite(data.main && data.main.humidity) ? data.main.humidity : null,
