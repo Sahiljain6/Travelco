@@ -1,7 +1,9 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+import CountryMap from "../components/CountryMap";
+import WeatherSearchPanel from "../components/WeatherSearchPanel";
 
-const COUNTRIES_API = "https://restcountries.com/v3.1/all?fields=name,cca2,flags,capital,region,subregion,currencies,population";
+const COUNTRIES_API = "https://restcountries.com/v3.1/all?fields=name,cca2,flags,capital,region,subregion,currencies,population,latlng";
 const CURRENCIES_API = "https://api.frankfurter.dev/v2/currencies";
 
 const asCurrencyName = (country) => {
@@ -18,6 +20,7 @@ const ExploreWorld = () => {
   const [countriesLoading, setCountriesLoading] = useState(true);
   const [countriesError, setCountriesError] = useState("");
   const [search, setSearch] = useState("");
+  const [selectedCountry, setSelectedCountry] = useState(null);
   const [region, setRegion] = useState("All regions");
   const [currencies, setCurrencies] = useState({});
   const [amount, setAmount] = useState("1");
@@ -188,6 +191,22 @@ const ExploreWorld = () => {
             </select>
           </label>
         </div>
+        <WeatherSearchPanel />
+        <section id="world-map" className="mt-8 overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+          <div className="flex flex-col gap-2 p-5 sm:flex-row sm:items-end sm:justify-between sm:p-7">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-blue-600">Interactive map</p>
+              <h3 className="mt-2 text-2xl font-bold text-slate-950">Explore destinations on the map</h3>
+              <p className="mt-2 text-sm leading-6 text-slate-600">Select a marker to focus a country. Country markers use approximate country coordinates, not a city-level route.</p>
+            </div>
+            {selectedCountry && (
+              <p className="rounded-xl bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-800">
+                Selected: {selectedCountry.name.common}
+              </p>
+            )}
+          </div>
+          <CountryMap countries={countries} selectedCountry={selectedCountry} onSelectCountry={setSelectedCountry} />
+        </section>
         {countriesError && <div role="alert" className="mt-6 rounded-2xl border border-rose-200 bg-rose-50 p-4 text-rose-800">{countriesError} Check your connection and refresh to retry.</div>}
         {countriesLoading ? (
           <div className="grid gap-5 pt-8 sm:grid-cols-2 lg:grid-cols-3"><div className="h-64 animate-pulse rounded-3xl bg-slate-200" /><div className="h-64 animate-pulse rounded-3xl bg-slate-200" /><div className="h-64 animate-pulse rounded-3xl bg-slate-200" /></div>
@@ -219,7 +238,17 @@ const ExploreWorld = () => {
                       <div className="flex justify-between gap-3"><dt className="text-slate-500">Currency</dt><dd className="text-right font-semibold text-slate-800">{asCurrencyName(country)}</dd></div>
                       <div className="flex justify-between gap-3"><dt className="text-slate-500">Population</dt><dd className="text-right font-semibold text-slate-800">{populationLabel(country.population)}</dd></div>
                     </dl>
-                    <Link to={`/profile?destination=${encodeURIComponent(country.name.common)}`} className="mt-6 inline-flex w-full items-center justify-center rounded-xl bg-slate-950 px-4 py-3 font-semibold text-white transition group-hover:bg-blue-700">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedCountry(country);
+                        document.getElementById("world-map")?.scrollIntoView({ behavior: "smooth", block: "center" });
+                      }}
+                      className="mt-6 inline-flex w-full items-center justify-center rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 font-semibold text-blue-800 transition hover:bg-blue-100"
+                    >
+                      Locate on map
+                    </button>
+                    <Link to={"/profile?destination=" + encodeURIComponent(country.name.common)} className="mt-2 inline-flex w-full items-center justify-center rounded-xl bg-slate-950 px-4 py-3 font-semibold text-white transition group-hover:bg-blue-700">
                       Save / personalize this destination
                     </Link>
                     {firstCurrency && <p className="mt-3 text-center text-xs text-slate-400">Currency code: {firstCurrency}</p>}

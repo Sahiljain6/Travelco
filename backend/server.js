@@ -45,6 +45,7 @@ app.use(bodyParser.json({ limit: "5mb" }));
 app.use(bodyParser.urlencoded({ limit: "5mb", extended: true }));
 app.use(cookieParser());
 app.use("/api/uploads", require("./routes/uploadRoutes"));
+app.use("/api/integrations", require("./routes/integrationRoutes"));
 
 app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/api/users", require("./routes/userRoutes"));

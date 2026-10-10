@@ -61,5 +61,14 @@ The backend must run Node.js 18 or newer for its built-in `fetch`, `FormData` an
 ## Provider integration status
 
 - **Active:** MongoDB Atlas, SMTP email, Cloudinary backend image uploads, REST Countries and Frankfurter currency reference data.
-- **Next planned:** weather provider via `OPENWEATHER_API_KEY`; map tiles/geocoding via a provider such as MapTiler. The optional `OPENWEATHER_API_KEY` and `MAPTILER_API_KEY` placeholders do not activate these integrations by themselves.
+- **Now wired:** current-city weather through `GET /api/integrations/weather?city=...` using the server-only `OPENWEATHER_API_KEY`; interactive country map through React Leaflet and MapTiler tiles when a restricted public `REACT_APP_MAPTILER_API_KEY` is set in Netlify. In development, the map falls back to OpenStreetMap tiles with attribution.
 - **Not activated:** flight inventory/booking or payment gateway. These require provider selection, credentials, tested booking/payment flows and webhook verification.
+
+
+## Weather and map setup
+
+Add `OPENWEATHER_API_KEY` to the Railway backend service Variables. The weather endpoint limits requests per client IP, times out upstream calls, normalizes the provider response, and never sends the API key to the browser. Without a key it returns HTTP 503 and the UI displays a configuration message. Get a key through OpenWeather and verify the account/API access before testing.
+
+Add `REACT_APP_MAPTILER_API_KEY` to Netlify's frontend environment variables to use MapTiler tiles. This is a browser-visible public key, not a private API secret: restrict its allowed HTTP origins to the exact Travelco production domain and localhost only for local development. The frontend map displays approximate country-centroid markers and is not a turn-by-turn route planner. Without a key it falls back to OpenStreetMap tiles with attribution; review OpenStreetMap's tile usage policy before relying on its public tile service for significant commercial traffic.
+
+The frontend environment template is `frontend/.env.example`. Any change to `REACT_APP_*` variables requires a new frontend build in Netlify.
