@@ -1,5 +1,4 @@
 const crypto = require("crypto");
-const path = require("path");
 const multer = require("multer");
 const User = require("../models/userModel");
 
