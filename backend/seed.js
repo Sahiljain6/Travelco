@@ -9,7 +9,24 @@ const Vehicle = require("./models/Vehicle");
 const MONGO_URI =
   process.env.MONGO_URI ||
   process.env.MONGO_URL ||
-  "mongodb+srv://sahiljain24_db_user:CsdNiQ4y1YdXMKwK@cluster0.4zfgvbr.mongodb.net/travelco?retryWrites=true&w=majority&appName=Cluster0";
+  process.env.MONGODB_URI ||
+  process.env.DATABASE_URL;
+
+if (!MONGO_URI) {
+  console.error("Seeding stopped: set MONGO_URI (or MONGO_URL/MONGODB_URI/DATABASE_URL) in your local environment.");
+  process.exit(1);
+}
+
+// This script deletes existing Tour, Hotel and Vehicle records before inserting samples.
+// Never allow the destructive seed routine to run against a production environment.
+if (process.env.NODE_ENV === "production") {
+  console.error("Seeding stopped: the destructive seed script is disabled in production.");
+  process.exit(1);
+}
+if (process.env.ALLOW_DESTRUCTIVE_SEED !== "true") {
+  console.error("Seeding stopped: use an isolated disposable development database and set ALLOW_DESTRUCTIVE_SEED=true to confirm the destructive reset.");
+  process.exit(1);
+}
 
 const sampleTours = [
   {

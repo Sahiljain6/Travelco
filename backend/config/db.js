@@ -16,7 +16,8 @@ const connectDB = async () => {
     const conn = await mongoose.connect(uri);
     console.log(`MongoDB connected : ${conn.connection.host} 😎`);
   } catch (error) {
-    console.log(error);
+    // Avoid printing driver options or connection details that could contain credentials.
+    console.error("MongoDB connection failed. Check the configured URI and Atlas network access.", error.name);
     process.exit(1);
   }
 };
