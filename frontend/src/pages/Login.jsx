@@ -1,6 +1,6 @@
 import axios from "axios";
 import { useContext, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { AuthContext } from "../context/authContext";
 import { Link } from "react-router-dom";
 import Swal from "sweetalert2";
@@ -9,8 +9,8 @@ import Spinner from "../components/spinner/LoadingSpinner";
 
 const Login = () => {
   const [credentials, setCredentials] = useState({
-    email: undefined,
-    password: undefined,
+    email: "",
+    password: "",
   });
 
   const [loading2, setLoading2] = useState(false);
@@ -18,6 +18,7 @@ const Login = () => {
   const { loading, error, dispatch } = useContext(AuthContext);
 
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleChange = (e) => {
     setCredentials((prev) => ({ ...prev, [e.target.id]: e.target.value }));
@@ -25,31 +26,34 @@ const Login = () => {
 
   const handleClick = async (e) => {
     e.preventDefault();
-    dispatch({ type: "LOGIN_START" });
-
     if (!credentials.email || !credentials.password) {
       Swal.fire("Please enter your email and password", "", "error");
+      return;
     }
     if (!/\S+@\S+\.\S+/.test(credentials.email)) {
       Swal.fire("Please enter a valid email address", "", "error");
+      return;
     }
+    dispatch({ type: "LOGIN_START" });
+    setLoading2(true);
     try {
-      setLoading2(true);
       const res = await axios.post("auth/login", credentials);
-      dispatch({ type: "LOGIN_SUCCESS", payload: res.data.details });
-      setLoading2(false);
-      if (res.data.isAdmin === true) {
-        navigate("/admin");
-      } else if (res.data.details.type == "financeManager") {
-        navigate("/finance");
-      } else if (res.data.isAdmin === false) {
-        navigate("/");
-      }
+      const signedInUser = { ...res.data.details, isAdmin: res.data.isAdmin === true };
+      dispatch({ type: "LOGIN_SUCCESS", payload: signedInUser });
+      if (res.data.isAdmin === true) navigate("/admin");
+      else if (signedInUser.type === "financeManager") navigate("/finance");
+      else navigate(location.state?.from || "/");
     } catch (err) {
-      dispatch({ type: "LOGIN_FAILURE", payload: err.response.data });
-      setTimeout(() => {
-        Swal.fire(err.response.data, "", "error");
-      }, 2000);
+      const data = err.response?.data || {};
+      dispatch({ type: "LOGIN_FAILURE", payload: data.message || "Unable to sign in" });
+      if (data.code === "EMAIL_NOT_VERIFIED") {
+        await Swal.fire("Verify your email", data.message, "info");
+        navigate("/verify-email?email=" + encodeURIComponent(credentials.email));
+      } else {
+        Swal.fire("Unable to sign in", data.message || "Check your details and try again.", "error");
+      }
+    } finally {
+      setLoading2(false);
     }
   };
 

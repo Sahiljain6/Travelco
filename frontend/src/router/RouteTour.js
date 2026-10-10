@@ -1,6 +1,10 @@
 import React, { useContext } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import Home from "../pages/Home";
+import ExploreWorld from "../pages/ExploreWorld";
+import VerifyEmail from "../pages/VerifyEmail";
+import TermsAndConditions from "../pages/TermsAndConditions";
+import PrivacyPolicy from "../pages/PrivacyPolicy";
 import Login from "../pages/Login";
 import Admin from "../pages/Admin";
 import VehicleHome from "../pages/vehicle/VehicleHome";
@@ -96,6 +100,10 @@ const RouteTour = () => {
   return (
     <Routes>
       <Route path="/" element={<Home />} />
+      <Route path="/explore" element={<ExploreWorld />} />
+      <Route path="/verify-email" element={<VerifyEmail />} />
+      <Route path="/terms" element={<TermsAndConditions />} />
+      <Route path="/privacy" element={<PrivacyPolicy />} />
       <Route path="/login" element={<Login />} />
       <Route path="/reset-password" element={<ResetPassword />} />
 

@@ -1,83 +1,77 @@
-﻿const jwt = require("jsonwebtoken");
+const jwt = require("jsonwebtoken");
 const User = require("../models/userModel.js");
 const asyncHandler = require("express-async-handler");
 
-const verifyToken = (req, res, next) => {
-  const token = req.cookies.access_token;
+const authenticateRequest = (req, res) => {
+  const bearerToken =
+    req.headers.authorization && req.headers.authorization.startsWith("Bearer ")
+      ? req.headers.authorization.slice(7)
+      : null;
+  const token = (req.cookies && req.cookies.access_token) || bearerToken;
+
   if (!token) {
-    return res.status(401).json({ message: "Access Denied" });
+    res.status(401).json({ message: "Please sign in to continue", code: "AUTH_REQUIRED" });
+    return false;
   }
-  jwt.verify(token, process.env.JWT, (err, user) => {
-    if (err) {
-      return res.status(403).json({ message: "Invalid Token" });
+  if (!process.env.JWT) {
+    res.status(503).json({ message: "Authentication is not configured on this server" });
+    return false;
+  }
+
+  try {
+    req.user = jwt.verify(token, process.env.JWT);
+    if (!req.user || !req.user.id) {
+      res.status(401).json({ message: "Invalid session", code: "INVALID_TOKEN" });
+      return false;
     }
-    req.user = user;
-    next();
-  });
+    return true;
+  } catch (error) {
+    res.status(401).json({ message: "Your session has expired. Please sign in again.", code: "INVALID_TOKEN" });
+    return false;
+  }
+};
+
+const verifyToken = (req, res, next) => {
+  if (authenticateRequest(req, res)) next();
 };
 
 const verifyUser = (req, res, next) => {
-  verifyToken(req, res, next, () => {
-    if (req.user.id === req.params.id || req.user.isAdmin) {
-      next();
-    } else {
-      res.status(403).json({ message: "You are not allowed to do that" });
-    }
-  });
+  if (!authenticateRequest(req, res)) return;
+  if (String(req.user.id) === String(req.params.id) || req.user.isAdmin === true) {
+    return next();
+  }
+  return res.status(403).json({ message: "You are not allowed to do that" });
 };
 
 const verifyAdmin = (req, res, next) => {
-  verifyToken(req, res, next, () => {
-    if (req.user.isAdmin) {
-      next();
-    } else {
-      res.status(403).json({ message: "You are not allowed to do that" });
-    }
-  });
+  if (!authenticateRequest(req, res)) return;
+  if (req.user.isAdmin === true) return next();
+  return res.status(403).json({ message: "Administrator access is required" });
 };
 
-
-
-
+// Legacy bearer-token middleware retained for existing chat/user routes.
+// New account endpoints use verifyToken and the main JWT secret.
 const protect = asyncHandler(async (req, res, next) => {
-  let token;
-  
-  if (
-    req.headers.authorization &&
-    req.headers.authorization.startsWith("Bearer")
-    
-  ) {
-    console.log("Authorization header is present and has the correct format");
-    try {
-
-      token = req.headers.authorization.split(" ")[1];
-
-      console.log(token);
-
-      const decoded = jwt.verify(token,"travelcoVerification");
-
-      console.log(decoded)
-
-      req.user = await User.findById(decoded.id).select("-password");
-
-      next();
-    } catch (error) {
-      console.log("Error verifying token:", error);
-      res.status(401);
-      throw new Error("Not authorized, token failed");
-    }
-  } else {
-    console.log("Authorization header is missing or has an incorrect format");
+  const token =
+    req.headers.authorization && req.headers.authorization.startsWith("Bearer ")
+      ? req.headers.authorization.slice(7)
+      : null;
+  if (!token) {
     res.status(401);
-    throw new Error("Not authorized, invalid token format");
+    throw new Error("Not authorized, token missing");
+  }
+  try {
+    const decoded = jwt.verify(token, process.env.JWT);
+    req.user = await User.findById(decoded.id).select("-password");
+    if (!req.user) {
+      res.status(401);
+      throw new Error("Not authorized, user not found");
+    }
+    next();
+  } catch (error) {
+    res.status(401);
+    throw new Error("Not authorized, token failed");
   }
 });
 
-
-
-module.exports = {
-  verifyToken,
-  verifyUser,
-  verifyAdmin,
-  protect
-};
+module.exports = { verifyToken, verifyUser, verifyAdmin, protect };

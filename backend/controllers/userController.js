@@ -1,62 +1,72 @@
 const User = require("../models/userModel");
 
-// @desc    Update a User
-// @route   PUT /api/users/:id
-// @access
+const safeUserSelect = "-password -emailVerificationTokenHash -passwordResetTokenHash";
+
 const updateUser = async (req, res) => {
   try {
+    const allowedFields = ["name", "country", "mobile", "img", "pic"];
+    const update = {};
+    allowedFields.forEach((field) => {
+      if (Object.prototype.hasOwnProperty.call(req.body, field)) update[field] = req.body[field];
+    });
+
+    if (update.name !== undefined) {
+      if (typeof update.name !== "string" || update.name.trim().length < 2 || update.name.trim().length > 80) {
+        return res.status(400).json({ message: "Name must be between 2 and 80 characters" });
+      }
+      update.name = update.name.trim();
+    }
+    if (update.country !== undefined) {
+      if (typeof update.country !== "string" || !update.country.trim() || update.country.trim().length > 80) {
+        return res.status(400).json({ message: "Please select a valid country" });
+      }
+      update.country = update.country.trim();
+    }
+    if (update.mobile !== undefined) {
+      if (typeof update.mobile !== "string" || update.mobile.trim().length < 7 || update.mobile.trim().length > 25) {
+        return res.status(400).json({ message: "Please enter a valid phone number" });
+      }
+      update.mobile = update.mobile.trim();
+    }
     const updatedUser = await User.findByIdAndUpdate(
       req.params.id,
-      {
-        $set: req.body,
-      },
-      { new: true }
-    );
-    res.status(200).json(updatedUser);
+      { $set: update },
+      { new: true, runValidators: true }
+    ).select(safeUserSelect);
+    if (!updatedUser) return res.status(404).json({ message: "User not found" });
+    return res.status(200).json(updatedUser);
   } catch (error) {
-    res.status(404).json({ message: error.message });
+    return res.status(400).json({ message: error.message });
   }
 };
 
-// @desc    Delete a User
-// @route   DELETE /api/users/:id
-// @access
 const deleteUser = async (req, res) => {
   try {
-    await User.findByIdAndDelete(req.params.id);
-    res.status(200).json("User has been deleted");
+    const deleted = await User.findByIdAndDelete(req.params.id);
+    if (!deleted) return res.status(404).json({ message: "User not found" });
+    return res.status(200).json({ message: "User has been deleted" });
   } catch (error) {
-    res.status(404).json({ message: error.message });
+    return res.status(400).json({ message: error.message });
   }
 };
 
-// @desc    Get a User
-// @route   GET /api/users/:id
-// @access
 const getUser = async (req, res) => {
   try {
-    const user = await User.findById(req.params.id);
-    res.status(200).json(user);
+    const user = await User.findById(req.params.id).select(safeUserSelect);
+    if (!user) return res.status(404).json({ message: "User not found" });
+    return res.status(200).json(user);
   } catch (error) {
-    res.status(404).json({ message: error.message });
+    return res.status(400).json({ message: error.message });
   }
 };
 
-// @desc    Get all Users
-// @route   GET /api/hotels
-// @access
 const getAllUsers = async (req, res) => {
   try {
-    const users = await User.find();
-    res.status(200).json(users);
+    const users = await User.find().select(safeUserSelect);
+    return res.status(200).json(users);
   } catch (error) {
-    res.status(404).json({ message: error.message });
+    return res.status(400).json({ message: error.message });
   }
 };
 
-module.exports = {
-  updateUser,
-  deleteUser,
-  getUser,
-  getAllUsers,
-};
+module.exports = { updateUser, deleteUser, getUser, getAllUsers };

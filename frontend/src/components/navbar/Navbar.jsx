@@ -40,10 +40,9 @@ const Navbar = () => {
 
   const navigate = useNavigate();
 
-  const handleLogout = () => {
-    logout();
-    navigate("/login");
-    window.location.reload();
+  const handleLogout = async () => {
+    await logout();
+    navigate("/login", { replace: true });
   };
 
   const [nav, setNav] = useState(true);
@@ -64,6 +63,7 @@ const Navbar = () => {
       {/* <!-- left header section --> */}
       <div className="items-center hidden space-x-5 md:flex">
         <Link to="/">Home</Link>
+        <Link to="/explore" className="font-medium transition hover:text-blue-600">Explore World</Link>
         <Menu as="div" className="relative inline-block text-left">
           <div>
             <Menu.Button className="inline-flex w-full justify-center gap-x-1.5 rounded-md px-3 py-2">
@@ -210,6 +210,9 @@ const Navbar = () => {
             <Link to="/">Home</Link>
           </li>
           <li className="p-4 border-b border-gray-600">
+            <Link to="/explore" onClick={() => setNav(true)} className="font-medium hover:text-blue-600">Explore World</Link>
+          </li>
+          <li className="p-4 border-b border-gray-600">
             <Menu as="div" className="relative inline-block text-left">
               <div>
                 <Menu.Button className="inline-flex w-full justify-center gap-x-1.5 rounded-md">
@@ -295,17 +298,19 @@ const Navbar = () => {
                                 : "text-gray-700",
                               "block px-4 py-2 text-sm"
                             )}
-                            to="/"
+                            to="/profile"
+                            onClick={() => setNav(true)}
                           >
                             Profile
                           </Link>
                         )}
                       </Menu.Item>
-                      <form>
+                      <div>
                         <Menu.Item>
                           {({ active }) => (
                             <button
-                              type="submit"
+                              type="button"
+                              onClick={handleLogout}
                               className={classNames(
                                 active
                                   ? "bg-gray-100 text-gray-900"
@@ -317,7 +322,7 @@ const Navbar = () => {
                             </button>
                           )}
                         </Menu.Item>
-                      </form>
+                      </div>
                     </div>
                   </Menu.Items>
                 </Transition>
