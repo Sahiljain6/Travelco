@@ -75,7 +75,7 @@ const Profile = () => {
         const nextForm = toForm(data);
         if (suggestedDestination && !nextForm.savedDestinations.includes(suggestedDestination)) {
           nextForm.savedDestinations = [...nextForm.savedDestinations, suggestedDestination];
-          setNotice(\`“\${suggestedDestination}” is ready to save. Press Save profile to keep it in your list.\`);
+          setNotice(`“${suggestedDestination}” is ready to save. Press Save profile to keep it in your list.`);
         }
         setForm(nextForm);
         setSavedText(nextForm.savedDestinations.join(", "));

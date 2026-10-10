@@ -53,12 +53,12 @@ const verificationEmail = async (user) => {
   user.emailVerificationTokenHash = hashToken(token);
   user.emailVerificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000);
   await user.save();
-  const link = \`\${FRONTEND_URL}/verify-email?token=\${token}\`;
+  const link = `${FRONTEND_URL}/verify-email?token=${token}`;
   await sendEmail({
     to: user.email,
     subject: "Verify your Travelco email",
-    text: \`Hi \${user.name}, verify your Travelco account using this link (valid for 24 hours): \${link}\`,
-    html: \`<p>Hi \${user.name},</p><p>Verify your Travelco email address by clicking the link below. It expires in 24 hours.</p><p><a href="\${link}">Verify my email</a></p><p>If you did not create this account, you can ignore this message.</p>\`,
+    text: `Hi ${user.name}, verify your Travelco account using this link (valid for 24 hours): ${link}`,
+    html: `<p>Hi ${user.name},</p><p>Verify your Travelco email address by clicking the link below. It expires in 24 hours.</p><p><a href="${link}">Verify my email</a></p><p>If you did not create this account, you can ignore this message.</p>`,
   });
 };
 
@@ -356,13 +356,13 @@ const resetpasswordrequest = async (req, res) => {
       user.passwordResetTokenHash = hashToken(token);
       user.passwordResetExpires = new Date(Date.now() + 60 * 60 * 1000);
       await user.save();
-      const link = \`\${FRONTEND_URL}/reset-password?token=\${token}\`;
+      const link = `${FRONTEND_URL}/reset-password?token=${token}`;
       try {
         await sendEmail({
           to: user.email,
           subject: "Reset your Travelco password",
-          text: \`Use this link to reset your Travelco password within one hour: \${link}\`,
-          html: \`<p>Use the link below to reset your Travelco password. It expires in one hour.</p><p><a href="\${link}">Reset password</a></p><p>If you did not request a reset, ignore this email.</p>\`,
+          text: `Use this link to reset your Travelco password within one hour: ${link}`,
+          html: `<p>Use the link below to reset your Travelco password. It expires in one hour.</p><p><a href="${link}">Reset password</a></p><p>If you did not request a reset, ignore this email.</p>`,
         });
       } catch (error) {
         console.error("Password reset email delivery failed:", error.message);

@@ -6,7 +6,7 @@ const CURRENCIES_API = "https://api.frankfurter.dev/v2/currencies";
 
 const asCurrencyName = (country) => {
   const first = Object.entries(country.currencies || {})[0];
-  return first ? \`\${first[0]} · \${first[1].name || first[0]}\` : "Currency unavailable";
+  return first ? `${first[0]} · ${first[1].name || first[0]}` : "Currency unavailable";
 };
 const populationLabel = (population) => {
   if (!Number.isFinite(population)) return "Population unavailable";
@@ -78,7 +78,7 @@ const ExploreWorld = () => {
     const timer = setTimeout(() => {
       setRateLoading(true);
       setRateError("");
-      fetch(\`https://api.frankfurter.dev/v2/rate/\${encodeURIComponent(base)}/\${encodeURIComponent(quote)}\`, { signal: controller.signal })
+      fetch(`https://api.frankfurter.dev/v2/rate/${encodeURIComponent(base)}/${encodeURIComponent(quote)}`, { signal: controller.signal })
         .then((response) => {
           if (!response.ok) throw new Error("This currency pair is not supported by the rate provider.");
           return response.json();
@@ -107,7 +107,7 @@ const ExploreWorld = () => {
   const visibleCountries = useMemo(() => {
     const term = search.trim().toLowerCase();
     return countries.filter((country) => {
-      const currencyText = Object.entries(country.currencies || {}).map(([code, item]) => \`\${code} \${item.name || ""} \${item.symbol || ""}\`).join(" ");
+      const currencyText = Object.entries(country.currencies || {}).map(([code, item]) => `${code} ${item.name || ""} ${item.symbol || ""}`).join(" ");
       const matchesSearch = !term || [
         country.name?.common, country.name?.official, country.capital?.join(" "),
         country.region, country.subregion, country.cca2, currencyText
@@ -119,7 +119,7 @@ const ExploreWorld = () => {
   const numericAmount = Number(amount);
   const converted = Number.isFinite(numericAmount) && numericAmount >= 0 && rate !== null ? numericAmount * rate : null;
   const currencyOptions = Object.keys(currencies).length
-    ? Object.entries(currencies).map(([code, name]) => ({ code, label: \`\${code} — \${name}\` })).sort((a, b) => a.code.localeCompare(b.code))
+    ? Object.entries(currencies).map(([code, name]) => ({ code, label: `${code} — ${name}` })).sort((a, b) => a.code.localeCompare(b.code))
     : ["AUD","CAD","CHF","CNY","EUR","GBP","INR","JPY","NZD","SGD","USD","ZAR"].map((code) => ({ code, label: code }));
 
   return (
@@ -161,7 +161,7 @@ const ExploreWorld = () => {
                 rateError ? <p className="mt-2 text-sm text-rose-600">{rateError}</p> :
                   converted === null ? <p className="mt-2 text-sm text-slate-500">Enter a valid amount to calculate.</p> :
                     <p className="mt-1 break-words text-3xl font-bold">{new Intl.NumberFormat(undefined, { maximumFractionDigits: 2 }).format(converted)} <span className="text-lg">{quote}</span></p>}
-              {rate !== null && base !== quote && !rateLoading && <p className="mt-2 text-xs text-slate-500">1 {base} = {rate.toLocaleString(undefined, { maximumFractionDigits: 6 })} {quote}{rateDate ? \` · Rate date: \${rateDate}\` : ""}</p>}
+              {rate !== null && base !== quote && !rateLoading && <p className="mt-2 text-xs text-slate-500">1 {base} = {rate.toLocaleString(undefined, { maximumFractionDigits: 6 })} {quote}{rateDate ? ` · Rate date: ${rateDate}` : ""}</p>}
             </div>
           </div>
         </div>
@@ -174,7 +174,7 @@ const ExploreWorld = () => {
             <h2 className="mt-2 text-3xl font-bold text-slate-950 sm:text-4xl">Find a place that fits you</h2>
             <p className="mt-2 max-w-2xl leading-7 text-slate-600">Search countries, capitals, regions, and currency codes to narrow down your options.</p>
           </div>
-          <p className="text-sm font-semibold text-slate-500">{countriesLoading ? "Loading countries…" : \`\${visibleCountries.length.toLocaleString()} destinations\`}</p>
+          <p className="text-sm font-semibold text-slate-500">{countriesLoading ? "Loading countries…" : `${visibleCountries.length.toLocaleString()} destinations`}</p>
         </div>
         <div className="mt-7 grid gap-3 sm:grid-cols-[1fr_220px]">
           <label className="block">
@@ -205,7 +205,7 @@ const ExploreWorld = () => {
                 <article key={country.cca2} className="group overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
                   <div className="flex h-40 items-center justify-center overflow-hidden bg-slate-100 p-6">
                     {country.flags?.svg || country.flags?.png
-                      ? <img src={country.flags.svg || country.flags.png} alt={\`Flag of \${country.name.common}\`} loading="lazy" className="max-h-28 max-w-full rounded-md object-contain shadow-sm" />
+                      ? <img src={country.flags.svg || country.flags.png} alt={`Flag of ${country.name.common}`} loading="lazy" className="max-h-28 max-w-full rounded-md object-contain shadow-sm" />
                       : <span className="text-3xl font-bold text-slate-400">{country.cca2}</span>}
                   </div>
                   <div className="p-6">
@@ -215,11 +215,11 @@ const ExploreWorld = () => {
                     </div>
                     <dl className="mt-5 space-y-3 text-sm">
                       <div className="flex justify-between gap-3"><dt className="text-slate-500">Capital</dt><dd className="text-right font-semibold text-slate-800">{country.capital?.join(", ") || "Not listed"}</dd></div>
-                      <div className="flex justify-between gap-3"><dt className="text-slate-500">Region</dt><dd className="text-right font-semibold text-slate-800">{country.region || "Not listed"}{country.subregion ? \` · \${country.subregion}\` : ""}</dd></div>
+                      <div className="flex justify-between gap-3"><dt className="text-slate-500">Region</dt><dd className="text-right font-semibold text-slate-800">{country.region || "Not listed"}{country.subregion ? ` · ${country.subregion}` : ""}</dd></div>
                       <div className="flex justify-between gap-3"><dt className="text-slate-500">Currency</dt><dd className="text-right font-semibold text-slate-800">{asCurrencyName(country)}</dd></div>
                       <div className="flex justify-between gap-3"><dt className="text-slate-500">Population</dt><dd className="text-right font-semibold text-slate-800">{populationLabel(country.population)}</dd></div>
                     </dl>
-                    <Link to={\`/profile?destination=\${encodeURIComponent(country.name.common)}\`} className="mt-6 inline-flex w-full items-center justify-center rounded-xl bg-slate-950 px-4 py-3 font-semibold text-white transition group-hover:bg-blue-700">
+                    <Link to={`/profile?destination=${encodeURIComponent(country.name.common)}`} className="mt-6 inline-flex w-full items-center justify-center rounded-xl bg-slate-950 px-4 py-3 font-semibold text-white transition group-hover:bg-blue-700">
                       Save / personalize this destination
                     </Link>
                     {firstCurrency && <p className="mt-3 text-center text-xs text-slate-400">Currency code: {firstCurrency}</p>}
