@@ -1,5 +1,23 @@
 # Travelco 🌍✈️ — Comprehensive Tourism & Travel Management System
 
+## Global destination and currency support
+
+Travelco is designed for international destination discovery rather than a Sri Lanka-only website. Hotel listings can carry a country and listing currency; vehicle and tour listings can carry an explicit currency; destination search accepts city/country text; and prices are formatted with locale-aware currency formatting. The Explore World page includes a global country directory and indicative currency conversion.
+
+The development seed contains sample listings in Sri Lanka, France, Japan, and South Africa to demonstrate multi-country data. These are **development/demo listings**, not verified real-world inventory. Never run the destructive seed script against production.
+
+Global discovery UI does not itself guarantee live inventory in every country. Train availability depends on records configured in the Travelco database; flight search requires a valid server-side `SKYSCANNER_RAPIDAPI_KEY`. Payment, tax, refund, and currency settlement behavior must be integrated and tested with the actual providers used in each market.
+
+## Security notes for deployment
+
+- Use a long, random `JWT` secret and configure it only in the backend host environment.
+- Set `SKYSCANNER_RAPIDAPI_KEY` on the backend if flight search is enabled. Do not put provider secrets in React environment variables.
+- A flight-provider key was previously committed in source. **Revoke/rotate that key in the provider dashboard**; removing it from current source does not remove it from Git history.
+- Configure `CORS_ORIGINS`, SMTP, MongoDB, Cloudinary, and public map keys for the deployed domains.
+- Business account roles should be granted through an authenticated approval process; public registration creates traveler accounts.
+- Run the GitHub Actions build and syntax checks, then test authorization with anonymous, traveler, business-owner, and administrator accounts before launch.
+
+
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-travelxco.netlify.app-blue?style=for-the-badge&logo=netlify)](https://travelxco.netlify.app/)
 [![MERN Stack](https://img.shields.io/badge/Stack-MERN-green?style=for-the-badge&logo=mongodb)](https://github.com/Sahiljain6/Travelco)
 [![Node.js](https://img.shields.io/badge/Node.js-18.x-brightgreen?style=for-the-badge&logo=node.js)](https://nodejs.org/)
