@@ -323,6 +323,10 @@ const location=useLocation();
               type="Number"
               onChange={(e) => setprice(e.target.value)}
             />
+            <label class="mt-4 block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2" htmlFor="currency">Listing currency</label>
+            <select id="currency" class="block w-full rounded border bg-gray-200 px-4 py-3" value={currency} onChange={(e) => setCurrency(e.target.value)} required>
+              {supportedCurrencies.map((code) => <option key={code} value={code}>{code}</option>)}
+            </select>
           </div>
         </div>
 
