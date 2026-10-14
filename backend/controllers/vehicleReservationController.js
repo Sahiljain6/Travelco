@@ -26,7 +26,7 @@ exports.addReservation = async (req, res) => {
     }
 
     const newReservation = new Reservation({
-      userId: req.body.userId,
+      userId: String(req.user),
       vehicleId: vehicle.id,
       vehicleNumber: vehicle.vehicleNumber,
       date: new Date(),
@@ -51,7 +51,10 @@ exports.addReservation = async (req, res) => {
 exports.getMyReservationsTraveler = async (req, res) => {
   try {
     const { userId } = req.params;
-    const reservations = await Reservation.find({ userId: userId });
+    if (String(req.user) !== String(userId) && req.authUser?.isAdmin !== true) {
+      return res.status(403).json({ message: "You can only view your own reservations" });
+    }
+    const reservations = await Reservation.find({ userId: String(req.user) });
     res.send(reservations);
   } catch (err) {
     res.status(500).send(err.message);
@@ -62,9 +65,10 @@ exports.getMyReservationsTraveler = async (req, res) => {
 exports.getMyReservationsOwner = async (req, res) => {
   try {
     const { vehicleOwnerId } = req.params;
-    const reservations = await Reservation.find({
-      vehicleOwnerId: vehicleOwnerId,
-    });
+    if (String(req.user) !== String(vehicleOwnerId) && req.authUser?.isAdmin !== true) {
+      return res.status(403).json({ message: "You can only view your own vehicle reservations" });
+    }
+    const reservations = await Reservation.find({ vehicleOwnerId });
     res.send(reservations);
   } catch (err) {
     res.status(500).send(err.message);
@@ -75,8 +79,12 @@ exports.getMyReservationsOwner = async (req, res) => {
 exports.getOneReservation = async (req, res) => {
   try {
     const { id } = req.params;
-    const reservation = await Reservation.findOne({ _id: id });
-    res.send(reservation);
+    const reservation = await Reservation.findById(id);
+    if (!reservation) return res.status(404).json({ message: "Reservation not found" });
+    if (String(reservation.userId) !== String(req.user) && String(reservation.vehicleOwnerId) !== String(req.user) && req.authUser?.isAdmin !== true) {
+      return res.status(403).json({ message: "You are not allowed to view this reservation" });
+    }
+    return res.status(200).json(reservation);
   } catch (err) {
     res.status(500).send(err.message);
   }
@@ -87,12 +95,16 @@ exports.deleteReservation = async (req, res) => {
   const { id } = req.params;
 
   try {
-    const reservation = await Reservation.findByIdAndDelete(id);
-    if (!reservation) {
-      res.status(404).send("Reservation not found");
-    } else {
-      res.send(reservation);
+    const reservation = await Reservation.findById(id);
+    if (!reservation) return res.status(404).json({ message: "Reservation not found" });
+    if (String(reservation.userId) !== String(req.user) && String(reservation.vehicleOwnerId) !== String(req.user) && req.authUser?.isAdmin !== true) {
+      return res.status(403).json({ message: "You are not allowed to cancel this reservation" });
     }
+    if (reservation.status && ["CANCELLED", "COMPLETED"].includes(String(reservation.status).toUpperCase())) {
+      return res.status(409).json({ message: "This reservation can no longer be cancelled" });
+    }
+    await reservation.deleteOne();
+    return res.status(200).json({ message: "Reservation cancelled" });
   } catch (err) {
     res.status(500).send(err.message);
   }
@@ -101,6 +113,7 @@ exports.deleteReservation = async (req, res) => {
 //get All reservations
 exports.getAllReservations = async (req, res) => {
   try {
+    if (req.authUser?.isAdmin !== true) return res.status(403).json({ message: "Administrator access required" });
     const reservations = await Reservation.find();
     res.send(reservations);
   } catch (err) {
@@ -112,7 +125,7 @@ exports.getAllReservations = async (req, res) => {
 exports.getMyReservationsTravelerByVehicle = async (req, res) => {
   try {
     const { vehicleId } = req.params;
-    const reservations = await Reservation.find({ vehicleId: vehicleId });
+    const reservations = await Reservation.find({ vehicleId, userId: req.user });
     res.send(reservations);
   } catch (err) {
     res.status(500).send(err.message);
