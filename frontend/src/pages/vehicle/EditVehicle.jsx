@@ -57,11 +57,11 @@ const EditVehicle = () => {
         <h1 className='text-lg lg:text-2xl font-bold py-6  text-center'>Edit Vehicle</h1>
             
             <label for className='lg:text-lg text-left'>Price</label>
-            <input type='number' className='border rounded-lg w-full p-2 mb-6 mt-2' defaultValue={state.price} placeholder='12500' required onChange={(e) => setPrice(e.target.value) } />
+            <input type='number' className='border rounded-lg w-full p-2 mb-6 mt-2' defaultValue={state.price} placeholder='Price in the listing currency' required onChange={(e) => setPrice(e.target.value) } />
 
             
             <label for className='lg:text-lg text-left'>Location</label>
-            <input type='text' className='border rounded-lg w-full p-2 mb-6 mt-2' defaultValue={state.location} placeholder='Colombo' required onChange={(e) => setLocation(e.target.value) }/>
+            <input type='text' className='border rounded-lg w-full p-2 mb-6 mt-2' defaultValue={state.location} placeholder='City, region, country or airport' required onChange={(e) => setLocation(e.target.value) }/>
 
             <label for className='lg:text-lg text-left'>Description</label>
             <textarea rows = '4' className='border rounded-lg w-full p-2 mb-6 mt-2' defaultValue={state.description} placeholder='Add your description here' required onChange={(e) => setDescription(e.target.value) }/>
