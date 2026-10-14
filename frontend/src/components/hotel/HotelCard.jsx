@@ -22,8 +22,10 @@ const createDefaultStay = () => {
 
 const hotelImageUrl = (image) => {
   if (!image) return FALLBACK_IMAGE;
-  if (/^https?:\/\//i.test(image)) return image;
-  return `${BASE_URL.replace(/\/?$/, "/")}hotels/images/${image}`;
+  if (/^https?:\\/\\//i.test(image)) return image;
+  const configuredBase = BASE_URL.replace(/\\/+$/, "");
+  const apiBase = configuredBase.endsWith("/api") ? configuredBase : `${configuredBase}/api`;
+  return `${apiBase}/hotels/images/${image}`;
 };
 
 const HotelCard = () => {
