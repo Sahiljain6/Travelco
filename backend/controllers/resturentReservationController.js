@@ -66,51 +66,32 @@ const getRerservationRequestsCanceled = async (req, res, next) => {
     }
 }
 const getRerservationRequestsByUser = async (req, res, next) => {
-    const id = req.body.user;
-    const reservation = await ResturentReservation.find({ user: id }).populate({
-        path: 'resturent',
-        populate: [
-            {
-                path: 'returentType',
-            },
-            {
-                path: 'district',
-            }
-        ],
-        match: { user: id },
-    }).populate('user').populate('time');
     try {
-        if (reservation.length != 0) {
-            return res.status(200).json(reservation);
-        }
-        return res.status(200).json({ error: true, message: "No Reservations Found!" });
+        const reservations = await ResturentReservation.find({ user: req.user })
+            .populate({ path: "resturent", populate: [{ path: "returentType" }, { path: "district" }] })
+            .populate("user")
+            .populate("time");
+        return res.status(200).json(reservations);
     } catch (err) {
         next(err);
     }
-}
+};
 const getRerservationRequestById = async (req, res, next) => {
-    const id = req.body.id;
-    const reservation = await ResturentReservation.find({ _id: id }).populate({
-        path: 'resturent',
-        populate: [
-            {
-                path: 'returentType',
-            },
-            {
-                path: 'district',
-            }
-        ]
-    }).populate('user').populate('time');
     try {
-        if (reservation.length != 0) {
-            return res.status(200).json(reservation);
+        const reservation = await ResturentReservation.findById(req.body.id)
+            .populate({ path: "resturent", populate: [{ path: "returentType" }, { path: "district" }] })
+            .populate("user")
+            .populate("time");
+        if (!reservation) return res.status(404).json({ error: true, message: "Reservation not found" });
+        const reservationUserId = reservation.user?._id || reservation.user;
+        if (String(reservationUserId) !== String(req.user) && req.authUser?.isAdmin !== true) {
+            return res.status(403).json({ error: true, message: "You cannot view this reservation" });
         }
-        return res.status(200).json({ error: true, message: "No Reservations Found!" });
+        return res.status(200).json(reservation);
     } catch (err) {
         next(err);
     }
-}
-
+};
 const acceptReservation = async (req, res, next) => {
     const id = req.body.id;
     const reservation = await ResturentReservation.find({ _id: id });
