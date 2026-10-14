@@ -3,6 +3,7 @@ import React, {useState} from 'react'
 import Swal from 'sweetalert2'
 import axios from 'axios';
 import {  useLocation, useNavigate } from 'react-router-dom';
+import { getPreferredCurrency, supportedCurrencies } from '../../utils/globalTravel';
 
 
 
@@ -17,6 +18,7 @@ const EditVehicle = () => {
   
 
     const [price, setPrice] = useState(state.price);
+    const [currency, setCurrency] = useState(state.currency || getPreferredCurrency());
     const [location, setLocation] = useState(state.location);
     const [description, setDescription] = useState(state.description);
 
@@ -24,7 +26,7 @@ const EditVehicle = () => {
     function sendData(e){
         e.preventDefault();
 
-        const updateVehicle = {price, location, description}
+        const updateVehicle = {price, currency, location, description}
 
       axios
       .patch(`/vehicle/${state._id}`, updateVehicle ) 
@@ -57,7 +59,11 @@ const EditVehicle = () => {
         <h1 className='text-lg lg:text-2xl font-bold py-6  text-center'>Edit Vehicle</h1>
             
             <label for className='lg:text-lg text-left'>Price</label>
-            <input type='number' className='border rounded-lg w-full p-2 mb-6 mt-2' defaultValue={state.price} placeholder='Price in the listing currency' required onChange={(e) => setPrice(e.target.value) } />
+            <input type='number' min='0.01' step='0.01' className='border rounded-lg w-full p-2 mb-3 mt-2' value={price} required onChange={(e) => setPrice(e.target.value) } />
+            <label className='lg:text-lg text-left'>Listing Currency</label>
+            <select className='border rounded-lg w-full p-2 mb-6 mt-2' value={currency} onChange={(e) => setCurrency(e.target.value)} required>
+              {supportedCurrencies.map((code) => <option key={code} value={code}>{code}</option>)}
+            </select>
 
             
             <label for className='lg:text-lg text-left'>Location</label>
