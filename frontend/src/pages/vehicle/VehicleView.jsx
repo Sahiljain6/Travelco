@@ -2,6 +2,7 @@
 import axios from "axios";
 import Swal from 'sweetalert2'
 import React, { useState, useEffect } from "react";
+import { formatMoney } from "../../utils/globalTravel";
 import { Link, useParams } from "react-router-dom";
 import { useNavigate,useLocation } from "react-router-dom";
 
@@ -88,7 +89,7 @@ const VehicleBook = () => {
             </div>
 
             <div className="flex items-center">
-              <h1 className="font-bold text-2xl">Rs.{state.price}</h1>
+              <h1 className="font-bold text-2xl">{formatMoney(state.price, state.currency || "USD")}</h1>
               <h1 className="md:text-1xl">/per day</h1>
             </div>
           </div>
