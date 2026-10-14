@@ -10,6 +10,7 @@ const ReservationSchema = new Schema({
     pickupDate : {type: Date, required: true},
     returnDate : {type: Date, required: true},
     price : {type: Number, required: true},
+    currency: { type: String, default: "USD" },
     vehicleOwnerId : {type: String, required: true},
     transactionId : {type: String, required: true},
     needDriver : {type: Boolean, required: true , default: false},
