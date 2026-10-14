@@ -25,7 +25,7 @@ const authenticate = async (req, res) => {
       res.status(401).json({ message: "Invalid session" });
       return null;
     }
-    const user = await User.findById(decoded.id).select("_id isAdmin type");
+    const user = await User.findById(decoded.id).select("_id name isAdmin type");
     if (!user) {
       res.status(401).json({ message: "Account no longer exists" });
       return null;
