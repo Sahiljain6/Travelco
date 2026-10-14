@@ -6,7 +6,7 @@ exports.addReservation = async (req, res) => {
   //tested in postman - working well
   try {
     // Fetch vehicle details to calculate price
-    const vehicle = await Vehicle.findById(req.body.vehicleId);
+    const vehicle = await Vehicle.findOne({ _id: req.body.vehicleId, isAccepted: true });
 
     if (!vehicle) {
       return res.status(404).json({ message: "Vehicle not found" });
@@ -29,6 +29,15 @@ exports.addReservation = async (req, res) => {
     let amount = numberOfDays * Number(vehicle.price);
     if (req.body.needDriver === true || req.body.needDriver === "true") {
       amount += numberOfDays * Math.max(0, Number(vehicle.driverDailyFee ?? process.env.DRIVER_DAILY_FEE ?? 0));
+    }
+
+    const existingReservation = await Reservation.findOne({
+      vehicleId: String(vehicle._id),
+      pickupDate: { $lt: returnDate },
+      returnDate: { $gt: pickupDate }
+    });
+    if (existingReservation) {
+      return res.status(409).json({ message: "This vehicle is already reserved for part of those dates" });
     }
 
     const newReservation = new Reservation({
