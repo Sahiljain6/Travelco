@@ -21,7 +21,7 @@ const HotelSchema=new mongoose.Schema({
         reqiured:true
     },
     zip:{
-        type:Number,
+        type:String,
         reqiured:true
     },
     address:{
@@ -37,7 +37,7 @@ const HotelSchema=new mongoose.Schema({
         reqiured:true
     },
     contactNo:{
-        type:Number,
+        type:String,
         reqiured:true
     },
     numberOfRoomTypes:{
