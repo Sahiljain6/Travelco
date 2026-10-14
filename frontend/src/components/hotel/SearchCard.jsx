@@ -1,5 +1,6 @@
 import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
 import useFetch from "../../hooks/useFetch";
+import { formatMoney } from "../../utils/globalTravel";
 
 
 const SearchCard = (item) => {
@@ -37,9 +38,9 @@ const SearchCard = (item) => {
                   <h2 className="font-bold text-gray-700 text-lg mb-2">
                     {item.name}
                   </h2>
-                  <p className="font-light text-gray-500 mb-2">{item.city}</p>
+                  <p className="font-light text-gray-500 mb-2">{[item.city, item.country].filter(Boolean).join(", ")}</p>
                   <p className="font-medium text-gray-900 mb-2">
-                    Starting from Rs.{item.cheapestPrice}
+                    Starting from {formatMoney(item.cheapestPrice, item.currency || "USD")}
                   </p>
                   <div className="flex items-center">
                   
