@@ -1,4 +1,5 @@
 import React, {useState, useEffect} from "react";
+import { formatMoney } from "../../utils/globalTravel";
 import axios from "axios";
 import {useNavigate, useParams } from "react-router-dom";
 
@@ -121,7 +122,7 @@ const VehicleBook = () => {
          
           <div className="flex flex-col md:flex-row mt-6  py-2 justify-between lg:items-center">
             <div className="flex items-center">
-              <h1 className="font-bold text-2xl">Rs.{data.price}</h1>
+              <h1 className="font-bold text-2xl">{formatMoney(data.price, data.currency || "USD")}</h1>
               <h1 className="md:text-1xl">/per day</h1>
             </div>
             
