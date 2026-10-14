@@ -110,12 +110,9 @@ exports.acceptVehicle = async(req, res) => {
     const {id} = req.params;
     try{
         const vehicle = await Vehicle.findById(id);
-        if(!vehicle){
-            res.status(404).send("Vehicle not found");
-        }
-
-        const accept = await Vehicle.findByIdAndUpdate(id, {isAccepted: true}, {new: true});
-        res.send(accept);
+        if (!vehicle) return res.status(404).json({ message: "Vehicle not found" });
+        const accept = await Vehicle.findByIdAndUpdate(id, { isAccepted: true }, { new: true });
+        return res.status(200).json(accept);
 
         // Return success message
         return "Vehicle accepted successfully!";
