@@ -43,7 +43,7 @@ const Home = () => {
             <AiOutlineRight className="mt-1 mx-2" />
           </li>
           <li class="text-neutral-500 dark:text-neutral-400">
-            Explore Sri Lanka
+            Explore destinations worldwide
           </li>
         </ol>
       </nav>

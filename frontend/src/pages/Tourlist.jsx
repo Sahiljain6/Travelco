@@ -37,8 +37,8 @@ const Tourlist = ({ columns }) => {
           tour.groupCount,
           tour.currentUser,
 
-          moment(tour.createdAt).format("MM/DD/YYYY h:mm A"), // format createdAt using moment
-          moment(tour.updatedAt).format("MM/DD/YYYY h:mm A"), // format updatedAt using moment
+          moment(tour.createdAt).format("YYYY-MM-DD HH:mm"), // format createdAt using moment
+          moment(tour.updatedAt).format("YYYY-MM-DD HH:mm"), // format updatedAt using moment
         ];
         tableRows.push(ticketData);
       });
@@ -50,7 +50,7 @@ const Tourlist = ({ columns }) => {
     doc.text("Tour Details Report", 14, 23).setFontSize(10);
     doc.text(`Report Generated Date: ${dateStr}`, 14, 30).setFontSize(10);
     doc
-      .text("Traverly.co,Whihara mavatha,Kaduwela,Sri lanka", 14, 37)
+      .text("Travelco · Global Travel Platform", 14, 37)
       .setFontSize(10);
 
     doc.autoTable(tableColumn, tableRows, {

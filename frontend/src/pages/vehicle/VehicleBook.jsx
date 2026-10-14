@@ -1,6 +1,8 @@
 import React, {useState, useEffect} from "react";
+import { formatMoney } from "../../utils/globalTravel";
 import axios from "axios";
 import {useNavigate, useParams } from "react-router-dom";
+import { BASE_URL } from "../../utils/config";
 
 
 
@@ -67,7 +69,7 @@ const VehicleBook = () => {
     <div className="lg:p-20">
       <div className="flex justify-center items-center w-full flex-col lg:flex-row pt-12 lg:pt-0">
         <img
-          src={`http://localhost:5000/api/vehicle/images/${data.vehicleMainImg}`}
+          src={data.vehicleMainImg?.startsWith("http") ? data.vehicleMainImg : `${BASE_URL}vehicle/images/${data.vehicleMainImg}`}
           alt="vehMainImg"
           className="w-[320px] md:w-[700px] lg:w-[600px] rounded-lg"
         />
@@ -121,7 +123,7 @@ const VehicleBook = () => {
          
           <div className="flex flex-col md:flex-row mt-6  py-2 justify-between lg:items-center">
             <div className="flex items-center">
-              <h1 className="font-bold text-2xl">Rs.{data.price}</h1>
+              <h1 className="font-bold text-2xl">{formatMoney(data.price, data.currency || "USD")}</h1>
               <h1 className="md:text-1xl">/per day</h1>
             </div>
             

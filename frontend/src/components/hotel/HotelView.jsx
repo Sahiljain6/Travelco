@@ -4,6 +4,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { useLocation } from "react-router-dom";
 import { AuthContext } from "../../context/authContext";
 import HotelReserve from "./HotelReserve";
+import { BASE_URL } from "../../utils/config";
 
 const HotelView = () => {
 
@@ -70,7 +71,7 @@ const checkOutDate = new Date(date.checkOutDate);
             </h1>
         <div className="flex justify-center items-center w-full flex-col lg:flex-row pt-12 lg:pt-0">
           <img
-            src={`http://localhost:5000/api/hotels/images/${data.HotelImg}`}
+            src={data.HotelImg?.startsWith("http") ? data.HotelImg : `${BASE_URL}hotels/images/${data.HotelImg}`}
             alt="Hotel Image"
             className=" w-[320px] md:w-[700px]  lg:w-[800px] rounded-lg mb-10"
           />
@@ -116,7 +117,7 @@ const checkOutDate = new Date(date.checkOutDate);
             <div className="flex flex-col md:flex-row  py-4 justify-between lg:items-center">
               <div className="flex items-center">
                 <h1 className="font-bold text-2xl">
-                  Book a stay over Rs.{data.cheapestPrice *day_difference}
+                  Book a stay over {formatMoney(data.cheapestPrice * day_difference, data.currency || "USD")}
                 </h1>
                 <h1 className="ml-3 md:text-1xl">/for {day_difference} days</h1>
               </div>
@@ -144,7 +145,7 @@ const checkOutDate = new Date(date.checkOutDate);
       />
     ))}
 </div>
-      { openBook &&  <HotelReserve setOpen={setOpenBook} hotelId={id} checkInDate={date.checkInDate} checkOutDate={date.checkOutDate} date_difference={day_difference}/>}
+      { openBook &&  <HotelReserve setOpen={setOpenBook} hotelId={id} checkInDate={date.checkInDate} checkOutDate={date.checkOutDate} date_difference={day_difference} currency={data.currency || "USD"}/>}
 
     </div>
   );

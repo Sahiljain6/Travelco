@@ -2,9 +2,11 @@ import React, { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import CountryMap from "../components/CountryMap";
 import WeatherSearchPanel from "../components/WeatherSearchPanel";
+import { getPreferredCurrency } from "../utils/globalTravel";
 
 const COUNTRIES_API = "https://restcountries.com/v3.1/all?fields=name,cca2,flags,capital,region,subregion,currencies,population,latlng";
 const CURRENCIES_API = "https://api.frankfurter.dev/v2/currencies";
+
 
 const asCurrencyName = (country) => {
   const first = Object.entries(country.currencies || {})[0];
@@ -25,7 +27,7 @@ const ExploreWorld = () => {
   const [currencies, setCurrencies] = useState({});
   const [amount, setAmount] = useState("1");
   const [base, setBase] = useState("USD");
-  const [quote, setQuote] = useState("INR");
+  const [quote, setQuote] = useState(getPreferredCurrency);
   const [rate, setRate] = useState(null);
   const [rateDate, setRateDate] = useState("");
   const [rateLoading, setRateLoading] = useState(false);

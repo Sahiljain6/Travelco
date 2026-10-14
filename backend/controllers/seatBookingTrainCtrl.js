@@ -4,7 +4,9 @@ const path = require("path")
 // add seat booking - tourists
 const addSeatBooking = async(req,res)=>{
     const newSeatBooking = new SeatBookingTrain({
-        ...req.body
+        ...req.body,
+        userId: String(req.user),
+        isApproved: false
     })
 
     await newSeatBooking.save().then((newSeatBooking)=>{
@@ -23,9 +25,9 @@ const fetchAllBookings =  async(req,res)=>{
 }
 // fetch all tickets of single user  - tourits
 const myBookings = ((req,res)=>{
-    const ID = req.body.userId;
+    const ID = String(req.user);
 
-    SeatBookingTrain.find({userId : ID}).then((booking)=>{
+    SeatBookingTrain.find({userId: ID}).then((booking)=>{
         res.json(booking);
     }).catch((err)=>{
         res.json(err.message)
@@ -40,42 +42,53 @@ const myBookings = ((req,res)=>{
 const getSingleSeatBooking = async(req,res)=>{
     const id = req.params.id;
 
-    await SeatBookingTrain.findById(id).then((obj)=>{
-        res.json(obj);
-    }).catch((err)=>{
-        res.json(err.message);
-    })
+    try {
+        const booking = await SeatBookingTrain.findById(id);
+        if (!booking) return res.status(404).json({ message: "Ticket not found" });
+        if (String(booking.userId) !== String(req.user) && req.authUser?.isAdmin !== true) {
+            return res.status(403).json({ message: "You cannot view this ticket" });
+        }
+        return res.status(200).json(booking);
+    } catch {
+        return res.status(500).json({ message: "Unable to retrieve ticket" });
+    }
 }
 
 // delete seatReservation  -  tourists
 const deleteSeatBooking = async(req,res)=>{
     const id = req.params.id;
 
-    await SeatBookingTrain.findByIdAndDelete(id).then(()=>{
-        res.json("deleted");
-    }).catch((err)=>{
-        res.json(err.message);
-    })
+    try {
+        const booking = await SeatBookingTrain.findById(id);
+        if (!booking) return res.status(404).json({ message: "Ticket not found" });
+        if (String(booking.userId) !== String(req.user) && req.authUser?.isAdmin !== true) {
+            return res.status(403).json({ message: "You cannot cancel this ticket" });
+        }
+        await booking.deleteOne();
+        return res.status(200).json({ message: "Ticket cancelled" });
+    } catch {
+        return res.status(500).json({ message: "Unable to cancel ticket" });
+    }
 }
 
 // update seatReservation -  tourists
-const updateSeatBooking = async (req,res)=>{
-    const id = req.params.id;
-
-    const {userId,trainId,trainName,price,priceStatus,noOfTickets,
-        firstName,LastName,nationality,IdCardNumber,phoneNumber,email,isApproved
-    } = req.body;
-
-    const updatedSeatBooking = {userId,trainId,trainName,price,priceStatus,noOfTickets,
-        firstName,LastName,nationality,IdCardNumber,phoneNumber,email,isApproved
+const updateSeatBooking = async (req, res) => {
+    try {
+        const booking = await SeatBookingTrain.findById(req.params.id);
+        if (!booking) return res.status(404).json({ message: "Ticket not found" });
+        if (String(booking.userId) !== String(req.user) && req.authUser?.isAdmin !== true) {
+            return res.status(403).json({ message: "You cannot update this ticket" });
+        }
+        const allowed = ["firstName", "LastName", "nationality", "IdCardNumber", "phoneNumber", "email", "noOfTickets"];
+        for (const field of allowed) {
+            if (req.body[field] !== undefined) booking[field] = req.body[field];
+        }
+        await booking.save();
+        return res.status(200).json({ status: "updated", booking });
+    } catch {
+        return res.status(500).json({ message: "Unable to update ticket" });
     }
-
-    await SeatBookingTrain.findByIdAndUpdate(id,updatedSeatBooking).then(()=>{
-        res.json({status:"updated"});
-    }).catch((err)=>{
-        res.json(err.message)
-    })
-}
+};
 
 module.exports = {
     addSeatBooking,

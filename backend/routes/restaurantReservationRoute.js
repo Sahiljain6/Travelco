@@ -1,16 +1,15 @@
 const express = require("express");
-const RestaurantReservation = require("../controllers/resturentReservationController");
-// import { verifyAdmin } from "../utils/verifyToken.js";
+const reservations = require("../controllers/resturentReservationController");
+const { userMiddleware, adminMiddleware } = require("../middleware/authMiddleware");
 const router = express.Router();
 
-router.post("/", RestaurantReservation.getRestaurantReservations);
-router.post("/create", RestaurantReservation.createReservation);
-router.post("/get-reservation-request", RestaurantReservation.getRerservationRequests);
-router.post("/get-reservation-request-canceled", RestaurantReservation.getRerservationRequestsCanceled);
-router.post("/accept-reservation-request", RestaurantReservation.acceptReservation);
-router.post("/decline-reservation-request", RestaurantReservation.declineReservation);
-router.post("/get-reservation-requess-by-user", RestaurantReservation.getRerservationRequestsByUser);
-router.post("/get-reservation-requess-by-id", RestaurantReservation.getRerservationRequestById);
-
+router.post("/", adminMiddleware, reservations.getRestaurantReservations);
+router.post("/create", userMiddleware, reservations.createReservation);
+router.post("/get-reservation-request", adminMiddleware, reservations.getRerservationRequests);
+router.post("/get-reservation-request-canceled", adminMiddleware, reservations.getRerservationRequestsCanceled);
+router.post("/accept-reservation-request", adminMiddleware, reservations.acceptReservation);
+router.post("/decline-reservation-request", adminMiddleware, reservations.declineReservation);
+router.post("/get-reservation-requess-by-user", userMiddleware, reservations.getRerservationRequestsByUser);
+router.post("/get-reservation-requess-by-id", userMiddleware, reservations.getRerservationRequestById);
 
 module.exports = router;

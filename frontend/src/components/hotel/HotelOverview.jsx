@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from "react";
+import { formatMoney } from "../../utils/globalTravel";
 import axios from "axios";
 import { Link, useParams } from "react-router-dom";
 import { useLocation } from "react-router-dom";
+import { BASE_URL } from "../../utils/config";
 
 const HotelOverview = () => {
   const [data, setData] = useState([]);
@@ -28,7 +30,7 @@ const HotelOverview = () => {
             </h1>
         <div className="flex justify-center items-center w-full flex-col lg:flex-row pt-12 lg:pt-0">
           <img
-            src={`http://localhost:5000/api/hotels/images/${data.HotelImg}`}
+            src={data.HotelImg?.startsWith("http") ? data.HotelImg : `${BASE_URL}hotels/images/${data.HotelImg}`}
             alt="Hotel Image"
             className=" w-[320px] md:w-[700px]  lg:w-[800px] rounded-lg mb-10"
           />
@@ -64,7 +66,7 @@ const HotelOverview = () => {
             <div className="flex flex-col md:flex-row  py-4 justify-between lg:items-center">
               <div className="flex items-center">
                 <h1 className="font-bold text-2xl">
-                  Book a stay over Rs.{data.cheapestPrice}
+                  Book a stay over {formatMoney(data.cheapestPrice, data.currency || "USD")}
                 </h1>
                 <h1 className="ml-3 md:text-1xl">/per day</h1>
               </div>

@@ -2,30 +2,12 @@ const express = require("express");
 const tourController = require("../controllers/tourController");
 const tourCustomForm = require("../controllers/tourCustomFormController");
 const tourReservation = require("../controllers/tourReservstionController");
+const { adminMiddleware, userMiddleware } = require("../middleware/authMiddleware");
 
-//define route handler
 const router = express.Router();
-
-//tour routes
-router
-  .route("/")
-  .post(tourController.createTour)
-  .get(tourController.getAllTours);
-
-router
-  .route("/:id")
-  .get(tourController.getTour)
-  .patch(tourController.updateTour)
-  .delete(tourController.deleteTour);
-
-//custom form
-router.route("/customform").post(tourCustomForm.createForm);
-
-// router.route("/tt").post(tourReservation.getAllReservations);
-//reserve form
-router
-  .route("/tourReservations")
-  .put(tourReservation.getAllReservations)
-  .post(tourReservation.bookTour);
+router.route("/").post(adminMiddleware, tourController.createTour).get(tourController.getAllTours);
+router.route("/:id").get(tourController.getTour).patch(adminMiddleware, tourController.updateTour).delete(adminMiddleware, tourController.deleteTour);
+router.route("/customform").post(userMiddleware, tourCustomForm.createForm);
+router.route("/tourReservations").put(adminMiddleware, tourReservation.getAllReservations).post(userMiddleware, tourReservation.bookTour);
 
 module.exports = router;

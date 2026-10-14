@@ -1,108 +1,59 @@
-import React, {useState, useEffect} from 'react'
-import { } from "react-icons/fa";
-import useFetch from '../../hooks/useFetch';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from "react";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
-const SearchBar = ()=>{
+const SearchBar = () => {
+  const [from, setFrom] = useState("");
+  const [to, setTo] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const navigate = useNavigate();
 
-   const[from,setFrom] = useState("");
-   const[to,setTo] =  useState("");
-
-   const {data} = useFetch(`/train/fetch/${from}/${to}`);
-
-   console.log(data)
-
-   const navigate = useNavigate();
-
-   useEffect(()=>{
-    if(data) {
-      navigate('/TrainHome',{state : data})
-      //navigate('/adminTrain',{state :data})
+  const searchTrains = async (event) => {
+    event.preventDefault();
+    const origin = from.trim();
+    const destination = to.trim();
+    if (!origin || !destination) {
+      setError("Enter both a departure and arrival station or city.");
+      return;
     }
-   },[data,navigate])
+    if (origin.toLowerCase() === destination.toLowerCase()) {
+      setError("Departure and arrival must be different locations.");
+      return;
+    }
+    setLoading(true);
+    setError("");
+    try {
+      const response = await axios.get(`/train/fetch/${encodeURIComponent(origin)}/${encodeURIComponent(destination)}`);
+      navigate("/TrainHome", { state: response.data });
+    } catch {
+      setError("Train search is temporarily unavailable for this route. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-
-
-    return(
-        <div className='flex  items-center bg-white mt-4 lg:mt-[-52px] px-8 shadow-lg max-w-[1240px] max-l-[240px]  p-4 lg:text-left text-center h-full  items-center   mx-auto rounded-lg'>
-            <form className='flex flex-wrap lg:flex-row justify-between px-0'>
-            <div className='w-full md:w-1/2 lg:w-1/2 '>
-                <label for = 'from' className='py-3'>From</label> <br/>
-                <input type='text' list='from' className='border rounded-md  p-3 lg:w-[300px] w-full' placeholder='Colombo Fort'
-                        value={from} onChange={(e)=>{setFrom(e.target.value)}}
-                ></input>
-                    <datalist id='from'>
-                        <option value='Colombo Fort'/>
-                        <option value = 'Galle'/>
-                        <option value = 'Matara'/>
-                        <option value = 'Badulla'/>
-                        <option value = 'Hatton'/>
-                        <option value = 'Batticaloa'/>
-                        <option value = 'Vavuniya'/>
-                    </datalist>
-            </div>
-
-          <div className='w-full md:w-1/2 lg:w-1/2 '>
-            <label for = 'to' className='py-3'>To</label><br/>
-            <input type='text' list='to' className='border rounded-md  p-3 lg:w-[300px] w-full' placeholder='Colombo Fort'
-                    value={to} onChange={(e)=>{setTo(e.target.value)}}
-            ></input>
-                <datalist id='to'>
-                <option value='Colombo Fort'/>
-                        <option value = 'Galle'/>
-                        <option value = 'Matara'/>
-                        <option value = 'Badulla'/>
-                        <option value = 'Hatton'/>
-                        <option value = 'Batticaloa'/>
-                        <option value = 'Vavuniya'/>
-            </datalist>
-          </div>
-
-          <div className='w-full md:w-1/2 lg:w-1/2'>
-            <label for = 'pickupDate' className='py-3'>Depature Date</label> <br/>
-            <input type='date' className='border rounded-md p-3 w-full lg:w-[300px]'/>
-          </div>
-
-          <div className='w-full md:w-1/2 lg:w-1/2'>
-            <label for = 'returnDate' className='py-3'>Return Date</label> <br/>
-            <input type='date' className='border rounded-md p-3 w-full lg:w-[300px]'/>
-          </div>
-
-          <div className='w-full md:w-1/2 lg:w-1/2 '>
-            <label for = 'to' className='py-3'>Class</label><br/>
-            <input type='text' list='nut' className='border rounded-md  p-3 lg:w-[300px] w-full' placeholder='First Class'></input>
-                <datalist id='nut'>
-                <option value='First Class'/>
-                <option value = 'Second Class'/>
-                <option value = 'Three Class'/>
-            </datalist>
-          </div>
-
-          <div className='w-full md:w-1/2 lg:w-1/2 '>
-            <label for = 'to' className='py-3'>Number Of Passengers</label><br/>
-            <input type='text'  className='border rounded-md  p-3 lg:w-[300px] w-full'></input>
-                
-          </div>
-
-          
-
-          <div className='mx-auto  hidden'>
-            <button type='submit' className='mt-10 inline-block flex justify-center float-right rounded-xl bg-primary px-6 pb-2 pt-2.5 text-xs font-medium uppercase leading-normal text-white shadow-[0_4px_9px_-4px_#3b71ca] transition duration-150 ease-in-out hover:bg-primary-600 hover:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.3),0_4px_18px_0_rgba(59,113,202,0.2)] focus:bg-primary-600 focus:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.3),0_4px_18px_0_rgba(59,113,202,0.2)] focus:outline-none focus:ring-0 active:bg-primary-700 active:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.3),0_4px_18px_0_rgba(59,113,202,0.2)] dark:shadow-[0_4px_9px_-4px_rgba(59,113,202,0.5)] dark:hover:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.2),0_4px_18px_0_rgba(59,113,202,0.1)] dark:focus:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.2),0_4px_18px_0_rgba(59,113,202,0.1)] dark:active:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.2),0_4px_18px_0_rgba(59,113,202,0.1)]'>
-                Search
-            </button>
-          
-            </div>
-
-          
-          
-
-        </form>
-
-      
-      
-
+  return (
+    <div className="mx-auto mt-4 max-w-5xl rounded-xl bg-white p-5 shadow-lg lg:-mt-12">
+      <form onSubmit={searchTrains} className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <div>
+          <label htmlFor="trainFrom" className="mb-2 block font-semibold">From</label>
+          <input id="trainFrom" type="text" className="w-full rounded-md border p-3" placeholder="Departure station or city" value={from} onChange={(event) => setFrom(event.target.value)} maxLength={120} required />
+        </div>
+        <div>
+          <label htmlFor="trainTo" className="mb-2 block font-semibold">To</label>
+          <input id="trainTo" type="text" className="w-full rounded-md border p-3" placeholder="Arrival station or city" value={to} onChange={(event) => setTo(event.target.value)} maxLength={120} required />
+        </div>
+        <div className="md:col-span-2">
+          <button type="submit" disabled={loading} className="w-full rounded-md bg-blue-500 px-6 py-3 font-bold text-white hover:bg-blue-600 disabled:opacity-60 md:w-auto">
+            {loading ? "Searching…" : "Search trains"}
+          </button>
+        </div>
+      </form>
+      {error && <p role="alert" className="mt-3 text-sm text-red-600">{error}</p>}
+      <p className="mt-3 text-xs text-slate-500">Search uses routes available in Travelco's configured train inventory; live schedules depend on regional data providers.</p>
     </div>
-    )
-}
+  );
+};
 
 export default SearchBar;

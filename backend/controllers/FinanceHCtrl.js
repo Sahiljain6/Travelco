@@ -1,73 +1,53 @@
-const Finance = require("../models/FinanceHealth")
+const Finance = require("../models/FinanceHealth");
 
+const addRecord = async (req, res) => {
+  try {
+    const fields = ["RecordId", "Section", "Income", "Expences", "Month"];
+    const data = Object.fromEntries(fields.filter((key) => req.body?.[key] !== undefined).map((key) => [key, req.body[key]]));
+    for (const key of ["Income", "Expences"]) {
+      if (data[key] !== undefined && (!Number.isFinite(Number(data[key])) || Number(data[key]) < 0)) {
+        return res.status(400).json({ message: key + " must be a non-negative number" });
+      }
+    }
+    const record = await Finance.create(data);
+    return res.status(201).json(record);
+  } catch { return res.status(400).json({ message: "Unable to create financial record" }); }
+};
 
-// add Finance record
-const addRecord = async(req,res)=>{
+const getAllRecords = async (req, res) => {
+  try { return res.status(200).json(await Finance.find().sort({ Month: -1 })); }
+  catch { return res.status(500).json({ message: "Unable to retrieve financial records" }); }
+};
 
+const getOneRecord = async (req, res) => {
+  try {
+    const record = await Finance.findById(req.params.id);
+    if (!record) return res.status(404).json({ message: "Financial record not found" });
+    return res.status(200).json(record);
+  } catch { return res.status(400).json({ message: "Invalid financial record ID" }); }
+};
 
+const deleteRecord = async (req, res) => {
+  try {
+    const record = await Finance.findByIdAndDelete(req.params.id);
+    if (!record) return res.status(404).json({ message: "Financial record not found" });
+    return res.status(200).json({ message: "Financial record deleted" });
+  } catch { return res.status(400).json({ message: "Invalid financial record ID" }); }
+};
 
-    const newFinance = new Finance({
-        ...req.body
-    })
+const updateRecord = async (req, res) => {
+  try {
+    const fields = ["RecordId", "Section", "Income", "Expences", "Month"];
+    const data = Object.fromEntries(fields.filter((key) => req.body?.[key] !== undefined).map((key) => [key, req.body[key]]));
+    for (const key of ["Income", "Expences"]) {
+      if (data[key] !== undefined && (!Number.isFinite(Number(data[key])) || Number(data[key]) < 0)) {
+        return res.status(400).json({ message: key + " must be a non-negative number" });
+      }
+    }
+    const record = await Finance.findByIdAndUpdate(req.params.id, data, { new: true, runValidators: true });
+    if (!record) return res.status(404).json({ message: "Financial record not found" });
+    return res.status(200).json({ status: "updated", record });
+  } catch { return res.status(400).json({ message: "Unable to update financial record" }); }
+};
 
-    await newFinance.save().then(()=>{
-        res.json(newFinance)
-    }).catch((err)=>{
-        res.json(err.message)
-    })
-}
-
-// get all Finance Records
-const getAllRecords = async(req,res)=>{
-    await Finance.find().then((Finance)=>{
-        res.json(Finance)
-    }).catch((err)=>{
-        res.json(err.message)
-    })
-}
-
-//get one Finance Record
-const getOneRecord = async (req,res)=>{
-    const id = req.params.id;
-    console.log(id)
-    const singleRecord= await Finance.findById(id).then((Employee)=>{
-        res.json(singleRecord);
-    }).catch((err)=>{
-        res.json(err.message)
-    })
-}
-
-// delete Finance Record
-const deleteRecord = async(req,res)=>{
-    const id = req.params.id;
-    
-    await Finance.findByIdAndDelete(id).then(()=>{
-        res.json("deleted")
-    }).catch((err)=>{
-        res.json(err.message)
-    })
-
-}
-
-// update Finance Record
-const updateRecord = async (req,res)=>{
-    const id = req.params.id;
-
-    const {RecordId,Section,Income,Expences,Month,} = req.body;
-
-    const updatedRecord = {RecordId,Section,Income,Expences,Month}
-
-    await Finance.findByIdAndUpdate(id,updatedRecord).then(()=>{
-        res.json({status:"Update"})
-    }).catch((err)=>{
-        res.json(err.message)
-    })
-}
-
-module.exports ={
-    addRecord,
-    getAllRecords,
-    getOneRecord,
-    deleteRecord,
-    updateRecord
-}
+module.exports = { addRecord, getAllRecords, getOneRecord, deleteRecord, updateRecord };

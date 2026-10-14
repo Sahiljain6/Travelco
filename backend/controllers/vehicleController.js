@@ -16,9 +16,12 @@ const storage = multer.diskStorage({
 
 const upload = multer({
     storage: storage,
+    limits: { fileSize: 5 * 1024 * 1024, files: 8 },
     fileFilter: function (req, file, cb) {
-      if (!file.originalname.match(/\.(jpg|jpeg|png)$/)) {
-        return cb(new Error('Only image files are allowed!'));
+      const validExtension = /\.(jpg|jpeg|png)$/i.test(file.originalname);
+      const validMime = ["image/jpeg", "image/png"].includes(file.mimetype);
+      if (!validExtension || !validMime) {
+        return cb(new Error("Only JPEG and PNG images up to 5 MB are allowed"));
       }
       cb(null, true);
     }
@@ -41,12 +44,15 @@ exports.addVehicle = async(req, res) => {
             }
             
     
+            const mainImage = req.files?.vehicleMainImg?.[0];
+            if (!mainImage) return res.status(400).json({ message: "A main vehicle image is required" });
             const newVehicle = new Vehicle({
                 ...req.body,
+                userId: String(req.user),
                 isAccepted: false,
-                vehicleMainImg: req.files.vehicleMainImg[0].filename,
-                insuranceImgs: req.files.insuranceImgs.map(file => file.filename),
-                vehicleImgs: req.files.vehicleImgs.map(file => file.filename)
+                vehicleMainImg: mainImage.filename,
+                insuranceImgs: (req.files.insuranceImgs || []).map(file => file.filename),
+                vehicleImgs: (req.files.vehicleImgs || []).map(file => file.filename)
             })
 
             await newVehicle.save();
@@ -63,7 +69,7 @@ exports.addVehicle = async(req, res) => {
 //get all vehicles - vehicle admin             //postman checked. working well.
 exports.getAllVehicle = async(req, res) => {
     try{
-        const vehicles = await Vehicle.find();
+        const vehicles = await Vehicle.find({ isAccepted: true }).limit(200);
         res.send(vehicles);
     }catch (err) {
         res.status(500).send(err.message);
@@ -75,7 +81,7 @@ exports.getAllVehicle = async(req, res) => {
 exports.getSpecificvehicle = async(req, res) => {
     const {id} = req.params;
     try{
-        const specificVehicle = await Vehicle.findById({_id: id});     //without _id, it will not work ???
+        const specificVehicle = await Vehicle.findOne({ _id: id, isAccepted: true });     //without _id, it will not work ???
         res.send(specificVehicle);
     }catch(err){
         res.status(500).send(err.message);
@@ -86,31 +92,27 @@ exports.getSpecificvehicle = async(req, res) => {
 
 //delete a specific vehicle by id (Reject a vehicle from pending collection) - vehicle admin
 exports.deleteVehicle = async (req, res) => {
-    const { id } = req.params;
     try {
-      const vehicle = await Vehicle.findByIdAndDelete(id);
-      if (!vehicle) {
-        res.status(404).send('Vehicle not found');
-      } else {
-        res.send(vehicle);
+      const vehicle = await Vehicle.findById(req.params.id);
+      if (!vehicle) return res.status(404).json({ message: "Vehicle not found" });
+      if (String(vehicle.userId) !== String(req.user) && req.authUser?.isAdmin !== true) {
+        return res.status(403).json({ message: "You can only delete your own vehicle listing" });
       }
-    } catch (err) {
-      res.status(500).send(err.message);
+      await vehicle.deleteOne();
+      return res.status(200).json({ message: "Vehicle listing deleted" });
+    } catch {
+      return res.status(400).json({ message: "Unable to delete vehicle listing" });
     }
   };
-
 
 //accept a vehicle by isAccepted change to true - vehicle admin
 exports.acceptVehicle = async(req, res) => {
     const {id} = req.params;
     try{
         const vehicle = await Vehicle.findById(id);
-        if(!vehicle){
-            res.status(404).send("Vehicle not found");
-        }
-
-        const accept = await Vehicle.findByIdAndUpdate(id, {isAccepted: true}, {new: true});
-        res.send(accept);
+        if (!vehicle) return res.status(404).json({ message: "Vehicle not found" });
+        const accept = await Vehicle.findByIdAndUpdate(id, { isAccepted: true }, { new: true });
+        return res.status(200).json(accept);
 
         // Return success message
         return "Vehicle accepted successfully!";
@@ -125,13 +127,13 @@ exports.acceptVehicle = async(req, res) => {
 exports.getMyVehicles = async(req, res) => {
     const { userId } = req.params;
     try{
-        const myVehicles = await Vehicle.find({userId: userId});
-        if(!myVehicles){
-            res.status(404).send("No vehicles found");
+        if (String(req.user) !== String(userId) && req.authUser?.isAdmin !== true) {
+            return res.status(403).json({ message: "You can only view your own vehicles" });
         }
-        res.send(myVehicles);
-    }catch{
-        res.status(500).send(err.message);
+        const myVehicles = await Vehicle.find({ userId: String(req.user) });
+        return res.status(200).json(myVehicles);
+    } catch (err) {
+        res.status(500).json({ message: "Unable to retrieve vehicles" });
     }
 }
 
@@ -139,23 +141,35 @@ exports.getMyVehicles = async(req, res) => {
 //edit a specific vehicle details - vehicle owner 
 exports.updateVehicle = async (req, res) => {
   const { id } = req.params;
-  const  update = { price, description, location } = req.body;
-  update.isAccepted = false; 
-
-  try {
-    const updatedVehicle = await Vehicle.findByIdAndUpdate(id, update, { new: true });    //may be wrong
-    
-    if (!updatedVehicle) {
-      res.status(404).send('Vehicle not found');
+  const { price, description, location } = req.body || {};
+  const update = {};
+  if (price !== undefined) {
+    const numericPrice = Number(price);
+    if (!Number.isFinite(numericPrice) || numericPrice <= 0) {
+      return res.status(400).json({ message: "Price must be a positive number" });
     }
-
-    res.send(updatedVehicle);
+    update.price = numericPrice;
+  }
+  if (description !== undefined) update.description = String(description).slice(0, 3000);
+  if (location !== undefined && String(location).trim()) update.location = String(location).trim().slice(0, 180);
+  if (req.body.currency !== undefined) {
+    const currency = String(req.body.currency).toUpperCase();
+    if (!["USD","EUR","GBP","INR","LKR","AUD","CAD","NZD","JPY","CNY","SGD","ZAR","CHF","AED","BRL","MXN","KRW","THB","MYR","IDR","PHP","TRY","SAR","NGN","PKR"].includes(currency)) return res.status(400).json({ message: "Unsupported listing currency" });
+    update.currency = currency;
+  }
+  update.isAccepted = false;
+  try {
+    const vehicle = await Vehicle.findById(id);
+    if (!vehicle) return res.status(404).json({ message: "Vehicle not found" });
+    if (String(vehicle.userId) !== String(req.user) && req.authUser?.isAdmin !== true) {
+      return res.status(403).json({ message: "You can only edit your own vehicle listing" });
+    }
+    const updatedVehicle = await Vehicle.findByIdAndUpdate(id, update, { new: true, runValidators: true });
+    return res.status(200).json(updatedVehicle);
   } catch (err) {
-    res.status(500).send(err.message);
+    return res.status(500).json({ message: "Unable to update vehicle" });
   }
 };
-
-
 
 exports.availableVehicles = async (req, res) => {
 
@@ -196,7 +210,8 @@ exports.availableVehicles = async (req, res) => {
 exports.getVehiclesByTypeAndLocation = async(req, res) => {
     const { vehicleType, location } = req.params;
     try{
-        const vehicles = await Vehicle.find({vehicleType: vehicleType, location: location});
+        const safeLocation = String(location).replace(/[.*+?^${}()|[\]\\]/g, "\\const vehicles = await Vehicle.find({vehicleType: vehicleType, location: location});");
+        const vehicles = await Vehicle.find({ vehicleType, location: { $regex: safeLocation, $options: "i" }, isAccepted: true }).limit(100);
         if(!vehicles){
             res.status(404).send("No vehicles found");
         }
@@ -211,7 +226,7 @@ exports.getVehiclesByTypeAndLocation = async(req, res) => {
 exports.getVehicleByType = async (req, res) => {
     const {vehicleType} = req.params;
     try{
-        const vehicles = await Vehicle.find({vehicleType: vehicleType});
+        const vehicles = await Vehicle.find({ vehicleType, isAccepted: true }).limit(200);
         if(!vehicles){
             res.status(404).send("No vehicles found");
         }
@@ -225,7 +240,8 @@ exports.getVehicleByType = async (req, res) => {
 exports.getVehicleByLocation = async (req, res) => {
     const {location} = req.params;
     try{
-        const vehicles = await Vehicle.find({location: location});
+        const safeLocation = String(location).replace(/[.*+?^${}()|[\]\\]/g, "\\const vehicles = await Vehicle.find({location: location});");
+        const vehicles = await Vehicle.find({ location: { $regex: safeLocation, $options: "i" }, isAccepted: true }).limit(100);
         if(!vehicles){
             res.status(404).send("No vehicles found");
         }

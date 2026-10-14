@@ -3,9 +3,10 @@ import axios from "axios";
 import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/authContext";
 import countries from "../data/countries";
+import { getPreferredCurrency, supportedCurrencies } from "../utils/globalTravel";
 
 const interests = ["Beaches", "Adventure", "Culture", "Food", "Nature", "Shopping", "History", "Wildlife", "Wellness", "Nightlife", "Road trips", "Photography"];
-const currencies = ["INR", "USD", "EUR", "GBP", "AUD", "CAD", "SGD", "JPY", "AED", "CHF", "NZD", "ZAR", "THB", "MYR", "IDR", "LKR", "NPR", "SAR", "CNY", "HKD"];
+const currencies = Array.from(new Set([...supportedCurrencies, "NPR", "HKD"]));
 const languages = [
   { value: "en", label: "English" }, { value: "hi", label: "Hindi" },
   { value: "es", label: "Spanish" }, { value: "fr", label: "French" },
@@ -14,7 +15,7 @@ const languages = [
   { value: "zh", label: "Chinese" }, { value: "ar", label: "Arabic" },
 ];
 const initialForm = {
-  name: "", country: "", mobile: "", preferredCurrency: "INR", preferredLanguage: "en",
+  name: "", country: "", mobile: "", preferredCurrency: getPreferredCurrency(), preferredLanguage: "en",
   travelInterests: [], budgetRange: "flexible", travelStyle: "flexible",
   notificationPreferences: { bookingUpdates: true, tripReminders: true, productNews: false },
 };
@@ -23,7 +24,7 @@ const toForm = (user) => ({
   name: user.name || "",
   country: user.country || "",
   mobile: user.mobile || "",
-  preferredCurrency: user.preferredCurrency || "INR",
+  preferredCurrency: user.preferredCurrency || getPreferredCurrency(),
   preferredLanguage: user.preferredLanguage || "en",
   travelInterests: Array.isArray(user.travelInterests) ? user.travelInterests : [],
   budgetRange: user.budgetRange || "flexible",

@@ -13,6 +13,7 @@ const vehicleSchema = new Schema({
   transmissionType : {type: String, required : true},
   fuelType : {type: String, required : true},
   price : {type: Number, required : true},
+  currency: { type: String, enum: ["USD","EUR","GBP","INR","LKR","AUD","CAD","NZD","JPY","CNY","SGD","ZAR","CHF","AED","BRL","MXN","KRW","THB","MYR","IDR","PHP","TRY","SAR","NGN","PKR"], default: "USD" },
   description : {type: String, required : true},
   insuranceImgs: [{ type: String, required : true }],
   vehicleMainImg: {type : String, required : true},

@@ -13,10 +13,9 @@ const HotelSchema=new mongoose.Schema({
         type:String
          
     },
-    city:{  
-        type:String,
-        reqiured:true
-    },
+    city:{ type:String, required:true, trim:true, index:true },
+    country:{ type:String, default:"", trim:true, index:true },
+    currency:{ type:String, default:"USD", enum:["USD","EUR","GBP","INR","LKR","AUD","CAD","NZD","JPY","CNY","SGD","ZAR","CHF","AED","BRL","MXN","KRW","THB","MYR","IDR","PHP","TRY","SAR","NGN","PKR"] },
     province:{
         type:String,
         reqiured:true

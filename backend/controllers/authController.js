@@ -86,7 +86,7 @@ const registerUser = async (req, res) => {
       return res.status(400).json({ message: "You must accept the Terms and Conditions and Privacy Policy to create an account" });
     }
     const allowedTypes = ["traveler", "hotelOwner", "vehicleOwner", "resturentOwner", "tourGuide", "eventOrganizer"];
-    const selectedType = type || "traveler";
+    const selectedType = "traveler"; // Business roles must be granted through an admin approval workflow.
     if (!allowedTypes.includes(selectedType)) {
       return res.status(400).json({ message: "Please select a valid account type" });
     }

@@ -35,8 +35,8 @@ const Userlist = ({ columns }) => {
           ticket.mobile,
           ticket.country,
           ticket.type,
-          moment(ticket.createdAt).format("MM/DD/YYYY h:mm A"), // format createdAt using moment
-          moment(ticket.updatedAt).format("MM/DD/YYYY h:mm A"), // format updatedAt using moment
+          moment(ticket.createdAt).format("YYYY-MM-DD HH:mm"), // format createdAt using moment
+          moment(ticket.updatedAt).format("YYYY-MM-DD HH:mm"), // format updatedAt using moment
         ];
         tableRows.push(ticketData);
       });
@@ -52,7 +52,7 @@ const Userlist = ({ columns }) => {
     doc.text("User Details Report", 14, 23);
     doc.text(`Report Generated Date: ${dateStr}`, 14, 30);
     doc
-      .text("Traverly.co,Whihara mavatha,Kaduwela,Sri lanka", 14, 37)
+      .text("Travelco · Global Travel Platform", 14, 37)
       .setFontSize(10);
 
     doc.autoTable(tableColumn, tableRows, {
