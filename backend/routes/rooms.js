@@ -1,31 +1,15 @@
-
-const express=require("express");
-
+const express = require("express");
 const {
-    createRoom,updateRoom, deleteRoom, getRoom, getAllRoom, updateRoomAvailability
-  } = require("../controllers/room.js");
+  createRoom, updateRoom, deleteRoom, getRoom, getAllRoom, updateRoomAvailability
+} = require("../controllers/room.js");
+const { adminMiddleware } = require("../middleware/authMiddleware");
 
-const router =express.Router();
+const router = express.Router();
+router.post("/:hotelid", adminMiddleware, createRoom);
+router.put("/:id", adminMiddleware, updateRoom);
+router.put("/availability/:id", adminMiddleware, updateRoomAvailability);
+router.delete("/:id/:hotelid", adminMiddleware, deleteRoom);
+router.get("/:id", getRoom);
+router.get("/", getAllRoom);
 
-// must be change after user auth done
-
-//Create
-router.post("/:hotelid",createRoom)
-
-//update
-
-router.put("/:id",updateRoom)
-router.put("/availability/:id",updateRoomAvailability)
-
-//Delete
- 
-router.delete("/:id/:hotelid",deleteRoom)
-
-//get
-router.get("/:id", getRoom)
-
-// Get all hotels
-router.get("/",getAllRoom)
-
-
-module.exports = router 
+module.exports = router;
