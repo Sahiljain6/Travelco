@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { formatMoney } from "../../utils/globalTravel";
 import axios from "axios";
 import { Link, useParams } from "react-router-dom";
 import { useLocation } from "react-router-dom";
@@ -64,7 +65,7 @@ const HotelOverview = () => {
             <div className="flex flex-col md:flex-row  py-4 justify-between lg:items-center">
               <div className="flex items-center">
                 <h1 className="font-bold text-2xl">
-                  Book a stay over Rs.{data.cheapestPrice}
+                  Book a stay over {formatMoney(data.cheapestPrice, data.currency || "USD")}
                 </h1>
                 <h1 className="ml-3 md:text-1xl">/per day</h1>
               </div>
