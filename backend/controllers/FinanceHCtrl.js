@@ -30,11 +30,13 @@ const getAllRecords = async(req,res)=>{
 const getOneRecord = async (req,res)=>{
     const id = req.params.id;
     console.log(id)
-    const singleRecord= await Finance.findById(id).then((Employee)=>{
-        res.json(singleRecord);
-    }).catch((err)=>{
-        res.json(err.message)
-    })
+    try {
+        const record = await Finance.findById(id);
+        if (!record) return res.status(404).json({ message: "Financial record not found" });
+        return res.status(200).json(record);
+    } catch (err) {
+        return res.status(500).json({ message: "Unable to retrieve financial record" });
+    }
 }
 
 // delete Finance Record
