@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import axios from "axios";
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
+import countries from "../../data/countries";
+import { getPreferredCurrency, supportedCurrencies } from "../../utils/globalTravel";
 
 export const AddHotel = () => {
   const navigate = useNavigate();
@@ -9,7 +11,9 @@ export const AddHotel = () => {
   const [title, setTitle] = React.useState("");
   const [hotelType, setHotelType] = React.useState("");
   const [city, setCity] = React.useState("");
+  const [country, setCountry] = React.useState("");
   const [province, setProvince] = React.useState("");
+  const [currency, setCurrency] = React.useState(getPreferredCurrency);
   const [zip, setZip] = React.useState("");
   const [address, setAddress] = React.useState("");
   const [distance, setDistance] = React.useState("");
@@ -32,12 +36,8 @@ export const AddHotel = () => {
   function sendData(e) {
     e.preventDefault();
 
-    if (isNaN(zip)) {
-      Swal.fire({
-        icon: "error",
-        title: "Oops...",
-        text: "Enter valid zip code",
-      });
+    if (!String(zip).trim() || String(zip).trim().length > 20) {
+      Swal.fire({ icon: "error", title: "Oops...", text: "Enter a valid postal or ZIP code" });
       return;
     }
      if (isNaN(distance)) {
@@ -48,12 +48,8 @@ export const AddHotel = () => {
         });
          return;
     }
-    if (contactNumber.length !== 10) {
-      Swal.fire({
-        icon: "error",
-        title: "Oops...",
-        text: "enter valid mobile number",
-      });
+    if (!/^\+?[0-9\s().-]{7,25}$/.test(contactNumber.trim())) {
+      Swal.fire({ icon: "error", title: "Oops...", text: "Enter a valid international contact number" });
       return;
     }
 
@@ -63,6 +59,8 @@ export const AddHotel = () => {
     formData.append("title", title);
     formData.append("type", hotelType);
     formData.append("city", city);
+    formData.append("country", country);
+    formData.append("currency", currency);
     formData.append("province", province);
     formData.append("zip", zip);
     formData.append("address", address);
@@ -195,7 +193,7 @@ export const AddHotel = () => {
               class="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
               id="city"
               type="text"
-              onChange={(e) => setCity(e.target.value.toLowerCase())}
+              onChange={(e) => setCity(e.target.value)}
             />
           </div>
           <div class="w-full md:w-1/3 px-3 mb-6 md:mb-0">
