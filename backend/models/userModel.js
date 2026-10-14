@@ -28,7 +28,7 @@ const UserSchema = new mongoose.Schema(
     passwordResetTokenHash: { type: String, select: false },
     passwordResetExpires: { type: Date, select: false },
 
-    preferredCurrency: { type: String, default: "INR", uppercase: true, minlength: 3, maxlength: 3 },
+    preferredCurrency: { type: String, default: "USD", uppercase: true, minlength: 3, maxlength: 3 },
     preferredLanguage: { type: String, default: "en", maxlength: 12 },
     travelInterests: { type: [String], default: [] },
     budgetRange: { type: String, enum: ["budget", "mid-range", "luxury", "flexible"], default: "flexible" },
