@@ -27,7 +27,8 @@ const getOneEmployee = async (req,res)=>{
     const id = req.params.id;
     console.log(id)
     const singleEmployee = await Employee.findById(id).then((Employee)=>{
-        res.json(refund);
+        if (!Employee) return res.status(404).json({ message: "Employee not found" });
+        return res.status(200).json(Employee);
     }).catch((err)=>{
         res.json(err.message)
     })
