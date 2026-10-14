@@ -50,7 +50,7 @@ const Tourlist = ({ columns }) => {
     doc.text("Tour Details Report", 14, 23).setFontSize(10);
     doc.text(`Report Generated Date: ${dateStr}`, 14, 30).setFontSize(10);
     doc
-      .text("Traverly.co,Whihara mavatha,Kaduwela,Sri lanka", 14, 37)
+      .text("Travelco · Global Travel Platform", 14, 37)
       .setFontSize(10);
 
     doc.autoTable(tableColumn, tableRows, {
