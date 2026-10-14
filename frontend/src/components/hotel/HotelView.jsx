@@ -4,6 +4,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { useLocation } from "react-router-dom";
 import { AuthContext } from "../../context/authContext";
 import HotelReserve from "./HotelReserve";
+import { formatMoney } from "../../utils/globalTravel";
 import { BASE_URL } from "../../utils/config";
 
 const HotelView = () => {
