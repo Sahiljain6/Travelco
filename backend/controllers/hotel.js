@@ -92,7 +92,7 @@ const deleteHotel =async (req,res,next)=>{
 //get Hotel
 const getHotel =async (req,res,next)=>{
     try{
-        const viewHotel= await Hotel.findById(req.params.id);
+        const viewHotel= await Hotel.findOne({ _id: req.params.id, isApproved: true });
         res.status(200).json(viewHotel);
 
     }catch(err){
@@ -187,7 +187,7 @@ const getHotelbyCity = async (req, res) => {
 
 const getHotelRooms = async(req,res,next)=>{
   try{
-    const hotel= await Hotel.findById(req.params.id);
+    const hotel= await Hotel.findOne({ _id: req.params.id, isApproved: true });
     const list= await  Promise.all(hotel.rooms.map((room)=>{
         return Room.findById(room);
 
