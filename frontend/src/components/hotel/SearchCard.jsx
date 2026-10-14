@@ -1,6 +1,7 @@
 import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
 import useFetch from "../../hooks/useFetch";
 import { formatMoney } from "../../utils/globalTravel";
+import { formatMoney } from "../../utils/globalTravel";
 
 
 const SearchCard = (item) => {
@@ -30,7 +31,7 @@ const SearchCard = (item) => {
                 key={item.id}
               >
                 <img
-                  src={`hotels/images/${item.HotelImg}`}
+                  src={item.HotelImg?.startsWith("http") ? item.HotelImg : `hotels/images/${item.HotelImg}`}
                   alt=""
                   className="w-full object-cover h-64"
                 />
