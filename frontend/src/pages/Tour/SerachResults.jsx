@@ -69,8 +69,8 @@ const SerachResults = () => {
                       textShadow: "3px 1px black",
                     }}
                   >
-                    an island awaits you <br />
-                    Discover sri Lanka
+                    Your next adventure awaits <br />
+                    Discover destinations worldwide
                   </h4>
                 </div>
               </div>
