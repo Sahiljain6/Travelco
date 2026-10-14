@@ -28,7 +28,7 @@ export const HotelSearchBar = ({type}) => {
   
   const date = {checkInDate, checkOutDate}
 
-  const {data} = useFetch(`hotels/get/${city}`)
+  const {data} = useFetch(`hotels/get/${encodeURIComponent(city)}`)
 
     
 
