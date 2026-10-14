@@ -16,8 +16,8 @@ const Searchbar = () => {
 
     const url =
     
-      pickupLocation && vehicleType === "" ? `vehicle/location/get/${pickupLocation}`  
-      : pickupLocation && vehicleType ? `vehicle/get/${vehicleType}/${pickupLocation}` 
+      pickupLocation && vehicleType === "" ? `vehicle/location/get/${encodeURIComponent(pickupLocation)}`  
+      : pickupLocation && vehicleType ? `vehicle/get/${vehicleType}/${encodeURIComponent(pickupLocation)}` 
       : vehicleType === "" ? "vehicle/"  
       : `vehicle/type/get/${vehicleType}`; 
 
