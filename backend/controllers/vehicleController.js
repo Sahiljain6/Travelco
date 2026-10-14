@@ -16,9 +16,12 @@ const storage = multer.diskStorage({
 
 const upload = multer({
     storage: storage,
+    limits: { fileSize: 5 * 1024 * 1024, files: 8 },
     fileFilter: function (req, file, cb) {
-      if (!file.originalname.match(/\.(jpg|jpeg|png)$/)) {
-        return cb(new Error('Only image files are allowed!'));
+      const validExtension = /\.(jpg|jpeg|png)$/i.test(file.originalname);
+      const validMime = ["image/jpeg", "image/png"].includes(file.mimetype);
+      if (!validExtension || !validMime) {
+        return cb(new Error("Only JPEG and PNG images up to 5 MB are allowed"));
       }
       cb(null, true);
     }
@@ -41,12 +44,15 @@ exports.addVehicle = async(req, res) => {
             }
             
     
+            const mainImage = req.files?.vehicleMainImg?.[0];
+            if (!mainImage) return res.status(400).json({ message: "A main vehicle image is required" });
             const newVehicle = new Vehicle({
                 ...req.body,
+                userId: String(req.user),
                 isAccepted: false,
-                vehicleMainImg: req.files.vehicleMainImg[0].filename,
-                insuranceImgs: req.files.insuranceImgs.map(file => file.filename),
-                vehicleImgs: req.files.vehicleImgs.map(file => file.filename)
+                vehicleMainImg: mainImage.filename,
+                insuranceImgs: (req.files.insuranceImgs || []).map(file => file.filename),
+                vehicleImgs: (req.files.vehicleImgs || []).map(file => file.filename)
             })
 
             await newVehicle.save();
@@ -125,13 +131,13 @@ exports.acceptVehicle = async(req, res) => {
 exports.getMyVehicles = async(req, res) => {
     const { userId } = req.params;
     try{
-        const myVehicles = await Vehicle.find({userId: userId});
-        if(!myVehicles){
-            res.status(404).send("No vehicles found");
+        if (String(req.user) !== String(userId) && req.authUser?.isAdmin !== true) {
+            return res.status(403).json({ message: "You can only view your own vehicles" });
         }
-        res.send(myVehicles);
-    }catch{
-        res.status(500).send(err.message);
+        const myVehicles = await Vehicle.find({ userId: String(req.user) });
+        return res.status(200).json(myVehicles);
+    } catch (err) {
+        res.status(500).json({ message: "Unable to retrieve vehicles" });
     }
 }
 
