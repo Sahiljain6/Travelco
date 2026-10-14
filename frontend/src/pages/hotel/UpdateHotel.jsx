@@ -1,8 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Swal from "sweetalert2";
 import { useLocation, useNavigate } from "react-router-dom";
 import useFetch from "../../hooks/useFetch";
+import countries from "../../data/countries";
+import { getPreferredCurrency, supportedCurrencies } from "../../utils/globalTravel";
 
 
 export const UpdateHotel= () => {
@@ -16,22 +18,42 @@ const location=useLocation();
   const [name, setHotelName] = React.useState(data.name);
   const [title, setTitle] = React.useState(data.title);
   const [type, setHotelType] = React.useState(data.type);
-  const [city, setCity] = React.useState(data.city);
-  const [province, setProvince] = React.useState(data.province);
+  const [city, setCity] = React.useState(data.city || "");
+  const [country, setCountry] = React.useState(data.country || "");
+  const [province, setProvince] = React.useState(data.province || "");
+  const [currency, setCurrency] = React.useState(data.currency || getPreferredCurrency());
   const [zip, setZip] = React.useState(data.zip);
   const [address, setAddress] = React.useState(data.address);
   const [distance, setDistance] = React.useState(data.distance);
   const [description, setDescription] = React.useState(data.description);
   const [contactName, setContactName] = React.useState(data.contactName);
-  const [contactNo, setContactNumber] = React.useState(data.contactNumber);
+  const [contactNo, setContactNumber] = React.useState(data.contactNo || "");
  // const [noOfRoomTypes, setNoOfRoomTypes] = React.useState("");
-  const [cheapestPrice, setprice] = React.useState(data.cheapestPrice);
+  const [cheapestPrice, setprice] = React.useState(data.cheapestPrice || "");
 
   
 
   
 
   
+
+  useEffect(() => {
+    if (!data || !data._id) return;
+    setHotelName(data.name || "");
+    setTitle(data.title || "");
+    setHotelType(data.type || "");
+    setCity(data.city || "");
+    setCountry(data.country || "");
+    setProvince(data.province || "");
+    setZip(data.zip || "");
+    setAddress(data.address || "");
+    setDistance(data.distance || "");
+    setDescription(data.description || "");
+    setContactName(data.contactName || "");
+    setContactNumber(data.contactNo || "");
+    setprice(data.cheapestPrice ?? "");
+    setCurrency(data.currency || getPreferredCurrency());
+  }, [data]);
 
   function sendData(e) {
     e.preventDefault();
@@ -43,6 +65,8 @@ const location=useLocation();
         title,
         type,
         city,
+        country,
+        currency,
         province,
         zip,
         address,
@@ -165,39 +189,15 @@ const location=useLocation();
             />
           </div>
           <div class="w-full md:w-1/3 px-3 mb-6 md:mb-0">
-            <label
-              class="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2"
-              for="grid-state"
-            >
-              Province
-            </label>
-            <div class="relative">
-              <select
-                class="block appearance-none w-full bg-gray-200 border border-gray-200 text-gray-700 py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
-                id="province"
-                defaultValue={data.province}
-                onChange={(e) => setProvince(e.target.value)}
-              >
-                <option>SOUTHERN PROVINCE</option>
-                <option>WESTERN PROVINCE</option>
-                <option>CENTRAL PROVINCE</option>
-                <option>SABARAGAMUWA PROVINCE</option>
-                <option>EASTERN PROVINCE</option>
-                <option>UVA PROVINCE</option>
-                <option>NORTH WESTERN PROVINCE</option>
-                <option>NORTH CENTRAL PROVINCE</option>
-                <option>NORTHERN PROVINCE</option>
-              </select>
-              <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                <svg
-                  class="fill-current h-4 w-4"
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 20 20"
-                >
-                  <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
-                </svg>
-              </div>
-            </div>
+            <label class="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2" htmlFor="country">Country</label>
+            <select id="country" class="block w-full rounded border bg-gray-200 px-4 py-3" value={country} onChange={(e) => setCountry(e.target.value)} required>
+              <option value="">Choose a country</option>
+              {countries.map((name) => <option key={name} value={name}>{name}</option>)}
+            </select>
+          </div>
+          <div class="w-full md:w-1/3 px-3 mb-6 md:mb-0">
+            <label class="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2" htmlFor="province">State / region</label>
+            <input id="province" type="text" class="block w-full rounded border bg-gray-200 px-4 py-3" value={province} onChange={(e) => setProvince(e.target.value)} placeholder="State, province or region" />
           </div>
           <div class="w-full md:w-1/3 px-3 mb-6 md:mb-0">
             <label
