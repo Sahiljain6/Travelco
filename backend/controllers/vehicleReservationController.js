@@ -12,17 +12,23 @@ exports.addReservation = async (req, res) => {
       return res.status(404).json({ message: "Vehicle not found" });
     }
 
-    const numberOfDays =
-      (new Date(req.body.returnDate) - new Date(req.body.pickupDate)) /
-      (1000 * 3600 * 24); //convert milliseconds to days
-    let amount = (numberOfDays) * vehicle.price; //add by 1 because if pickup date is 1st and return date is 3rd, it is 2 days.
-
-    if (numberOfDays < 0) {
-      return res.status(400).json({ message: "Invalid dates" });
+    const pickupDate = new Date(req.body.pickupDate);
+    const returnDate = new Date(req.body.returnDate);
+    if (!req.body.pickupDate || !req.body.returnDate || Number.isNaN(pickupDate.getTime()) || Number.isNaN(returnDate.getTime())) {
+      return res.status(400).json({ message: "Valid pickup and return dates are required" });
     }
-
-    if(req.body.needDriver){
-      amount = amount + numberOfDays * 2500;   //static driver fee
+    pickupDate.setUTCHours(0, 0, 0, 0);
+    returnDate.setUTCHours(0, 0, 0, 0);
+    const numberOfDays = (returnDate - pickupDate) / 86400000;
+    if (numberOfDays <= 0 || numberOfDays > 90) {
+      return res.status(400).json({ message: "Return date must be after pickup and within 90 days" });
+    }
+    if (!Number.isFinite(Number(vehicle.price)) || Number(vehicle.price) <= 0) {
+      return res.status(400).json({ message: "Vehicle has an invalid rental price" });
+    }
+    let amount = numberOfDays * Number(vehicle.price);
+    if (req.body.needDriver === true || req.body.needDriver === "true") {
+      amount += numberOfDays * Number(process.env.DRIVER_DAILY_FEE || 25);
     }
 
     const newReservation = new Reservation({
