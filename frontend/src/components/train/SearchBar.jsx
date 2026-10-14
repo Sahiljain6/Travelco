@@ -28,34 +28,12 @@ const SearchBar = ()=>{
             <form className='flex flex-wrap lg:flex-row justify-between px-0'>
             <div className='w-full md:w-1/2 lg:w-1/2 '>
                 <label for = 'from' className='py-3'>From</label> <br/>
-                <input type='text' list='from' className='border rounded-md  p-3 lg:w-[300px] w-full' placeholder='Colombo Fort'
-                        value={from} onChange={(e)=>{setFrom(e.target.value)}}
-                ></input>
-                    <datalist id='from'>
-                        <option value='Colombo Fort'/>
-                        <option value = 'Galle'/>
-                        <option value = 'Matara'/>
-                        <option value = 'Badulla'/>
-                        <option value = 'Hatton'/>
-                        <option value = 'Batticaloa'/>
-                        <option value = 'Vavuniya'/>
-                    </datalist>
+                <input type='text' className='border rounded-md p-3 lg:w-[300px] w-full' placeholder='Departure station or city' value={from} onChange={(e)=>setFrom(e.target.value)} />
             </div>
 
           <div className='w-full md:w-1/2 lg:w-1/2 '>
             <label for = 'to' className='py-3'>To</label><br/>
-            <input type='text' list='to' className='border rounded-md  p-3 lg:w-[300px] w-full' placeholder='Colombo Fort'
-                    value={to} onChange={(e)=>{setTo(e.target.value)}}
-            ></input>
-                <datalist id='to'>
-                <option value='Colombo Fort'/>
-                        <option value = 'Galle'/>
-                        <option value = 'Matara'/>
-                        <option value = 'Badulla'/>
-                        <option value = 'Hatton'/>
-                        <option value = 'Batticaloa'/>
-                        <option value = 'Vavuniya'/>
-            </datalist>
+            <input type='text' className='border rounded-md p-3 lg:w-[300px] w-full' placeholder='Arrival station or city' value={to} onChange={(e)=>setTo(e.target.value)} />
           </div>
 
           <div className='w-full md:w-1/2 lg:w-1/2'>
