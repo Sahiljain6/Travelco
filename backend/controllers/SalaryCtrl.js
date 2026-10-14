@@ -38,10 +38,11 @@ const getOneSalary = async (req,res)=>{
 const deleteSalary = async(req,res)=>{
     const id = req.params.id;
     console.log(id)
-    await Employee.findByIdAndDelete(id).then(()=>{
-        res.json("deleted")
-    }).catch((err)=>{
-        res.json(err.message)
+    await Salary.findByIdAndDelete(id).then((deleted)=>{
+        if (!deleted) return res.status(404).json({ message: "Salary record not found" });
+        return res.status(200).json({ message: "Salary record deleted" });
+    }).catch(()=>{
+        return res.status(500).json({ message: "Unable to delete salary record" });
     })
 
 }
