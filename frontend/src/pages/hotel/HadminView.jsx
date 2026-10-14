@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
+import { formatMoney } from "../../utils/globalTravel";
 import axios from "axios";
 import { Link, Navigate, useNavigate, useParams } from "react-router-dom";
+import { formatMoney } from "../../utils/globalTravel";
 import { useLocation } from "react-router-dom";
 import Swal from "sweetalert2";
 
@@ -120,7 +122,7 @@ const HadminView = () => {
             <div className="flex flex-col md:flex-row  py-4 justify-between lg:items-center">
               <div className="flex items-center">
                 <h1 className="font-bold text-2xl">
-                  Book a stay over Rs.{state.cheapestPrice}
+                  Book a stay over {formatMoney(state.cheapestPrice, state.currency || "USD")}
                 </h1>
                 <h1 className="ml-3 md:text-1xl">/per day</h1>
               </div>
