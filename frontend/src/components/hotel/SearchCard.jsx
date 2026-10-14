@@ -1,7 +1,6 @@
 import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
 import useFetch from "../../hooks/useFetch";
 import { formatMoney } from "../../utils/globalTravel";
-import { formatMoney } from "../../utils/globalTravel";
 
 
 const SearchCard = (item) => {
