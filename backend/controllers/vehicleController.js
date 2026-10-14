@@ -92,19 +92,18 @@ exports.getSpecificvehicle = async(req, res) => {
 
 //delete a specific vehicle by id (Reject a vehicle from pending collection) - vehicle admin
 exports.deleteVehicle = async (req, res) => {
-    const { id } = req.params;
     try {
-      const vehicle = await Vehicle.findByIdAndDelete(id);
-      if (!vehicle) {
-        res.status(404).send('Vehicle not found');
-      } else {
-        res.send(vehicle);
+      const vehicle = await Vehicle.findById(req.params.id);
+      if (!vehicle) return res.status(404).json({ message: "Vehicle not found" });
+      if (String(vehicle.userId) !== String(req.user) && req.authUser?.isAdmin !== true) {
+        return res.status(403).json({ message: "You can only delete your own vehicle listing" });
       }
-    } catch (err) {
-      res.status(500).send(err.message);
+      await vehicle.deleteOne();
+      return res.status(200).json({ message: "Vehicle listing deleted" });
+    } catch {
+      return res.status(400).json({ message: "Unable to delete vehicle listing" });
     }
   };
-
 
 //accept a vehicle by isAccepted change to true - vehicle admin
 exports.acceptVehicle = async(req, res) => {
