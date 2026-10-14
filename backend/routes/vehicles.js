@@ -3,7 +3,7 @@ const vehicleController = require("../controllers/vehicleController");
 const { userMiddleware, adminMiddleware } = require("../middleware/authMiddleware");
 
 router.route("/").post(userMiddleware, vehicleController.addVehicle).get(vehicleController.getAllVehicle);
-router.route("/:id").get(vehicleController.getSpecificvehicle).delete(adminMiddleware, vehicleController.deleteVehicle).patch(userMiddleware, vehicleController.updateVehicle);
+router.route("/:id").get(vehicleController.getSpecificvehicle).delete(userMiddleware, vehicleController.deleteVehicle).patch(userMiddleware, vehicleController.updateVehicle);
 router.route("/accept/:id").get(adminMiddleware, vehicleController.acceptVehicle);
 router.route("/myvehicles/:userId").get(userMiddleware, vehicleController.getMyVehicles);
 router.route("/get/:vehicleType/:location").get(vehicleController.getVehiclesByTypeAndLocation);
