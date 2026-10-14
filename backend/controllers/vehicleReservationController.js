@@ -28,7 +28,7 @@ exports.addReservation = async (req, res) => {
     }
     let amount = numberOfDays * Number(vehicle.price);
     if (req.body.needDriver === true || req.body.needDriver === "true") {
-      amount += numberOfDays * Number(process.env.DRIVER_DAILY_FEE || 25);
+      amount += numberOfDays * Math.max(0, Number(vehicle.driverDailyFee ?? process.env.DRIVER_DAILY_FEE ?? 0));
     }
 
     const newReservation = new Reservation({
@@ -40,6 +40,7 @@ exports.addReservation = async (req, res) => {
       pickupDate: req.body.pickupDate,
       returnDate: req.body.returnDate,
       price: amount,
+      currency: vehicle.currency || "USD",
       needDriver : req.body.needDriver,
       vehicleOwnerId: vehicle.userId,
       transactionId: uuidv4(),
