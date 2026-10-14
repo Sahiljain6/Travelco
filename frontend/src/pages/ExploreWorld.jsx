@@ -5,6 +5,21 @@ import WeatherSearchPanel from "../components/WeatherSearchPanel";
 
 const COUNTRIES_API = "https://restcountries.com/v3.1/all?fields=name,cca2,flags,capital,region,subregion,currencies,population,latlng";
 const CURRENCIES_API = "https://api.frankfurter.dev/v2/currencies";
+const getPreferredCurrency = () => {
+  const currencyByRegion = {
+    US: "USD", GB: "GBP", IN: "INR", LK: "LKR", AU: "AUD", CA: "CAD",
+    NZ: "NZD", JP: "JPY", CN: "CNY", SG: "SGD", ZA: "ZAR", CH: "CHF",
+    AE: "AED", BR: "BRL", MX: "MXN", KR: "KRW", TH: "THB", MY: "MYR",
+    ID: "IDR", PH: "PHP", TR: "TRY", SA: "SAR", NG: "NGN", PK: "PKR"
+  };
+  try {
+    const locale = Intl.DateTimeFormat().resolvedOptions().locale;
+    const region = locale.match(/[-_]([A-Z]{2})(?:$|[-_])/i)?.[1]?.toUpperCase();
+    return currencyByRegion[region] || "USD";
+  } catch {
+    return "USD";
+  }
+};
 
 const asCurrencyName = (country) => {
   const first = Object.entries(country.currencies || {})[0];
@@ -25,7 +40,7 @@ const ExploreWorld = () => {
   const [currencies, setCurrencies] = useState({});
   const [amount, setAmount] = useState("1");
   const [base, setBase] = useState("USD");
-  const [quote, setQuote] = useState("INR");
+  const [quote, setQuote] = useState(getPreferredCurrency);
   const [rate, setRate] = useState(null);
   const [rateDate, setRateDate] = useState("");
   const [rateLoading, setRateLoading] = useState(false);
