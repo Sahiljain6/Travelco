@@ -41,13 +41,16 @@ export const HotelSearchBar = () => {
     try {
       const response = await axios.get(`/hotels/get/${encodeURIComponent(city.trim())}`);
       const hotels = Array.isArray(response.data) ? response.data : [];
+      if (hotels.length === 0) {
+        setError("No approved hotels matched that location. Try a nearby city or country.");
+        return;
+      }
       navigate("/hotelhome", {
         state: {
           date: { checkInDate, checkOutDate },
           data: hotels,
         },
       });
-      if (hotels.length === 0) setError("No approved hotels matched that location. Try a nearby city or country.");
     } catch (requestError) {
       setError(requestError.response?.data?.message || "Unable to search hotels right now. Please try again.");
     } finally {
