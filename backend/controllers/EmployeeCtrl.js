@@ -1,70 +1,52 @@
-const Employee = require("../models/Employee")
+const Employee = require("../models/Employee");
 
-// add Employee
-const addEmployee = async(req,res)=>{
-    const newEmployee = new Employee({
-        ...req.body
-    })
+const addEmployee = async (req, res) => {
+  try {
+    const fields = ["Name", "Email", "Nic", "Eid", "Position", "BasicSalary", "Department"];
+    const data = Object.fromEntries(fields.filter((key) => req.body?.[key] !== undefined).map((key) => [key, req.body[key]]));
+    if (!data.Name || !data.Email) return res.status(400).json({ message: "Employee name and email are required" });
+    if (data.BasicSalary !== undefined && (!Number.isFinite(Number(data.BasicSalary)) || Number(data.BasicSalary) < 0)) {
+      return res.status(400).json({ message: "Basic salary must be a non-negative number" });
+    }
+    const employee = await Employee.create(data);
+    return res.status(201).json(employee);
+  } catch (error) {
+    return res.status(error.code === 11000 ? 409 : 400).json({ message: error.code === 11000 ? "Employee already exists" : "Unable to create employee" });
+  }
+};
 
-    await newEmployee.save().then(()=>{
-        res.json(newEmployee)
-    }).catch((err)=>{
-        res.json(err.message)
-    })
-}
+const getAllEmployees = async (req, res) => {
+  try { return res.status(200).json(await Employee.find().sort({ Name: 1 })); }
+  catch { return res.status(500).json({ message: "Unable to retrieve employees" }); }
+};
 
-// get all Employees
-const getAllEmployees = async(req,res)=>{
-    await Employee.find().then((Employee)=>{
-        res.json(Employee)
-    }).catch((err)=>{
-        res.json(err.message)
-    })
-}
+const getOneEmployee = async (req, res) => {
+  try {
+    const employee = await Employee.findById(req.params.id);
+    if (!employee) return res.status(404).json({ message: "Employee not found" });
+    return res.status(200).json(employee);
+  } catch { return res.status(400).json({ message: "Invalid employee ID" }); }
+};
 
-//get one Employee
-const getOneEmployee = async (req,res)=>{
-    const id = req.params.id;
-    console.log(id)
-    const singleEmployee = await Employee.findById(id).then((Employee)=>{
-        if (!Employee) return res.status(404).json({ message: "Employee not found" });
-        return res.status(200).json(Employee);
-    }).catch((err)=>{
-        res.json(err.message)
-    })
-}
+const deleteEmployee = async (req, res) => {
+  try {
+    const employee = await Employee.findByIdAndDelete(req.params.id);
+    if (!employee) return res.status(404).json({ message: "Employee not found" });
+    return res.status(200).json({ message: "Employee deleted" });
+  } catch { return res.status(400).json({ message: "Invalid employee ID" }); }
+};
 
-// delete Employee
-const deleteEmployee = async(req,res)=>{
-    const id = req.params.id;
-    console.log(id)
-    await Employee.findByIdAndDelete(id).then(()=>{
-        res.json("deleted")
-    }).catch((err)=>{
-        res.json(err.message)
-    })
+const updateEmployee = async (req, res) => {
+  try {
+    const fields = ["Name", "Email", "Nic", "Eid", "Position", "BasicSalary", "Department"];
+    const data = Object.fromEntries(fields.filter((key) => req.body?.[key] !== undefined).map((key) => [key, req.body[key]]));
+    if (data.BasicSalary !== undefined && (!Number.isFinite(Number(data.BasicSalary)) || Number(data.BasicSalary) < 0)) {
+      return res.status(400).json({ message: "Basic salary must be a non-negative number" });
+    }
+    const employee = await Employee.findByIdAndUpdate(req.params.id, data, { new: true, runValidators: true });
+    if (!employee) return res.status(404).json({ message: "Employee not found" });
+    return res.status(200).json({ status: "updated", employee });
+  } catch { return res.status(400).json({ message: "Unable to update employee" }); }
+};
 
-}
-
-// update Employee
-const updateEmployee = async (req,res)=>{
-    const id = req.params.id;
-
-    const {Name,Email,Nic,Eid,Position,BasicSalary,Department} = req.body;
-
-    const updatedEmployee = {Name,Email,Nic,Eid,Position,BasicSalary,Department}
-
-    await Employee.findByIdAndUpdate(id,updatedEmployee).then(()=>{
-        res.json({status:"Update"})
-    }).catch((err)=>{
-        res.json(err.message)
-    })
-}
-
-module.exports ={
-    addEmployee,
-    getAllEmployees,
-    getOneEmployee,
-    deleteEmployee,
-    updateEmployee
-}
+module.exports = { addEmployee, getAllEmployees, getOneEmployee, deleteEmployee, updateEmployee };
