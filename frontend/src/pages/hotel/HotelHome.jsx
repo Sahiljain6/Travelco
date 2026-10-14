@@ -1,40 +1,41 @@
-import React, { useContext } from "react";
-import Navbar from "../../components/navbar/Navbar";
-import Footer from "../../components/footer/Footer";
+import React from "react";
+import { useLocation } from "react-router-dom";
 import { HotelHero } from "../../components/hotel/HotelHero";
 import { HotelSearchBar } from "../../components/hotel/HotelSearchBar";
 import HotelCard from "../../components/hotel/HotelCard";
-import { useLocation } from "react-router-dom";
-import { Link } from "react-router-dom";
 import SearchCard from "../../components/hotel/SearchCard";
-import { AuthContext } from "../../context/authContext";
 
 export const HotelHome = () => {
   const location = useLocation();
-  const {data, date} = location.state ?? {};
-  
+  const state = location.state || {};
+  const date = state.date;
 
   return (
-    <div>
+    <main className="min-h-screen">
       <HotelHero />
       <HotelSearchBar />
-      {data?.map((item) => (
-        <SearchCard
-        name={item.name}
-        city={item.city}
-        cheapestPrice={item.cheapestPrice}
-        HotelImg={item.HotelImg}
-        _id= {item._id}
-        date={date}
-        />
-      
-        
-      ))}
-      <h1 className="ml-10 mt-5  md:text-2xl  font-bold   text-[#272727]">
-        Hotels guests love
-      </h1>
+      {Array.isArray(state.data) && state.data.length > 0 && (
+        <section aria-label="Hotel search results" className="mt-8">
+          <h1 className="ml-6 text-xl font-bold text-slate-900 sm:ml-10 md:text-2xl">Search results</h1>
+          {state.data.map((item) => (
+            <SearchCard
+              key={item._id}
+              name={item.name}
+              city={item.city}
+              country={item.country}
+              currency={item.currency}
+              cheapestPrice={item.cheapestPrice}
+              HotelImg={item.HotelImg}
+              _id={item._id}
+              date={date}
+            />
+          ))}
+        </section>
+      )}
+      <h2 className="ml-6 mt-8 text-xl font-bold text-slate-900 sm:ml-10 md:text-2xl">Hotels guests love</h2>
       <HotelCard />
-      
-    </div>
+    </main>
   );
 };
+
+export default HotelHome;

@@ -180,6 +180,15 @@ const Admin = () => {
             Other
           </Link>
         </div>
+        <div className="lg:px-32 px-8 pt-8">
+          <Link
+            to="/admin/contact-messages"
+            className="block rounded-xl border border-blue-100 bg-white p-6 font-bold text-slate-900 shadow-sm transition hover:border-blue-300 hover:bg-blue-50"
+          >
+            Contact Messages
+            <span className="mt-2 block text-sm font-normal text-slate-600">Read user enquiries, reply by email, update status, or remove spam.</span>
+          </Link>
+        </div>
         <div className="flex flex-row col-span-2 lg:px-32 px-8 pt-8 justify-between items-stretch gap-10">
           <div className="p-10 flex-1  rounded-lg font-bold shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)]">
             <ResponsiveContainer width="100%" height="100%">

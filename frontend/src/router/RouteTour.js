@@ -68,6 +68,7 @@ import Hotellist from "../pages/Hotellist";
 import Tourlist from "../pages/Tourlist";
 import Trainlist from "../pages/Trainlist";
 import ContactUs from "../pages/ContactUs";
+import ContactMessages from "../pages/ContactMessages";
 import HotelBook from "../pages/hotel/HotelBook";
 import ResetPassword from "../pages/ResetPassword";
 import Tourreservations from "../pages/Tourreservations";
@@ -207,6 +208,7 @@ const RouteTour = () => {
       <Route path="/festival" element={<AllTourCategories />} />
 
       <Route path="/contactus" element={<ContactUs />} />
+      <Route path="/admin/contact-messages" element={<ProtectedRoute><ContactMessages /></ProtectedRoute>} />
 
       {/* Hansika */}
       <Route path="/add-new-activity" element={<ActivityForm />} />

@@ -1,98 +1,88 @@
-import React, { useState, useEffect } from "react";
-import { formatMoney } from "../../utils/globalTravel";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Link, useParams } from "react-router-dom";
-import { useLocation } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import { formatMoney } from "../../utils/globalTravel";
 import { BASE_URL } from "../../utils/config";
 
-const HotelOverview = () => {
-  const [data, setData] = useState([]);
+const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1200&q=80";
 
+const toLocalDateInput = (date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
+const createDefaultStay = () => {
+  const checkIn = new Date();
+  checkIn.setDate(checkIn.getDate() + 1);
+  const checkOut = new Date(checkIn);
+  checkOut.setDate(checkOut.getDate() + 1);
+  return { checkInDate: toLocalDateInput(checkIn), checkOutDate: toLocalDateInput(checkOut) };
+};
+
+const hotelImageUrl = (image) => {
+  if (!image) return FALLBACK_IMAGE;
+  if (image.startsWith("http://") || image.startsWith("https://")) return image;
+  let configuredBase = BASE_URL;
+  while (configuredBase.endsWith("/")) configuredBase = configuredBase.slice(0, -1);
+  const apiBase = configuredBase.endsWith("/api") ? configuredBase : `${configuredBase}/api`;
+  return `${apiBase}/hotels/images/${image}`;
+};
+
+const HotelOverview = () => {
+  const [data, setData] = useState(null);
+  const [loadError, setLoadError] = useState("");
   const { id } = useParams();
+  const navigate = useNavigate();
 
   useEffect(() => {
-    axios
-      .get(`/hotels/find/${id}`)
+    let active = true;
+    axios.get(`/hotels/find/${id}`)
       .then((response) => {
-        setData(response.data);
-        console.log(data.HotelImg);
+        if (active && response.data) setData(response.data);
+        else if (active) setLoadError("This hotel is no longer available.");
       })
-      .catch((err) => {
-        console.log(err);
+      .catch((error) => {
+        if (active) setLoadError(error.response?.data?.message || "Unable to load this hotel.");
       });
-  }, []);
+    return () => { active = false; };
+  }, [id]);
+
+  const bookNow = () => navigate(`/hotel/${id}`, { state: createDefaultStay() });
+
+  if (loadError) return <main className="mx-auto max-w-3xl px-4 py-16 text-red-700">{loadError}</main>;
+  if (!data) return <main className="mx-auto max-w-6xl px-4 py-16 text-slate-600">Loading hotel details…</main>;
 
   return (
-    <div>
-      <div className="lg:p-24 ">
-        <h1 className="ml-18 md:ml-20 lg:ml-20 text-center lg:text-left py-5 font-bold text-3xl">
-              {data.name} {data.type}
-            </h1>
-        <div className="flex justify-center items-center w-full flex-col lg:flex-row pt-12 lg:pt-0">
-          <img
-            src={data.HotelImg?.startsWith("http") ? data.HotelImg : `${BASE_URL}hotels/images/${data.HotelImg}`}
-            alt="Hotel Image"
-            className=" w-[320px] md:w-[700px]  lg:w-[800px] rounded-lg mb-10"
-          />
-
-          <div className="lg:px-24">
-            
-            <h1 className="text-center md:text-left py-5 font-bold text-1.5xl">
-              {data.title}
-            </h1>
-            <p className="max-w-[320px] md:max-w-[700px] lg:max-w-[600px] text-justify">
-              {data.description}
-            </p>
-            <div className="flex items-center">
-              <h1 className="font-bold py-5">City : </h1>
-              <h1 className="px-4">{data.city}</h1>
-            </div>
-
-            
-
-            <div className="flex flex-col md:flex-row py-4">
-              <h1 className="text-[#41A4FF]">Free Cancellation available</h1>
-            </div>
-
-            <div className="flex flex-col md:flex-row py-4">
-              <h1 className="text-[#636363]">
-                {" "}
-                Excellent location – {data.distance} Km from {data.city}
-              </h1>
-            </div>
-
-            <div className="flex"></div>
-
-            <div className="flex flex-col md:flex-row  py-4 justify-between lg:items-center">
-              <div className="flex items-center">
-                <h1 className="font-bold text-2xl">
-                  Book a stay over {formatMoney(data.cheapestPrice, data.currency || "USD")}
-                </h1>
-                <h1 className="ml-3 md:text-1xl">/per day</h1>
+    <main className="min-h-screen bg-white">
+      <section className="mx-auto max-w-7xl px-4 py-8 sm:px-8 lg:py-12">
+        <div className="grid items-start gap-8 lg:grid-cols-[1.15fr_0.85fr]">
+          <div>
+            <img src={hotelImageUrl(data.HotelImg)} onError={(event) => { event.currentTarget.onerror = null; event.currentTarget.src = FALLBACK_IMAGE; }} alt={data.name ? `${data.name} hotel` : "Hotel"} className="max-h-[560px] w-full rounded-2xl object-cover shadow-sm" />
+            {Array.isArray(data.HotelImgs) && data.HotelImgs.length > 0 && (
+              <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
+                {data.HotelImgs.map((image, index) => <img key={image || index} src={hotelImageUrl(image)} onError={(event) => { event.currentTarget.onerror = null; event.currentTarget.src = FALLBACK_IMAGE; }} alt={`${data.name || "Hotel"} photo ${index + 1}`} loading="lazy" className="h-36 w-full rounded-xl object-cover" />)}
               </div>
+            )}
+          </div>
+          <div className="rounded-2xl border border-slate-200 p-6 shadow-sm sm:p-8">
+            <p className="text-sm font-bold uppercase tracking-widest text-blue-600">{data.type || "Accommodation"}</p>
+            <h1 className="mt-2 text-3xl font-bold text-slate-950">{data.name}</h1>
+            <p className="mt-2 text-slate-600">{[data.city, data.country].filter(Boolean).join(", ")}</p>
+            <h2 className="mt-6 text-xl font-semibold text-slate-900">{data.title}</h2>
+            <p className="mt-3 leading-7 text-slate-700">{data.description}</p>
+            {data.distance && <p className="mt-4 text-sm text-slate-500">Approximately {data.distance} from the city centre.</p>}
+            <div className="mt-6">
+              <p className="text-2xl font-bold text-slate-950">{formatMoney(data.cheapestPrice, data.currency || "USD")} <span className="text-sm font-normal text-slate-500">/ night</span></p>
+              <p className="mt-2 text-sm text-slate-500">Prices are estimates until the room and stay dates are confirmed.</p>
             </div>
-            
+            <button type="button" onClick={bookNow} className="mt-6 w-full rounded-xl bg-blue-600 px-5 py-4 font-bold text-white transition hover:bg-blue-700">Book now</button>
           </div>
         </div>
-        
-      </div>
-      <h1 className="text-center lg:text-left py-5 font-bold text-2xl ml-10">
-              Images of our hotel
-            </h1>
-      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4 mb-10">
-  {data.HotelImgs &&
-    data.HotelImgs.map((image, index) => (
-      <img
-        src={`http://localhost:5000/api/hotels/images/${image}`}
-        alt={`Hotel Image ${index}`}
-        key={index}
-        class="ml-10 w-64 h-64 rounded-lg mb-2"
-      />
-    ))}
-</div>
-
-    </div>
+      </section>
+    </main>
   );
-}; 
+};
 
 export default HotelOverview;

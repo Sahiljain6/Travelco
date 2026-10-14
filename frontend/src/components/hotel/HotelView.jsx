@@ -1,154 +1,149 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import axios from "axios";
-import { Link, useNavigate, useParams } from "react-router-dom";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { AuthContext } from "../../context/authContext";
 import HotelReserve from "./HotelReserve";
 import { formatMoney } from "../../utils/globalTravel";
 import { BASE_URL } from "../../utils/config";
 
+const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1200&q=80";
+
+const toLocalDateInput = (date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
+const createDefaultStay = () => {
+  const checkIn = new Date();
+  checkIn.setDate(checkIn.getDate() + 1);
+  const checkOut = new Date(checkIn);
+  checkOut.setDate(checkOut.getDate() + 1);
+  return { checkInDate: toLocalDateInput(checkIn), checkOutDate: toLocalDateInput(checkOut) };
+};
+
+const hotelImageUrl = (image) => {
+  if (!image) return FALLBACK_IMAGE;
+  if (image.startsWith("http://") || image.startsWith("https://")) return image;
+  let configuredBase = BASE_URL;
+  while (configuredBase.endsWith("/")) configuredBase = configuredBase.slice(0, -1);
+  const apiBase = configuredBase.endsWith("/api") ? configuredBase : `${configuredBase}/api`;
+  return `${apiBase}/hotels/images/${image}`;
+};
+
 const HotelView = () => {
-
-  const [data, setData] = useState([]);
-  const location = useLocation();
-  const date= location.state;
- 
-  console.log(date)
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
+  const [openBook, setOpenBook] = useState(false);
   const { id } = useParams();
-  const {user}=useContext(AuthContext);
+  const location = useLocation();
+  const { user } = useContext(AuthContext);
   const navigate = useNavigate();
-  const [open, setOpen] = useState(false);
-  const [openBook,setOpenBook]=useState(false);
 
-  const checkInDate = new Date(date.checkInDate);
-const checkOutDate = new Date(date.checkOutDate);
- console.log(user)
- 
+  const suppliedStay = location.state;
+  const fallbackStay = createDefaultStay();
+  const stay = suppliedStay?.checkInDate && suppliedStay?.checkOutDate
+    && suppliedStay.checkOutDate > suppliedStay.checkInDate
+    ? suppliedStay
+    : fallbackStay;
 
-  const miliseconds_per_day = 1000 * 60 * 60 * 24;
-
-  function dayDifference(date1,date2){
-    const timeDifference=Math.abs(date2.getTime()-date1.getTime());
-    const differenceDays=Math.ceil(timeDifference/miliseconds_per_day);
-    return differenceDays;
-  }
-
-    
-  const day_difference=(dayDifference(checkInDate,checkOutDate))
-  console.log(day_difference)
-
-  
+  const start = new Date(`${stay.checkInDate}T00:00:00Z`);
+  const end = new Date(`${stay.checkOutDate}T00:00:00Z`);
+  const calculatedNights = Math.round((end.getTime() - start.getTime()) / 86400000);
+  const dayDifference = Number.isFinite(calculatedNights) && calculatedNights > 0 ? calculatedNights : 1;
 
   useEffect(() => {
-    axios
-      .get(`/hotels/find/${id}`)
+    let active = true;
+    setLoading(true);
+    axios.get(`/hotels/find/${id}`)
       .then((response) => {
+        if (!active) return;
+        if (!response.data) throw new Error("This hotel is not available anymore.");
         setData(response.data);
-        console.log(data.HotelImg);
-      
       })
-      .catch((err) => {
-        console.log(err);
+      .catch((error) => {
+        if (active) setLoadError(error.response?.data?.message || error.message || "Unable to load this hotel.");
+      })
+      .finally(() => {
+        if (active) setLoading(false);
       });
-  }, []);
+    return () => { active = false; };
+  }, [id]);
 
-  const handleClick = () => {
-    if(user){{setOpenBook(true)}
-
-
-
+  const handleReserve = () => {
+    if (!user) {
+      navigate("/login", { state: { from: location.pathname } });
+      return;
     }
-    else{
-      navigate("/login");
+    setOpenBook(true);
+  };
 
-    }
-  }
+  if (loading) return <main className="mx-auto max-w-6xl px-4 py-16 text-slate-600">Loading hotel details…</main>;
+  if (loadError || !data) return (
+    <main className="mx-auto max-w-3xl px-4 py-16">
+      <section className="rounded-2xl border border-red-200 bg-red-50 p-6 text-red-800">
+        <h1 className="text-xl font-bold">Hotel unavailable</h1>
+        <p className="mt-2">{loadError || "This hotel could not be found."}</p>
+        <button type="button" onClick={() => navigate("/hotelhome")} className="mt-4 rounded-lg bg-blue-600 px-4 py-2 font-semibold text-white">Browse hotels</button>
+      </section>
+    </main>
+  );
 
   return (
-    <div>
-      <div className="lg:p-24 ">
-        <h1 className="ml-18 md:ml-20 lg:ml-20 text-center lg:text-left py-5 font-bold text-3xl">
-              {data.name} {data.type}
-            </h1>
-        <div className="flex justify-center items-center w-full flex-col lg:flex-row pt-12 lg:pt-0">
-          <img
-            src={data.HotelImg?.startsWith("http") ? data.HotelImg : `${BASE_URL}hotels/images/${data.HotelImg}`}
-            alt="Hotel Image"
-            className=" w-[320px] md:w-[700px]  lg:w-[800px] rounded-lg mb-10"
-          />
-
-          <div className="lg:px-24">
-            
-            <h1 className="text-center md:text-left py-5 font-bold text-1.5xl">
-              {data.title}
-            </h1>
-            <p className="max-w-[320px] md:max-w-[700px] lg:max-w-[600px] text-justify">
-              {data.description}
-            </p>
-            <div className="flex items-center">
-              <h1 className="font-bold py-5">City : </h1>
-              <h1 className="px-4">{data.city}</h1>
-            </div>
-
-            <div className="flex flex-col md:flex-row">
-              <div className="flex items-center">
-                <h1 className="font-bold">checkIn Date :</h1>
-                <h1 className="px-4">{date.checkInDate}</h1>
-              </div>
-
-              <div className="flex items-center lg:px-8">
-                <h1 className="font-bold">checkout Date</h1>
-                <h1 className="px-4">{date.checkOutDate}</h1>
-              </div>
-            </div>
-
-            <div className="flex flex-col md:flex-row py-4">
-              <h1 className="text-[#41A4FF] font-semibold">Perfect for a {day_difference} night stay!</h1>
-            </div>
-
-            <div className="flex flex-col md:flex-row py-4">
-              <h1 className="text-[#636363]">
-                {" "}
-                Excellent location – {data.distance}Km from {data.city}
-              </h1>
-            </div>
-
-            <div className="flex"></div>
-
-            <div className="flex flex-col md:flex-row  py-4 justify-between lg:items-center">
-              <div className="flex items-center">
-                <h1 className="font-bold text-2xl">
-                  Book a stay over {formatMoney(data.cheapestPrice * day_difference, data.currency || "USD")}
-                </h1>
-                <h1 className="ml-3 md:text-1xl">/for {day_difference} days</h1>
-              </div>
-            </div>
-            
-              <button onClick={handleClick} className="bg-[#41A4FF] text-white rounded-md lg:ml-8 font-bold p-3 my-5 lg:my-0 w-full md:w-[350px] md:my-0 lg:w-[300px] ">
-                Reserve now
-              </button>
-            
+    <main className="min-h-screen bg-white">
+      <section className="mx-auto max-w-7xl px-4 py-8 sm:px-8 lg:py-12">
+        <button type="button" onClick={() => navigate("/hotelhome")} className="mb-6 text-sm font-semibold text-blue-700 hover:underline">← Back to hotels</button>
+        <div className="grid items-start gap-8 lg:grid-cols-[1.15fr_0.85fr]">
+          <div>
+            <img
+              src={hotelImageUrl(data.HotelImg)}
+              onError={(event) => { event.currentTarget.onerror = null; event.currentTarget.src = FALLBACK_IMAGE; }}
+              alt={data.name ? `${data.name} hotel` : "Hotel"}
+              className="max-h-[560px] w-full rounded-2xl object-cover shadow-sm"
+            />
+            {Array.isArray(data.HotelImgs) && data.HotelImgs.length > 0 && (
+              <>
+                <h2 className="mt-8 text-xl font-bold text-slate-900">More photos</h2>
+                <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
+                  {data.HotelImgs.map((image, index) => (
+                    <img key={image || index} src={hotelImageUrl(image)} onError={(event) => { event.currentTarget.onerror = null; event.currentTarget.src = FALLBACK_IMAGE; }} alt={`${data.name || "Hotel"} photo ${index + 1}`} loading="lazy" className="h-36 w-full rounded-xl object-cover" />
+                  ))}
+                </div>
+              </>
+            )}
           </div>
+          <section className="rounded-2xl border border-slate-200 p-6 shadow-sm sm:p-8">
+            <p className="text-sm font-bold uppercase tracking-widest text-blue-600">{data.type || "Accommodation"}</p>
+            <h1 className="mt-2 text-3xl font-bold text-slate-950">{data.name}</h1>
+            <p className="mt-2 text-slate-600">{[data.city, data.country].filter(Boolean).join(", ")}</p>
+            <p className="mt-5 leading-7 text-slate-700">{data.description || data.title}</p>
+            {data.distance && <p className="mt-4 text-sm text-slate-500">Approximately {data.distance} from the city centre.</p>}
+            <div className="mt-6 rounded-xl bg-slate-50 p-4">
+              <p className="text-sm text-slate-600">Your selected stay</p>
+              <p className="mt-1 font-semibold text-slate-900">{stay.checkInDate} to {stay.checkOutDate}</p>
+              <p className="mt-1 text-sm text-slate-600">{dayDifference} night(s)</p>
+            </div>
+            <p className="mt-6 text-2xl font-bold text-slate-950">{formatMoney(Number(data.cheapestPrice || 0) * dayDifference, data.currency || "USD")} <span className="text-sm font-normal text-slate-500">estimated from / {dayDifference} night(s)</span></p>
+            <button type="button" onClick={handleReserve} className="mt-6 w-full rounded-xl bg-blue-600 px-5 py-4 font-bold text-white transition hover:bg-blue-700">
+              Reserve now
+            </button>
+            <p className="mt-3 text-xs leading-5 text-slate-500">You can review available rooms before submitting your reservation request. Travelco payment processing is not enabled yet.</p>
+          </section>
         </div>
-        
-      </div>
-      <h1 className="text-center lg:text-left py-5 font-bold text-2xl ml-10">
-              Images of our hotel
-            </h1>
-      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4 mb-10">
-  {data.HotelImgs &&
-    data.HotelImgs.map((image, index) => (
-      <img
-        src={`http://localhost:5000/api/hotels/images/${image}`}
-        alt={`Hotel Image ${index}`}
-        key={index}
-        class="ml-10 w-64 h-64 rounded-lg mb-2"
-      />
-    ))}
-</div>
-      { openBook &&  <HotelReserve setOpen={setOpenBook} hotelId={id} checkInDate={date.checkInDate} checkOutDate={date.checkOutDate} date_difference={day_difference} currency={data.currency || "USD"}/>}
-
-    </div>
+      </section>
+      {openBook && (
+        <HotelReserve
+          setOpen={setOpenBook}
+          hotelId={id}
+          checkInDate={stay.checkInDate}
+          checkOutDate={stay.checkOutDate}
+          date_difference={dayDifference}
+          currency={data.currency || "USD"}
+        />
+      )}
+    </main>
   );
 };
 

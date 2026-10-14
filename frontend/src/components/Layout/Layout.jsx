@@ -13,6 +13,7 @@ const Layout = () => {
   // to render the alternative Navbar or the default Navbar
   const showAdminNavbar =
     location.pathname === "/admin" ||
+    location.pathname === "/admin/contact-messages" ||
     location.pathname === "/users" ||
     location.pathname === "/hotels" ||
     location.pathname === "/tours" ||

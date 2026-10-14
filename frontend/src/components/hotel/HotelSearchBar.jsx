@@ -1,105 +1,87 @@
-import React,{ useContext, useEffect, useState }  from 'react'
-import { useLocation, useNavigate} from 'react-router-dom';
+import React, { useState } from "react";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
-import { FontAwesomeIcon } from "@fortawesome/fontawesome-free";
-import {
- 
-  faCalendarDays,
- 
-} from "@fortawesome/fontawesome-free";
+const toLocalDateInput = (date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
 
-import useFetch from '../../hooks/useFetch';
+const addDays = (value, amount) => {
+  const date = value ? new Date(`${value}T12:00:00`) : new Date();
+  date.setDate(date.getDate() + amount);
+  return toLocalDateInput(date);
+};
 
-export const HotelSearchBar = ({type}) => {
-
-
-
-
-
-  const [city, setDestination] = useState("");
-  const [Hoteltype, setHotelType] = useState("");
+export const HotelSearchBar = () => {
+  const navigate = useNavigate();
+  const [city, setCity] = useState("");
   const [checkInDate, setCheckInDate] = useState("");
   const [checkOutDate, setCheckOutDate] = useState("");
+  const [searching, setSearching] = useState(false);
+  const [error, setError] = useState("");
 
-  console.log(city)
-  const currentDate = new Date().toISOString().split('T')[0]; // Get current date in yyyy-mm-dd format
-  const tomorrowDate = new Date(new Date().getTime() + 24 * 60 * 60 * 1000).toISOString().split('T')[0]; //get tomorrow date
-  const [searchClicked, setSearchClicked] = useState(false);
-  
-  const date = {checkInDate, checkOutDate}
+  const today = toLocalDateInput(new Date());
+  const minCheckOut = checkInDate ? addDays(checkInDate, 1) : addDays(today, 1);
 
-  const {data} = useFetch(`hotels/get/${encodeURIComponent(city)}`)
-
-    
-
-    const navigate = useNavigate();
-    const location = useLocation();
-    
-
-
-  
-
-  
-  useEffect(() => {
-    search();
-    if (searchClicked && data ) {
-      navigate('/hotelhome', { state: { date, data } });
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setError("");
+    if (!city.trim()) {
+      setError("Enter a city or country to search for hotels.");
+      return;
     }
-  }, [data, navigate, date]);
-
-  const search = () => {
-    if (checkInDate && checkOutDate) {
-      setSearchClicked(true);
+    if (!checkInDate || !checkOutDate || checkOutDate <= checkInDate) {
+      setError("Choose a valid check-in date and a check-out date at least one day later.");
+      return;
+    }
+    setSearching(true);
+    try {
+      const response = await axios.get(`/hotels/get/${encodeURIComponent(city.trim())}`);
+      const hotels = Array.isArray(response.data) ? response.data : [];
+      if (hotels.length === 0) {
+        setError("No approved hotels matched that location. Try a nearby city or country.");
+        return;
+      }
+      navigate("/hotelhome", {
+        state: {
+          date: { checkInDate, checkOutDate },
+          data: hotels,
+        },
+      });
+    } catch (requestError) {
+      setError(requestError.response?.data?.message || "Unable to search hotels right now. Please try again.");
+    } finally {
+      setSearching(false);
     }
   };
- 
- 
 
   return (
-    <div className="bg-white mt-4 lg:mt-[0px] px-8 shadow-lg max-w-[1240px]  p-4 lg:text-left text-center h-full  items-center   mx-auto rounded-lg">
-      <form className="flex flex-col lg:flex-row justify-between px-4">
-      <div className='flex flex-col'>
-          
-         
-          </div>
-        <div className="flex flex-col ">
-          <label for="Location" className="py-3 ml-5">
-            Location
-          </label>
-          <input
-            type="text"
-            className="border rounded-md  p-3 lg:w-[300px] w-full"
-            placeholder="Where are you going?"
-            onChange={(e) => setDestination(e.target.value)}
-          ></input>
-        </div>
-       
-
+    <section className="mx-auto mt-4 w-full max-w-7xl rounded-2xl border border-slate-100 bg-white px-4 py-5 shadow-lg sm:px-6 lg:px-8">
+      <form onSubmit={handleSubmit} className="grid grid-cols-1 items-end gap-4 md:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_auto]">
         <div className="flex flex-col">
-          <label for="checkInDate" className="py-3 ml-5">
-            Check-In Date
-          </label>
-          <input
-            type="date"
-            min={currentDate} 
-            className="border rounded-md p-3 w-full"
-            onChange={(e)=> setCheckInDate(e.target.value)}
-          />
+          <label htmlFor="hotel-destination" className="mb-2 font-medium text-slate-900">Location</label>
+          <input id="hotel-destination" type="text" required maxLength={120} value={city} onChange={(event) => setCity(event.target.value)} placeholder="Where are you going?" autoComplete="off" className="w-full rounded-lg border border-slate-300 p-3 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" />
         </div>
-
         <div className="flex flex-col">
-          <label for="returnDate" className="py-3 ml-5">
-            Check-Out Date
-          </label>
-          <input type="date" className="border rounded-md p-3 w-full"
-          min={tomorrowDate}
-          onChange={(e)=> setCheckOutDate(e.target.value)} />
+          <label htmlFor="hotel-check-in" className="mb-2 font-medium text-slate-900">Check-in date</label>
+          <input id="hotel-check-in" type="date" required min={today} value={checkInDate} onChange={(event) => {
+            const nextDate = event.target.value;
+            setCheckInDate(nextDate);
+            if (checkOutDate && checkOutDate <= nextDate) setCheckOutDate("");
+          }} className="w-full rounded-lg border border-slate-300 p-3 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" />
         </div>
-
-        <div className="lg:w-24 flex items-center w-full">
-         
+        <div className="flex flex-col">
+          <label htmlFor="hotel-check-out" className="mb-2 font-medium text-slate-900">Check-out date</label>
+          <input id="hotel-check-out" type="date" required min={minCheckOut} value={checkOutDate} onChange={(event) => setCheckOutDate(event.target.value)} className="w-full rounded-lg border border-slate-300 p-3 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" />
         </div>
+        <button type="submit" disabled={searching} className="min-h-[48px] rounded-lg bg-blue-600 px-6 py-3 font-bold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60">
+          {searching ? "Searching…" : "Search hotels"}
+        </button>
       </form>
-    </div>
-  )
-}
+      {error && <p role="alert" className="mt-3 text-sm text-red-700">{error}</p>}
+    </section>
+  );
+};
