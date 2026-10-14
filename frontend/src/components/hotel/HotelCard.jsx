@@ -19,7 +19,7 @@ const HotelCard = () => {
                 key={item.id}
               >
                 <img
-                  src={`hotels/images/${item.HotelImg}`}
+                  src={item.HotelImg?.startsWith("http") ? item.HotelImg : `hotels/images/${item.HotelImg}`}
                   alt=""
                   className="w-full object-cover h-64"
                 />
