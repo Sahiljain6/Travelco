@@ -5,6 +5,7 @@ import { Link, Navigate, useNavigate, useParams } from "react-router-dom";
 import { formatMoney } from "../../utils/globalTravel";
 import { useLocation } from "react-router-dom";
 import Swal from "sweetalert2";
+import { BASE_URL } from "../../utils/config";
 
 const HadminView = () => {
 
