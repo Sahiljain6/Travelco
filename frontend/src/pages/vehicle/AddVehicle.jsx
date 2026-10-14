@@ -4,6 +4,7 @@ import axios from 'axios';
 import Swal from 'sweetalert2'
 import { useContext } from "react";
 import { AuthContext } from "../../context/authContext";
+import { getPreferredCurrency, supportedCurrencies } from "../../utils/globalTravel";
 
 const AddVehicle = () => {
 
@@ -35,6 +36,7 @@ const AddVehicle = () => {
   const [transmissionType, setTransmissionType] = useState('Auto');
   const [fuelType, setFuelType] = useState('Petrol');
   const [rentPrice, setRentPrice] = useState('');
+  const [currency, setCurrency] = useState(getPreferredCurrency);
   const [insuranceImgs, setInsuranceImgs] = useState([]); // [img1, img2, img3]
   const [vehicleMainImg, setVehicleMainImg] = useState('');
   const [vehicleImgs, setVehicleImgs] = useState([]);
@@ -64,6 +66,7 @@ const AddVehicle = () => {
   formData.append('transmissionType', transmissionType);
   formData.append('fuelType', fuelType);
   formData.append('price', rentPrice);
+  formData.append('currency', currency);
   formData.append('description', description);
 
   for(let i = 0; i < insuranceImgs.length; i++){
@@ -163,7 +166,11 @@ const AddVehicle = () => {
           <label htmlFor="cover-photo" className="block text-sm font-medium leading-6 text-gray-900">
                 Rent Price
               </label>
-          <input type='number' className='border rounded-lg w-full p-2 mb-6 mt-2' placeholder='Price in the listing currency' onChange={(e) => setRentPrice(e.target.value) } required/>
+          <input type='number' min='0.01' step='0.01' className='border rounded-lg w-full p-2 mb-3 mt-2' placeholder='Price in the selected currency' onChange={(e) => setRentPrice(e.target.value) } required/>
+          <label className='block text-sm font-medium text-gray-900'>Listing Currency</label>
+          <select className='border rounded-lg w-full p-2 mb-6 mt-2' value={currency} onChange={(e) => setCurrency(e.target.value)} required>
+            {supportedCurrencies.map((code) => <option key={code} value={code}>{code}</option>)}
+          </select>
 
           <label htmlFor="cover-photo" className="block text-sm font-medium leading-6 text-gray-900">
                 Description
