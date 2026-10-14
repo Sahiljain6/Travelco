@@ -145,7 +145,7 @@ const checkOutDate = new Date(date.checkOutDate);
       />
     ))}
 </div>
-      { openBook &&  <HotelReserve setOpen={setOpenBook} hotelId={id} checkInDate={date.checkInDate} checkOutDate={date.checkOutDate} date_difference={day_difference}/>}
+      { openBook &&  <HotelReserve setOpen={setOpenBook} hotelId={id} checkInDate={date.checkInDate} checkOutDate={date.checkOutDate} date_difference={day_difference} currency={data.currency || "USD"}/>}
 
     </div>
   );
