@@ -66,7 +66,6 @@ const HotelReserve = ({ setOpen, hotelId, checkInDate, checkOutDate, date_differ
         checkOutDate
       });
       setOpen(false);
-      await window?.scrollTo?.(0, 0);
       navigate("/hotelhome", { state: { reservation: response.data.reservation } });
     } catch (requestError) {
       setError(requestError.response?.data?.message || "Unable to reserve these rooms. Please refresh availability and try again.");
