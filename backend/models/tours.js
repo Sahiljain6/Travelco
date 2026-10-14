@@ -22,6 +22,11 @@ const addTourForm = new Schema({
     type: Number,
     required: [true, "must provide a price"],
   },
+  currency: {
+    type: String,
+    enum: ["USD","EUR","GBP","INR","LKR","AUD","CAD","NZD","JPY","CNY","SGD","ZAR","CHF","AED","BRL","MXN","KRW","THB","MYR","IDR","PHP","TRY","SAR","NGN","PKR"],
+    default: "USD",
+  },
   groupCount: {
     type: Number,
     required: [true, "must provide a Group Count"],
