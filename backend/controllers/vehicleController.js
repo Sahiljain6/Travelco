@@ -145,23 +145,30 @@ exports.getMyVehicles = async(req, res) => {
 //edit a specific vehicle details - vehicle owner 
 exports.updateVehicle = async (req, res) => {
   const { id } = req.params;
-  const  update = { price, description, location } = req.body;
-  update.isAccepted = false; 
-
-  try {
-    const updatedVehicle = await Vehicle.findByIdAndUpdate(id, update, { new: true });    //may be wrong
-    
-    if (!updatedVehicle) {
-      res.status(404).send('Vehicle not found');
+  const { price, description, location } = req.body || {};
+  const update = {};
+  if (price !== undefined) {
+    const numericPrice = Number(price);
+    if (!Number.isFinite(numericPrice) || numericPrice <= 0) {
+      return res.status(400).json({ message: "Price must be a positive number" });
     }
-
-    res.send(updatedVehicle);
+    update.price = numericPrice;
+  }
+  if (description !== undefined) update.description = String(description).slice(0, 3000);
+  if (location !== undefined && String(location).trim()) update.location = String(location).trim().slice(0, 180);
+  update.isAccepted = false;
+  try {
+    const vehicle = await Vehicle.findById(id);
+    if (!vehicle) return res.status(404).json({ message: "Vehicle not found" });
+    if (String(vehicle.userId) !== String(req.user) && req.authUser?.isAdmin !== true) {
+      return res.status(403).json({ message: "You can only edit your own vehicle listing" });
+    }
+    const updatedVehicle = await Vehicle.findByIdAndUpdate(id, update, { new: true, runValidators: true });
+    return res.status(200).json(updatedVehicle);
   } catch (err) {
-    res.status(500).send(err.message);
+    return res.status(500).json({ message: "Unable to update vehicle" });
   }
 };
-
-
 
 exports.availableVehicles = async (req, res) => {
 
