@@ -52,7 +52,7 @@ const Userlist = ({ columns }) => {
     doc.text("User Details Report", 14, 23);
     doc.text(`Report Generated Date: ${dateStr}`, 14, 30);
     doc
-      .text("Traverly.co,Whihara mavatha,Kaduwela,Sri lanka", 14, 37)
+      .text("Travelco · Global Travel Platform", 14, 37)
       .setFontSize(10);
 
     doc.autoTable(tableColumn, tableRows, {
