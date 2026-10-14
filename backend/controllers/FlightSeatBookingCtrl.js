@@ -3,12 +3,13 @@ const axios = require("axios");
 
 // get all the selected flights   -- search
 const searchFlight = async (req,res)=>{
-    const from = req.body.from;
-    const to = req.body.to;
-    const travelclass = req.body.travelclass;
-    const depatureDate =  req.body.depatureDate;
-    const returnDate = req.body.returnDate;
-    const passengerCount = req.body.passengerCount;
+    const input = req.query || req.body || {};
+    const from = input.from;
+    const to = input.to;
+    const travelclass = input.travelclass;
+    const depatureDate = input.depatureDate;
+    const returnDate = input.returnDate;
+    const passengerCount = input.passengerCount;
 
     if (!process.env.SKYSCANNER_RAPIDAPI_KEY) {
         return res.status(503).json({ message: "Flight search is not configured on this server" });
