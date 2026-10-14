@@ -116,7 +116,7 @@ const checkOutDate = new Date(date.checkOutDate);
             <div className="flex flex-col md:flex-row  py-4 justify-between lg:items-center">
               <div className="flex items-center">
                 <h1 className="font-bold text-2xl">
-                  Book a stay over Rs.{data.cheapestPrice *day_difference}
+                  Book a stay over {formatMoney(data.cheapestPrice * day_difference, data.currency || "USD")}
                 </h1>
                 <h1 className="ml-3 md:text-1xl">/for {day_difference} days</h1>
               </div>
