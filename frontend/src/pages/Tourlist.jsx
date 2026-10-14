@@ -37,8 +37,8 @@ const Tourlist = ({ columns }) => {
           tour.groupCount,
           tour.currentUser,
 
-          moment(tour.createdAt).format("MM/DD/YYYY h:mm A"), // format createdAt using moment
-          moment(tour.updatedAt).format("MM/DD/YYYY h:mm A"), // format updatedAt using moment
+          moment(tour.createdAt).format("YYYY-MM-DD HH:mm"), // format createdAt using moment
+          moment(tour.updatedAt).format("YYYY-MM-DD HH:mm"), // format updatedAt using moment
         ];
         tableRows.push(ticketData);
       });
