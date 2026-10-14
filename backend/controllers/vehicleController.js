@@ -156,6 +156,11 @@ exports.updateVehicle = async (req, res) => {
   }
   if (description !== undefined) update.description = String(description).slice(0, 3000);
   if (location !== undefined && String(location).trim()) update.location = String(location).trim().slice(0, 180);
+  if (req.body.currency !== undefined) {
+    const currency = String(req.body.currency).toUpperCase();
+    if (!["USD","EUR","GBP","INR","LKR","AUD","CAD","NZD","JPY","CNY","SGD","ZAR","CHF","AED","BRL","MXN","KRW","THB","MYR","IDR","PHP","TRY","SAR","NGN","PKR"].includes(currency)) return res.status(400).json({ message: "Unsupported listing currency" });
+    update.currency = currency;
+  }
   update.isAccepted = false;
   try {
     const vehicle = await Vehicle.findById(id);
