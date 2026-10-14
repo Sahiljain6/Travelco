@@ -163,7 +163,7 @@ const AddVehicle = () => {
           <label htmlFor="cover-photo" className="block text-sm font-medium leading-6 text-gray-900">
                 Rent Price
               </label>
-          <input type='number' className='border rounded-lg w-full p-2 mb-6 mt-2' placeholder='12500' onChange={(e) => setRentPrice(e.target.value) } required/>
+          <input type='number' className='border rounded-lg w-full p-2 mb-6 mt-2' placeholder='Price in the listing currency' onChange={(e) => setRentPrice(e.target.value) } required/>
 
           <label htmlFor="cover-photo" className="block text-sm font-medium leading-6 text-gray-900">
                 Description
@@ -172,17 +172,9 @@ const AddVehicle = () => {
           <div className='mb-6 text-[#41A4FF]'>{countWords(description)}/300</div>
 
           <label htmlFor="cover-photo" className="block text-sm font-medium leading-6 text-gray-900"> Location </label>
-          <input type='text' list='city' className='border rounded-lg w-full p-2 mb-6 mt-2' placeholder='Colombo' onChange={(e) => setLocation(e.target.value) } required/>
+          <input type='text' list='city' className='border rounded-lg w-full p-2 mb-6 mt-2' placeholder='City, region, country or airport' onChange={(e) => setLocation(e.target.value) } required/>
 
-          <datalist id='city'>
-            
-            <option value='Colombo'></option>
-            <option value='Galle'></option>
-            <option value='Kandy'></option>
-            <option value='Jaffna'></option>
-            <option value='Matara'></option>
-            <option value='Negombo'></option>
-          </datalist>
+          
 
           
           <label for className='lg:text-lg text-left'>Insurance Images</label>
