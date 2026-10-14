@@ -5,6 +5,7 @@ import React, { useState, useEffect } from "react";
 import { formatMoney } from "../../utils/globalTravel";
 import { Link, useParams } from "react-router-dom";
 import { useNavigate,useLocation } from "react-router-dom";
+import { BASE_URL } from "../../utils/config";
 
 const VehicleBook = () => {
   const { state } = useLocation();
