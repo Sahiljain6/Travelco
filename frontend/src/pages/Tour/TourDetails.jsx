@@ -254,7 +254,7 @@ const TourDetails = () => {
               <div className="flex flex-row pl-10 pt-2 pr-2 space-x-3 mb-4">
                 <p className="text-xl font-bold">Cities:</p>
                 <p className="text-xl  mb-0   text-blue-500">
-                  {allTours.cities}
+                  {[allTours.cities, allTours.country].filter(Boolean).join(" · ")}
                 </p>
               </div>
 
