@@ -167,7 +167,7 @@ const loginUser = async (req, res) => {
     return res
       .cookie("access_token", token, cookieOptions)
       .status(200)
-      .json({ details: { ...publicUser(user), isAdmin: user.isAdmin === true }, isAdmin: user.isAdmin === true });
+      .json({ details: { ...publicUser(user), isAdmin: user.isAdmin === true }, isAdmin: user.isAdmin === true, token });
   } catch (error) {
     console.error("Login error:", error.message);
     return res.status(500).json({ message: "Unable to sign in right now. Please try again." });

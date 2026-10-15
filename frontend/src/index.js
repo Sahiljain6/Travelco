@@ -22,6 +22,18 @@ axios.interceptors.request.use((config) => {
     if (cleanUrl.startsWith("api/")) cleanUrl = cleanUrl.slice(4);
     config.url = `${API_BASE}/${cleanUrl}`;
   }
+
+  // Cookies remain the primary session mechanism. Send the short-lived tab session token as a fallback
+  // only to Travelco's configured API, for browsers that block cross-site cookies.
+  const sessionToken = sessionStorage.getItem("travelcoAccessToken");
+  if (sessionToken && config.url && config.url.startsWith(API_BASE)) {
+    config.headers = config.headers || {};
+    if (typeof config.headers.set === "function") {
+      config.headers.set("Authorization", `Bearer ${sessionToken}`);
+    } else {
+      config.headers.Authorization = `Bearer ${sessionToken}`;
+    }
+  }
   return config;
 });
 
