@@ -1,5 +1,5 @@
 ﻿import React, { useEffect, useState, useContext } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import HeroTour from "./HeroTour";
 import TourNav from "../../components/navbar/TourNav";
 import { AiFillStar } from "react-icons/ai";
@@ -9,9 +9,11 @@ import InclusionExclusion from "../../components/Tour/InclusionExclusion";
 import { AuthContext } from "../../context/authContext";
 import Swal from "sweetalert2";
 import axios from "axios";
+import { formatMoney } from "../../utils/globalTravel";
 
 const TourDetails = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
 
   const [firstName, setFname] = useState("");
   const [lastName, setLname] = useState("");
@@ -35,10 +37,16 @@ const TourDetails = () => {
   }, [id]);
   //get email of current user
   const { user } = useContext(AuthContext);
-  const currentUser = user.email;
+  const currentUser = user?.email;
 
   const inputHandler = async (e) => {
     e.preventDefault();
+
+    if (!user) {
+      Swal.fire({ icon: "info", title: "Sign in to reserve", text: "Please sign in before requesting this tour booking." });
+      navigate("/login");
+      return;
+    }
 
     if (
       firstName === "" ||
@@ -230,7 +238,7 @@ const TourDetails = () => {
                 <div>
                   <p className="text-lg p-2 font-bold ">Starting From</p>
                   <p className="p-3 ml-10 text-blue-600  text-5xl">
-                    <span className="font-semibold">${allTours.price}</span>
+                    <span className="font-semibold">{formatMoney(allTours.price, allTours.currency || "USD")}</span>
                     <span className="text-sm text-black">/Per Person</span>
                   </p>
                 </div>
