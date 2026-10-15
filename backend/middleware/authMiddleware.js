@@ -4,9 +4,10 @@ const User = require("../models/userModel");
 const getToken = (req) => {
   const header = req.headers.authorization;
   const bearer = typeof header === "string" && header.startsWith("Bearer ")
-    ? header.slice(7)
+    ? header.slice(7).trim()
     : null;
-  return (req.cookies && req.cookies.access_token) || bearer;
+  // Prefer an explicitly supplied bearer token so a stale cookie cannot mask a valid session fallback.
+  return bearer || (req.cookies && req.cookies.access_token) || null;
 };
 
 const authenticate = async (req, res) => {
