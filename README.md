@@ -1,237 +1,255 @@
-# Travelco 🌍✈️ — Comprehensive Tourism & Travel Management System
+# Travelco 🌍✈️ — Travel & Tourism Management Platform
 
-## Global destination and currency support
+Travelco is a full-stack travel and tourism web application that brings trip planning and booking workflows together in one place. Travelers can explore destinations and listings, while administrators can manage services, customer requests, and operational workflows.
 
-Travelco is designed for international destination discovery rather than a Sri Lanka-only website. Hotel listings can carry a country and listing currency; vehicle and tour listings can carry an explicit currency; destination search accepts city/country text; and prices are formatted with locale-aware currency formatting. The Explore World page includes a global country directory and indicative currency conversion.
+<p align="left">
+  <a href="https://travelxco.netlify.app/"><img src="https://img.shields.io/badge/Live%20Demo-Open%20Travelco-0A7EA4?style=for-the-badge&logo=netlify" alt="Live demo"></a>
+  <img src="https://img.shields.io/badge/Frontend-React%2018-61DAFB?style=for-the-badge&logo=react" alt="React 18">
+  <img src="https://img.shields.io/badge/Backend-Node.js%20%2B%20Express-339933?style=for-the-badge&logo=nodedotjs" alt="Node.js and Express">
+  <img src="https://img.shields.io/badge/Database-MongoDB-47A248?style=for-the-badge&logo=mongodb" alt="MongoDB">
+</p>
 
-The development seed contains sample listings in Sri Lanka, France, Japan, and South Africa to demonstrate multi-country data. These are **development/demo listings**, not verified real-world inventory. Never run the destructive seed script against production.
+> **Live application:** [travelxco.netlify.app](https://travelxco.netlify.app/)  
+> **Repository:** [Sahiljain6/Travelco](https://github.com/Sahiljain6/Travelco)
 
-Global discovery UI does not itself guarantee live inventory in every country. Train availability depends on records configured in the Travelco database; flight search requires a valid server-side `SKYSCANNER_RAPIDAPI_KEY`. Payment, tax, refund, and currency settlement behavior must be integrated and tested with the actual providers used in each market.
+## Contents
 
-## Security notes for deployment
+- [Overview](#overview)
+- [Features](#features)
+- [Technology Stack](#technology-stack)
+- [Architecture](#architecture)
+- [Project Structure](#project-structure)
+- [Run Locally](#run-locally)
+- [Environment Configuration](#environment-configuration)
+- [Roles and Access](#roles-and-access)
+- [Deployment](#deployment)
+- [Security and Production Notes](#security-and-production-notes)
+- [Roadmap](#roadmap)
+- [License](#license)
 
-- Use a long, random `JWT` secret and configure it only in the backend host environment.
-- Set `SKYSCANNER_RAPIDAPI_KEY` on the backend if flight search is enabled. Do not put provider secrets in React environment variables.
-- A flight-provider key was previously committed in source. **Revoke/rotate that key in the provider dashboard**; removing it from current source does not remove it from Git history.
-- Configure `CORS_ORIGINS`, SMTP, MongoDB, Cloudinary, and public map keys for the deployed domains.
-- Business account roles should be granted through an authenticated approval process; public registration creates traveler accounts.
-- Run the GitHub Actions build and syntax checks, then test authorization with anonymous, traveler, business-owner, and administrator accounts before launch.
+## Overview
 
+Travelco uses the MERN stack (MongoDB, Express.js, React, and Node.js) to provide a central platform for travel discovery and booking-related workflows. It includes destination, tour, accommodation, transport, restaurant, and activity modules, together with administrative tools for managing listings and service operations.
 
-[![Live Demo](https://img.shields.io/badge/Live%20Demo-travelxco.netlify.app-blue?style=for-the-badge&logo=netlify)](https://travelxco.netlify.app/)
-[![MERN Stack](https://img.shields.io/badge/Stack-MERN-green?style=for-the-badge&logo=mongodb)](https://github.com/Sahiljain6/Travelco)
-[![Node.js](https://img.shields.io/badge/Node.js-18.x-brightgreen?style=for-the-badge&logo=node.js)](https://nodejs.org/)
-[![React](https://img.shields.io/badge/React-18.x-61DAFB?style=for-the-badge&logo=react)](https://reactjs.org/)
+The interface supports international destination discovery. Listing records can include country and currency information, and prices can be formatted using locale-aware currency formatting. Sample listings across multiple countries are for demonstration and development only; they should not be interpreted as verified, bookable real-world inventory.
 
-**Travelco** is a modern, full-stack enterprise travel and tourism platform built using the **MERN (MongoDB, Express.js, React.js, Node.js)** architecture. It unifies tour packages, hotel reservations, vehicle rentals, train/flight seat bookings, restaurant table reservations, and special activity bookings into a single ecosystem with role-based administrative workflows, financial health tracking, and real-time messaging.
+## Features
 
----
+### Traveler experience
 
-## 🌐 Live Deployments
+- **Authentication:** registration and sign-in, JWT-based protected routes, and password recovery workflows.
+- **Hotels and rooms:** browse listings, review details and amenities, and follow room reservation workflows.
+- **Vehicle rentals:** explore vehicles and submit date-range bookings.
+- **Tours:** browse packages and itineraries, with options to submit custom tour requests.
+- **Trains and flights:** search configured schedules, select seats where supported, manage passenger details, and generate printable ticket PDFs.
+- **Restaurants:** filter listings by location or cuisine and use table reservation workflows.
+- **Activities and events:** discover special activities and submit booking requests.
+- **International discovery:** country and destination browsing with listing-level location and currency fields.
+- **Customer support:** submit enquiries and use in-app messaging features where configured.
 
-- **Frontend Application:** [https://travelxco.netlify.app/](https://travelxco.netlify.app/)
-- **Backend API Service:** Deployed on [Railway](https://railway.app/)
-- **Database:** [MongoDB Atlas](https://www.mongodb.com/cloud/atlas) Multi-Cloud Cluster
+### Administration and operations
 
----
+- Manage hotel, room, vehicle, and tour listings.
+- Review customer enquiries and special-activity requests.
+- Manage user and role-related workflows.
+- View financial-health and payroll dashboards.
+- Review refund requests and track operational records.
 
-## 🏗️ System Architecture
+### Platform capabilities
 
-Travelco follows a decoupled **Client-Server Architecture** communicating over a RESTful API and WebSocket channels:
+- REST API built with Express.
+- Real-time messaging using Socket.IO.
+- Image uploads with Cloudinary integration and local fallbacks where configured.
+- Email workflows using Nodemailer and SMTP.
+- PDF ticket and invoice generation using jsPDF.
+- Data visualization using Recharts and administrative tables using MUI Data Grid.
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                    CLIENT LAYER (Frontend)                  │
-│  React 18 SPA • React Router v6 • Tailwind CSS • Context API │
-│  Hosted on Netlify (CDN Edge)                               │
-└──────────────────────────────┬──────────────────────────────┘
-                               │ HTTPS (REST) / WSS (Socket.io)
-                               ▼
-┌─────────────────────────────────────────────────────────────┐
-│                    SERVER LAYER (Backend)                   │
-│  Node.js • Express.js REST API • JWT Auth • Socket.io Engine │
-│  Hosted on Railway                                          │
-└──────────────┬──────────────────────────────┬───────────────┘
-               │                              │
-               ▼                              ▼
-┌──────────────────────────────┐┌─────────────────────────────┐
-│       DATABASE LAYER         ││      EXTERNAL SERVICES      │
-│  MongoDB Atlas (Cloud DB)    ││  Cloudinary (Image Storage) │
-│  Mongoose ODM (27+ Models)   ││  Nodemailer (Email Service) │
-└──────────────────────────────┘└─────────────────────────────┘
-```
+Feature availability depends on application configuration, database records, and external-provider credentials. The README does not imply that every provider-backed feature or real-world booking is enabled in every deployment.
 
----
+## Technology Stack
 
-## 💡 How the MERN Stack is Implemented
-
-### 1. 🍃 MongoDB (Data Layer)
-- **ODM:** Uses **Mongoose** for data modeling, schema validation, and lifecycle hooks.
-- **Relational Integrity in NoSQL:** References across collections via `ObjectId` (e.g., Rooms referencing Hotels, Reservations referencing Users and Vehicles).
-- **27+ Schemas & Collections:**
-  - `User`, `Hotel`, `Room`, `HotelReservation`
-  - `Vehicle`, `VehicleReservation`
-  - `Tour`, `TourBook`, `TourCustomForm`
-  - `Train`, `SeatBooking`, `FlightSeatBooking`
-  - `Restaurant`, `RestaurantType`, `RestaurantDistrict`, `RestaurantReservation`, `RestaurantRate`
-  - `SpecialActivity`, `SpecialActivityType`, `Reservation`
-  - `Employee`, `Salary`, `FinanceHealth`, `Refund`
-  - `Chat`, `Message`
-
-### 2. ⚡ Express.js (API & Middleware Layer)
-- **Modular REST Routing:** Separation of concerns using dedicated route handlers for every domain (`/api/auth`, `/api/hotels`, `/api/train`, `/api/vehicle`, `/api/tours`, etc.).
-- **Security & Session Handling:**
-  - `jsonwebtoken (JWT)` authentication tokens for protected routes.
-  - Custom `verifyToken` middleware checking authentication and role authorization (`isAdmin`, `financeManager`).
-  - `bcryptjs` password hashing with salt generation.
-  - CORS middleware allowing secure cross-origin communication between Netlify and the backend API.
-- **Payload Handling:** `body-parser` and `express.json` with 50MB limit to handle media and document payloads.
-- **Static Asset Serving:** Express static file endpoints for local image fallbacks.
-
-### 3. ⚛️ React.js (Presentation Layer)
-- **Component Hierarchy:** Modular and reusable component architecture (Navbar, AdminNavbar, Sidebar, Datatables, Hero components, Search bars).
-- **Global State Management:** React `Context API` (`AuthContext`) managing user login sessions, roles, and token storage across page reloads using browser storage.
-- **Routing & Protected Views:** `react-router-dom` v6 for Single-Page Application (SPA) navigation with client-side route guards.
-- **Design & UI System:**
-  - **Tailwind CSS** & **Material Tailwind** for responsive layouts.
-  - **SweetAlert2** & **React Hot Toast** for interactive user feedback.
-  - **MUI (Material UI)** & `@mui/x-data-grid` for administrative data tables.
-  - **Recharts** for visual financial health dashboards and salary charts.
-  - **jsPDF & jspdf-autotable** for client-side invoice and ticket PDF generation.
-
-### 4. 🚀 Node.js (Runtime & Real-Time Engine)
-- Asynchronous, event-driven runtime handling concurrent booking transactions.
-- **Socket.io Integration:** Embedded WebSocket server directly on the Express HTTP instance enabling live bidirectional chat communication between clients and support agents.
-
----
-
-## 📦 Core Modules & Services
-
-### 1. 🔐 User & Authentication Service
-- Multi-role registration (Traveler, Admin, Finance Manager).
-- Cloudinary profile picture uploads with automatic URL generation.
-- Secure login with JWT issuing and password encryption.
-- Forgot/Reset password workflow via token verification.
-
-### 2. 🏖️ Tour Package Management
-- Tour package exploration with destination filters, duration, and price points.
-- Itinerary details with inclusion/exclusion breakdown.
-- Custom tour request forms tailored to customer preferences.
-
-### 3. 🏨 Hotel & Room Reservation
-- Multi-hotel directory with amenities, ratings, and location filters.
-- Real-time room availability calendar and selection.
-- Room booking with dynamic price computation.
-
-### 4. 🚗 Vehicle Reservation System
-- Fleet catalog (Sedans, SUVs, Vans, Luxury) with rental pricing and specs.
-- Date-range reservation engine with automated total calculation.
-
-### 5. 🚆 Train & Flight Booking System
-- Train schedule lookup with class options (1st, 2nd, 3rd class).
-- Interactive seat selection and passenger details management.
-- Instant printable ticket generation in PDF format.
-
-### 6. 🍽️ Restaurant Reservation
-- Filtering restaurants by district, cuisine type, and operational hours.
-- Table reservation system with slot management and user ratings.
-
-### 7. 🎯 Special Activities & Events
-- Outdoor activities, safaris, and adventure bookings.
-- Administrative review and approval workflow for event requests.
-
-### 8. 📊 Finance, Payroll & Refunds
-- Comprehensive financial health tracking (revenue vs. expenses).
-- Employee payroll calculation and automated salary sheet generation.
-- Customer refund request intake with administrative approval/rejection.
-
-### 9. 💬 Real-Time Chat System
-- One-on-one and administrative messaging powered by Socket.io.
-
----
-
-## 🛠️ Technology Stack Overview
-
-| Category | Technology |
+| Area | Technologies |
 |---|---|
-| **Frontend** | React 18, React Router v6, Tailwind CSS, Material Tailwind, MUI DataGrid, Axios |
-| **Backend** | Node.js, Express.js, Socket.io, Multer, Nodemailer, Bcrypt.js, JWT |
-| **Database** | MongoDB Atlas, Mongoose ODM |
-| **Cloud Storage** | Cloudinary API |
-| **Reporting & Export** | jsPDF, JSPDF-AutoTable, Recharts |
-| **Deployment** | Netlify (Frontend), Railway (Backend & API) |
+| Frontend | React 18, React Router v6, Axios, Tailwind CSS, Material Tailwind, Material UI / MUI Data Grid |
+| Backend | Node.js, Express.js, Socket.IO, Multer, Nodemailer |
+| Authentication | JSON Web Tokens (JWT), bcryptjs |
+| Database | MongoDB, Mongoose ODM |
+| Media | Cloudinary and configured local-upload support |
+| Reports and charts | jsPDF, jspdf-autotable, Recharts |
+| Hosting | Netlify frontend; Railway backend/API (as currently documented) |
 
----
+## Architecture
 
-## ⚙️ Local Development Setup
+Travelco follows a client-server architecture. The React single-page application communicates with the Express API over HTTP and with the Socket.IO service for real-time messaging.
+
+```text
+┌──────────────────────────────┐
+│        React Frontend        │
+│   React Router / UI modules  │
+│     Hosted on Netlify        │
+└──────────────┬───────────────┘
+               │ REST API / Socket.IO
+               ▼
+┌──────────────────────────────┐
+│       Node.js Backend        │
+│    Express API + JWT auth    │
+│      Hosted on Railway       │
+└────────┬───────────┬─────────┘
+         │           │
+         ▼           ▼
+┌────────────────┐ ┌────────────────────┐
+│ MongoDB Atlas  │ │ External services   │
+│ Mongoose models│ │ Cloudinary / SMTP   │
+└────────────────┘ └────────────────────┘
+```
+
+### Main data domains
+
+The backend contains models for users, hotels and rooms, reservations, vehicles, tours, train and flight bookings, restaurants, special activities, employees, salaries, financial records, refunds, chats, and messages. Refer to the source tree for the current model and route names.
+
+## Project Structure
+
+The repository includes the frontend, backend, and project documentation. A simplified overview:
+
+```text
+Travelco/
+├── backend/       # Express API, models, controllers, routes and middleware
+├── frontend/      # React application and UI components
+├── Charter/       # Project charter documents
+├── Proposal/      # Project proposal
+├── Final Report/  # Project report
+├── Procfile       # Process definition for supported hosts
+├── nixpacks.toml  # Nixpacks build configuration
+├── netlify.toml   # Netlify configuration
+└── LICENSE
+```
+
+Exact folders may change as the project evolves.
+
+## Run Locally
 
 ### Prerequisites
-- [Node.js](https://nodejs.org/) (v18 recommended)
-- [Git](https://git-scm.com/)
-- [MongoDB Atlas](https://www.mongodb.com/) account or local MongoDB instance
 
-### 1. Clone the Repository
+- [Node.js](https://nodejs.org/) (version 18 recommended)
+- [Git](https://git-scm.com/)
+- A [MongoDB Atlas](https://www.mongodb.com/atlas) cluster or local MongoDB instance
+
+### 1. Clone the repository
+
 ```bash
 git clone https://github.com/Sahiljain6/Travelco.git
 cd Travelco
 ```
 
-### 2. Configure Backend
+### 2. Install and start the backend
+
 ```bash
 cd backend
 npm install
 ```
 
-Create a `.env` file in the `backend/` directory:
-```env
-PORT=5000
-MONGO_URI=your_mongodb_connection_string
-JWT_SECRET=your_jwt_secret_key
-```
+Create a `.env` file in the `backend/` directory and add the configuration required by the backend (see [Environment Configuration](#environment-configuration)). Then start the server using the script defined by the backend package:
 
-Start the backend:
 ```bash
-npm run dev     # Starts with nodemon for development
-# OR
-npm start       # Starts standard Node process
+npm run dev
 ```
 
-### 3. Configure Frontend
-Open a new terminal:
+If the project does not define a `dev` script in your current checkout, inspect `backend/package.json` and use its available development or start script. The API commonly uses port `5000`, subject to the configured `PORT`.
+
+### 3. Install and start the frontend
+
+Open another terminal:
+
 ```bash
 cd frontend
 npm install
 ```
 
-Create a `.env` file in the `frontend/` directory (optional for local):
+Create `frontend/.env` if needed:
+
 ```env
 REACT_APP_API_URL=http://localhost:5000/api
 ```
 
-Start the React development server:
+Start the frontend:
+
 ```bash
 npm start
 ```
-The application will launch at `http://localhost:3000`.
 
----
+The React development server typically opens at [http://localhost:3000](http://localhost:3000). Confirm the actual scripts and required environment variables in the relevant package files if your branch differs.
 
-## 🔒 Environment Variables Reference
+## Environment Configuration
 
-### Backend (`backend/.env`)
-| Variable | Description |
+Never commit secrets, access tokens, or production `.env` files. Configure secrets in your local environment or hosting provider's secret/settings dashboard.
+
+### Backend variables
+
+The backend may use the following variables, depending on the enabled modules:
+
+| Variable | Purpose |
 |---|---|
-| `PORT` | Listening port for Express (Default: `5000`) |
-| `MONGO_URI` | MongoDB Atlas or local connection URI |
-| `JWT_SECRET` | Secret key used to sign and verify JSON Web Tokens |
+| `PORT` | Port for the Express server (commonly `5000`) |
+| `MONGO_URI` | MongoDB connection URI |
+| `JWT_SECRET` or the secret name used by the current backend | Secret for signing/verifying JWTs; check the authentication code for the exact name |
+| `FRONTEND_URL` | Public frontend URL used in links or email workflows |
+| `CORS_ORIGINS` | Allowed frontend origins, where supported |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE` | SMTP server configuration |
+| `SMTP_USER`, `SMTP_PASS`, `MAIL_FROM` | SMTP authentication and sender details |
+| `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` | Cloudinary media uploads |
+| `SKYSCANNER_RAPIDAPI_KEY` | Optional flight search provider key, if flight search is enabled |
+| `OPENWEATHER_API_KEY` | Weather integration, if enabled |
+| `DRIVER_DAILY_FEE` | Optional driver-related fee for vehicle bookings, if supported by the backend |
 
-### Frontend (`frontend/.env` or Netlify Environment)
-| Variable | Description |
+Use the exact variable names expected by your current code and any provided `.env.example`. Do not copy example values into production without verifying them.
+
+### Frontend variables
+
+| Variable | Purpose |
 |---|---|
-| `REACT_APP_API_URL` | Base URL of the deployed backend API (e.g., `https://your-railway-app.up.railway.app/api`) |
-| `CI` | Set to `false` for CI build runners (configured in `netlify.toml`) |
+| `REACT_APP_API_URL` | Base URL for the backend API |
+| `REACT_APP_MAPTILER_API_KEY` | Optional map tile key, if maps are enabled |
 
----
+Create or update frontend environment variables before building the app. In Create React App, `REACT_APP_*` values are embedded into the browser bundle and are **not secret**. Never place private provider credentials in frontend variables.
 
-## 📄 License
-This project is licensed under the ISC License.
+## Roles and Access
+
+The app documents traveler and administrative workflows, including finance-related permissions. Public registration should create a standard traveler account; privileged roles should only be granted through a secure, authorized process.
+
+Before release, verify permissions for each role against the actual backend middleware and routes. Do not grant administrative access by exposing a public endpoint or by trusting role values supplied by the browser.
+
+## Deployment
+
+The current project documentation identifies:
+
+- **Frontend:** Netlify — [travelxco.netlify.app](https://travelxco.netlify.app/)
+- **Backend/API:** Railway
+- **Database:** MongoDB Atlas
+
+Deployment settings can change independently of the source code. Configure the deployed frontend's API base URL, backend environment variables, CORS allowlist, database networking, and any external service credentials in the corresponding provider dashboards.
+
+After a deployment, test sign-in, API connectivity, media upload, email workflows, booking validation, role-based access, and any provider-dependent features. Confirm the frontend and backend URLs and health checks in the hosting dashboards rather than relying on local development settings.
+
+## Security and Production Notes
+
+- Use a long, unique JWT signing secret and store it only in backend environment settings.
+- A flight-provider key was previously committed in source. **Revoke or rotate it in the provider dashboard.** Removing a key from the latest source does not remove it from Git history.
+- Keep MongoDB credentials, SMTP passwords, Cloudinary secrets, and third-party API keys out of source control and frontend bundles.
+- Restrict CORS to the expected frontend origins and configure secure cookies or token handling according to the application's authentication design.
+- Ensure server-side validation and authorization for bookings, totals, refunds, and administrative actions.
+- Development/demo listings are not verified real-world inventory. Do not run destructive seed scripts against production data.
+- The deployment described by prior project notes may not have HTTPS configured end-to-end. Verify the live setup and enable HTTPS before processing real customer information.
+- Run the repository's available build checks and tests, then manually verify anonymous, traveler, business-owner (if enabled), finance, and administrator access paths.
+
+## Roadmap
+
+- [ ] Verify and document the current production deployment and HTTPS configuration.
+- [ ] Add or expand automated tests for booking validation and authorization.
+- [ ] Add a CI pipeline for repeatable build and syntax checks.
+- [ ] Review and document external provider integrations and their limitations.
+- [ ] Improve frontend code splitting and initial-load performance.
+- [ ] Complete production payment, refund, tax, and currency-settlement integrations before enabling real transactions.
+
+## License
+
+This project includes a `LICENSE` file. Check that file for the governing license; the README and repository metadata should agree on the license designation.
