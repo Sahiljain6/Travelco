@@ -7,6 +7,7 @@ import axios from "axios";
 import { AuthContext } from "../../../context/authContext";
 import { uploadImage } from "../../../utils/uploadImage";
 import { useLocation } from "react-router-dom";
+import { supportedCurrencies } from "../../../utils/globalTravel";
 
 const AddTourPackage = () => {
   useEffect(() => {
@@ -26,6 +27,8 @@ const AddTourPackage = () => {
   const [languages, setLanguages] = useState(tourDetails.languages);
   const [duration, setDuration] = useState(tourDetails.duration);
   const [cities, setCities] = useState(tourDetails.cities);
+  const [country, setCountry] = useState(tourDetails.country || "");
+  const [currency, setCurrency] = useState(tourDetails.currency || "USD");
   const [description, setDesc] = useState(tourDetails.description);
   const [introduction, setIntroduction] = useState(tourDetails.introduction);
   const { user } = useContext(AuthContext);
@@ -59,10 +62,12 @@ const AddTourPackage = () => {
               name,
               category,
               price,
+              currency,
               groupCount,
               languages,
               duration,
               cities,
+              country,
               description,
               introduction,
             }
@@ -228,6 +233,16 @@ const AddTourPackage = () => {
                   />
                 </div>
               </div>
+              <div className="sm:col-span-3">
+                <label htmlFor="currency" className="block text-lg font-medium leading-6 text-gray-900">
+                  Price currency
+                </label>
+                <div className="mt-2">
+                  <select id="currency" name="currency" value={currency} onChange={(e) => setCurrency(e.target.value)} className="block w-full rounded-md border-0 px-3 py-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300">
+                    {supportedCurrencies.map((code) => <option key={code} value={code}>{code}</option>)}
+                  </select>
+                </div>
+              </div>
               {/* select group size */}
               <div className="sm:col-span-3">
                 <label
@@ -313,11 +328,10 @@ const AddTourPackage = () => {
                   htmlFor="places"
                   className="block text-lg font-medium leading-6 text-gray-900"
                 >
-                  Cities That included in your package
+                  Cities or places included in your package
                 </label>
                 <p className="text-sm">
-                  (Type cities in visiting order (if you are starting in colombo
-                  and then you wish to travel to galle type colombo, Galle))
+                  (Enter cities in visiting order, including the country when helpful; e.g. Tokyo, Kyoto)
                 </p>
                 <div className="mt-2">
                   <input
@@ -331,6 +345,15 @@ const AddTourPackage = () => {
                       setCities(e.target.value);
                     }}
                   />
+                </div>
+              </div>
+              <div className="col-span-full">
+                <label htmlFor="tour-country" className="block text-lg font-medium leading-6 text-gray-900">
+                  Country or countries
+                </label>
+                <p className="text-sm text-gray-600">Add the country covered by this itinerary, for example Japan or Switzerland. This makes country searches more accurate.</p>
+                <div className="mt-2">
+                  <input id="tour-country" name="country" type="text" maxLength={120} value={country} onChange={(e) => setCountry(e.target.value)} placeholder="e.g. Japan" className="block w-full rounded-md border-0 px-3 py-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300" />
                 </div>
               </div>
             </div>
