@@ -199,8 +199,8 @@ const AddTourPackage = () => {
                     </option>
                     <option value={"wild safari"}>Wild Safari</option>
                     <option value={"special tours"}>Special Tour</option>
-                    <option vlaue={"cultural"}>Cultural</option>
-                    <option values={"festival"}>Festival</option>
+                    <option value={"cultural"}>Cultural</option>
+                    <option value={"festival"}>Festival</option>
                   </select>
                 </div>
               </div>
