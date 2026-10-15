@@ -45,6 +45,7 @@ export const AuthContextProvider = ({ children }) => {
     } catch (error) {
       // Clear the local session even if the API is temporarily unavailable.
     } finally {
+      sessionStorage.removeItem("travelcoAccessToken");
       dispatch({ type: "LOGOUT" });
     }
   };
