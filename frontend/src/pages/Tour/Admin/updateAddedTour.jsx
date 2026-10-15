@@ -81,10 +81,12 @@ const AddTourPackage = () => {
               name,
               category,
               price,
+              currency,
               groupCount,
               languages,
               duration,
               cities,
+              country,
               description,
               introduction,
             }
