@@ -42,6 +42,13 @@ const addTourForm = new Schema({
   cities: {
     type: String,
     required: [true, "must provide a cities"],
+    trim: true,
+  },
+  country: {
+    type: String,
+    trim: true,
+    default: "",
+    index: true,
   },
   description: {
     type: String,

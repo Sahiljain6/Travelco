@@ -1,107 +1,57 @@
-﻿import React from "react";
+import React from "react";
+import { Link } from "react-router-dom";
 
-const HiddenPlaces = () => {
-  return (
-    // <div className="mx-auto max-w-2xl px-4 pb-16 sm:px-6 lg:max-w-7xl lg:px-8">
-    //   <p className="uppercase text-5xl">
-    //     get a brief about Hidden beauties in srilanka
-    //   </p>
-    //   {/* first */}
-    //   <div className="grid grid-cols-2 mt-10 gap-5">
-    //     <div className="text-xl mt-5">
-    //       Lorem, ipsum dolor sit amet consectetur adipisicing elit. Sunt fugiat
-    //       cupiditate quas vitae, ducimus saepe quos voluptatibus, accusantium
-    //       qui voluptates earum voluptatum. Consequuntur alias beatae laborum
-    //       neque quisquam, quae sit, inventore maxime sed eligendi aliquid a cum
-    //       voluptatum nostrum deleniti cumque minima ab ullam impedit eveniet
-    //       nulla sequi quis odit?
-    //     </div>
-    //     <div>
-    //       <img
-    //         src="https://firebasestorage.googleapis.com/v0/b/travelco-7264c.appspot.com/o/dsc_0128.webp?alt=media&token=a06ac6b6-450a-49ac-9330-e345e9e0e755"
-    //         alt=""
-    //       />
-    //     </div>
-    //   </div>
-    //   {/* second */}
-    //   <div className="grid grid-cols-2 mt-10 gap-5">
-    //     <div>
-    //       <img
-    //         src="https://firebasestorage.googleapis.com/v0/b/travelco-7264c.appspot.com/o/dsc_0128.webp?alt=media&token=a06ac6b6-450a-49ac-9330-e345e9e0e755"
-    //         alt=""
-    //       />
-    //     </div>
-    //     <div className="text-xl mt-5">
-    //       Lorem, ipsum dolor sit amet consectetur adipisicing elit. Sunt fugiat
-    //       cupiditate quas vitae, ducimus saepe quos voluptatibus, accusantium
-    //       qui voluptates earum voluptatum. Consequuntur alias beatae laborum
-    //       neque quisquam, quae sit, inventore maxime sed eligendi aliquid a cum
-    //       voluptatum nostrum deleniti cumque minima ab ullam impedit eveniet
-    //       nulla sequi quis odit?
-    //     </div>
-    //   </div>
-    // </div>
-    <div class="mx-auto max-w-2xl px-4 pb-16 sm:px-6 lg:max-w-7xl lg:px-8 mt-10">
-      <p class="uppercase text-5xl">
-        get a brief about Hidden beauties in srilanka
+const destinations = [
+  {
+    name: "Kyoto, Japan",
+    description: "Temples, traditional streets, gardens and seasonal blossoms.",
+    image: "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=1200&q=80",
+    query: "Kyoto",
+  },
+  {
+    name: "Swiss Alps, Switzerland",
+    description: "Mountain trails, alpine villages and dramatic scenery.",
+    image: "https://images.unsplash.com/photo-1531366936337-7c912a4589a7?auto=format&fit=crop&w=1200&q=80",
+    query: "Switzerland",
+  },
+  {
+    name: "Cape Town, South Africa",
+    description: "Coastal drives, rugged peaks and rich local culture.",
+    image: "https://images.unsplash.com/photo-1580060839134-75a5edca2e99?auto=format&fit=crop&w=1200&q=80",
+    query: "Cape Town",
+  },
+  {
+    name: "Bali, Indonesia",
+    description: "Island landscapes, food, heritage and outdoor adventures.",
+    image: "https://images.unsplash.com/photo-1537996194471-e657df975ab4?auto=format&fit=crop&w=1200&q=80",
+    query: "Bali",
+  },
+];
+
+const HiddenPlaces = () => (
+  <section className="mx-auto max-w-7xl px-4 pb-16 sm:px-8">
+    <div className="max-w-3xl">
+      <p className="text-sm font-bold uppercase tracking-[0.18em] text-blue-600">Travel inspiration</p>
+      <h2 className="mt-2 text-3xl font-bold text-slate-950 sm:text-4xl">The world is full of places worth discovering.</h2>
+      <p className="mt-3 leading-7 text-slate-600">
+        Use these ideas to start planning. Tour availability depends on the listings currently published on Travelco.
       </p>
-      {/* <!-- first --> */}
-      <div class="grid grid-cols-1 md:grid-cols-2 mt-10 gap-5">
-        <img
-          src="https://firebasestorage.googleapis.com/v0/b/travelco-7264c.appspot.com/o/dsc_0128.webp?alt=media&token=a06ac6b6-450a-49ac-9330-e345e9e0e755"
-          alt=""
-        ></img>
-        <div class="text-xl">
-          <p className="font-extrabold text-2xl mb-3">Sembuwaththa Lake</p>
-          <p>
-            Sembuwatta Lake is a stunning man-made lake located in the hill
-            country of Sri Lanka, near the town of Elkaduwa in the Matale
-            District. The lake is situated around 1,150 meters above sea level
-            and is surrounded by lush green hills covered with tea plantations,
-            eucalyptus trees, and dense forest. The Sembuwatta Lake was created
-            by building a dam across the Sembuwatta River, which flows through a
-            {/* deep gorge. The lake covers an area of approximately 9.2 hectares
-            and has a maximum depth of around 18 meters. The water in the lake
-            is crystal clear and has a bluish-green tint, which makes it a
-            popular destination for swimming and boating. In addition to its
-            natural beauty, Sembuwatta Lake is also a popular picnic spot and
-            tourist attraction in Sri Lanka. Visitors can enjoy a variety of
-            activities at the lake, including boating, fishing, swimming, and
-            hiking in the surrounding hills. There are also several small
-            waterfalls and streams that flow into the lake, creating a
-            picturesque landscape. One of the main attractions at Sembuwatta
-            Lake is the wooden bridge that spans the lake, offering stunning
-            views of the surrounding hills and tea plantations. The bridge is
-            also a popular spot for taking photographs, especially during
-            sunrise and sunset. Overall, Sembuwatta Lake is a beautiful and
-            peaceful destination in Sri Lanka that offers a perfect getaway from
-            the hustle and bustle of city life. It is a must-visit location for
-            nature lovers and those seeking a serene and tranquil atmosphere. */}
-          </p>
-        </div>
-      </div>
-      {/* <!-- second --> */}
-      <div class="grid grid-cols-1 md:grid-cols-2 mt-20 gap-5">
-        <div class="md:order-last">
-          <img
-            src="https://firebasestorage.googleapis.com/v0/b/travelco-7264c.appspot.com/o/IMG_9666.JPG?alt=media&token=8be80c0f-0646-4f38-b468-43eb95c3b54b"
-            alt=""
-          ></img>
-        </div>
-        <div class="text-xl">
-          <p className="font-extrabold text-2xl mb-3">Hulangala</p>
-          <p>
-            Lorem, ipsum dolor sit amet consectetur adipisicing elit. Sunt
-            fugiat cupiditate quas vitae, ducimus saepe quos voluptatibus,
-            accusantium qui voluptates earum voluptatum. Consequuntur alias
-            beatae laborum neque quisquam, quae sit, inventore maxime sed
-            eligendi aliquid a cum voluptatum nostrum deleniti cumque minima ab
-            ullam impedit eveniet nulla sequi quis odit?
-          </p>
-        </div>
-      </div>
     </div>
-  );
-};
+    <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+      {destinations.map((destination) => (
+        <article key={destination.name} className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
+          <img src={destination.image} alt={destination.name} loading="lazy" className="h-48 w-full object-cover" />
+          <div className="p-5">
+            <h3 className="text-lg font-bold text-slate-950">{destination.name}</h3>
+            <p className="mt-2 min-h-12 text-sm leading-6 text-slate-600">{destination.description}</p>
+            <Link to={`/tours/search?destination=${encodeURIComponent(destination.query)}`} className="mt-4 inline-flex font-semibold text-blue-700 hover:underline">
+              Find tours <span aria-hidden="true" className="ml-1">→</span>
+            </Link>
+          </div>
+        </article>
+      ))}
+    </div>
+  </section>
+);
 
 export default HiddenPlaces;

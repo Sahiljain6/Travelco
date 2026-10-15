@@ -1,98 +1,60 @@
 import React from "react";
-
+import { Link } from "react-router-dom";
+import { AiOutlineRight } from "react-icons/ai";
 import HeroTour from "./HeroTour";
 import HiddenPlaces from "./HiddenPlaces";
-
 import ServiceCard from "./Services/ServiceCard";
 import TourCategories from "./Services/ServiceCategories";
 import TourNav from "../../components/navbar/TourNav";
-import { Link } from "react-router-dom";
-import { AiOutlineRight } from "react-icons/ai";
 import CustomForm from "./Services/CustomForm";
 
-import welcome from "../../assets/Tour/Tour-Welcome.jpg";
+const Home = () => (
+  <main className="min-h-screen bg-white">
+    <HeroTour />
 
-const Home = () => {
-  return (
-    <div>
-      <HeroTour />
+    <nav aria-label="Breadcrumb" className="mx-auto max-w-7xl px-4 py-6 sm:px-8">
+      <ol className="flex flex-wrap items-center gap-2 text-sm text-slate-500">
+        <li><Link to="/" className="text-blue-700 hover:underline">Home</Link></li>
+        <li aria-hidden="true"><AiOutlineRight /></li>
+        <li><Link to="/tours/home" className="text-blue-700 hover:underline">Tour packages</Link></li>
+        <li aria-hidden="true"><AiOutlineRight /></li>
+        <li aria-current="page">Explore destinations worldwide</li>
+      </ol>
+    </nav>
 
-      {/* Navigated menu start*/}
-      <nav class="bg-grey-light w-full rounded-md pl-20 pt-10">
-        <ol class="list-reset flex">
-          <li>
-            <Link
-              to={"/"}
-              class="text-primary transition duration-150 ease-in-out hover:text-primary-600 focus:text-primary-600 active:text-primary-700 dark:text-primary-400 dark:hover:text-primary-500 dark:focus:text-primary-500 dark:active:text-primary-600"
-            >
-              Home
-            </Link>
-          </li>
-          <li>
-            <AiOutlineRight className="mt-1 mx-2" />
-          </li>
-          <li>
-            <Link
-              to={"#"}
-              class="text-primary transition duration-150 ease-in-out hover:text-primary-600 focus:text-primary-600 active:text-primary-700 dark:text-primary-400 dark:hover:text-primary-500 dark:focus:text-primary-500 dark:active:text-primary-600"
-            >
-              Tour Packages
-            </Link>
-          </li>
-          <li>
-            <AiOutlineRight className="mt-1 mx-2" />
-          </li>
-          <li class="text-neutral-500 dark:text-neutral-400">
-            Explore destinations worldwide
-          </li>
-        </ol>
-      </nav>
-      {/* Navigated menu end*/}
+    <TourNav />
 
-      {/* Navigation Tour bar */}
-      <TourNav />
-
-      {/* Categories */}
-      <div className="mx-auto max-w-2xl px-4  sm:px-6  lg:max-w-7xl lg:px-8">
-        {/* welcome image */}
-        <img src={welcome} alt="" />
-        <h1 className="text-4xl mt-10 mb-10 ml-2">Tour Categories</h1>
-        <TourCategories />
+    <section className="mx-auto max-w-7xl px-4 py-12 sm:px-8">
+      <div className="max-w-3xl">
+        <p className="text-sm font-bold uppercase tracking-[0.18em] text-blue-600">Choose your kind of journey</p>
+        <h2 className="mt-2 text-3xl font-bold text-slate-950 sm:text-4xl">Explore the world by experience</h2>
+        <p className="mt-3 leading-7 text-slate-600">From coastlines and mountain trails to cultural landmarks, browse a style of travel and search for tours in the destination you have in mind.</p>
       </div>
-      {/* Service Card Brief start */}
-      <div className="mx-auto max-w-2xl px-4 py-16 sm:px-6 sm:py-24 lg:max-w-7xl lg:px-8">
-        <h1 className="text-4xl mb-10 ml-2">Perfect Picks For You</h1>
-        <ServiceCard />
-        {/* <div className="flex justify-center items-center">
-          <button
-            type="button"
-            data-te-ripple-init
-            data-te-ripple-color="light"
-            class="mt-20 inline-block rounded-xl bg-primary px-6 pb-2 pt-2.5 text-3xl font-medium uppercase leading-normal text-white shadow-[0_4px_9px_-4px_#3b71ca] transition duration-150 ease-in-out hover:bg-primary-600 hover:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.3),0_4px_18px_0_rgba(59,113,202,0.2)] focus:bg-primary-600 focus:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.3),0_4px_18px_0_rgba(59,113,202,0.2)] focus:outline-none focus:ring-0 active:bg-primary-700 active:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.3),0_4px_18px_0_rgba(59,113,202,0.2)] dark:shadow-[0_4px_9px_-4px_rgba(59,113,202,0.5)] dark:hover:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.2),0_4px_18px_0_rgba(59,113,202,0.1)] dark:focus:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.2),0_4px_18px_0_rgba(59,113,202,0.1)] dark:active:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.2),0_4px_18px_0_rgba(59,113,202,0.1)]"
-          >
-            <Link to={"/tourdetails"}></Link>
-            View More
-          </button>
-        </div> */}
-      </div>
-      {/* Service Card Brief end*/}
+      <TourCategories />
+    </section>
 
-      <div className="mx-auto max-w-2xl px-4 py-16 sm:px-6  lg:max-w-7xl lg:px-8">
-        <h1 className="text-black uppercase text-center pt-0 mt-0 text-5xl">
-          don't fit All these Packages to <br /> your unique interests and{" "}
-          <br /> preferences?
-        </h1>
+    <section className="mx-auto max-w-7xl px-4 py-12 sm:px-8">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p className="text-sm font-bold uppercase tracking-[0.18em] text-blue-600">Currently listed on Travelco</p>
+          <h2 className="mt-2 text-3xl font-bold text-slate-950">Tour packages to explore</h2>
+        </div>
+        <p className="max-w-xl text-sm leading-6 text-slate-500">Listings depend on what tour providers have published. Use the search above for a city or country.</p>
       </div>
+      <div className="mt-6"><ServiceCard /></div>
+    </section>
 
-      {/* customer form */}
-      <div>
-        <CustomForm />
+    <section className="bg-slate-50 py-14">
+      <div className="mx-auto max-w-4xl px-4 text-center sm:px-8">
+        <p className="text-sm font-bold uppercase tracking-[0.18em] text-emerald-700">Plan it your way</p>
+        <h2 className="mt-3 text-3xl font-bold text-slate-950 sm:text-4xl">Need something more personal?</h2>
+        <p className="mt-4 leading-7 text-slate-600">Tell us what kind of trip you want, where you would like to go, and what matters to your group.</p>
       </div>
-      <div>
-        <HiddenPlaces />
-      </div>
-    </div>
-  );
-};
+      <div className="mx-auto mt-8 max-w-6xl px-4 sm:px-8"><CustomForm /></div>
+    </section>
+
+    <div className="pt-12"><HiddenPlaces /></div>
+  </main>
+);
 
 export default Home;

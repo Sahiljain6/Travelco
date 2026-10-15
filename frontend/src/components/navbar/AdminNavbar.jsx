@@ -73,7 +73,7 @@ const AdminNavbar = () => {
               <div>
                 <Menu.Button className="flex rounded-full bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800">
                   {/* {user.name} */}
-                  <img class="h-8 w-8 rounded-full" src={user.img} alt=""></img>
+                  <img className="h-8 w-8 rounded-full object-cover" src={user.img || "https://ui-avatars.com/api/?name=Traveler&background=1e293b&color=fff"} onError={(event) => { event.currentTarget.onerror = null; event.currentTarget.src = "https://ui-avatars.com/api/?name=Traveler&background=1e293b&color=fff"; }} alt="Profile" />
                 </Menu.Button>
               </div>
 
@@ -170,11 +170,7 @@ const AdminNavbar = () => {
                 <div>
                   <Menu.Button className="flex rounded-full bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800">
                     {/* {user.name} */}
-                    <img
-                      class="h-8 w-8 rounded-full"
-                      src={user.img}
-                      alt=""
-                    ></img>
+                    <img className="h-8 w-8 rounded-full object-cover" src={user.img || "https://ui-avatars.com/api/?name=Traveler&background=1e293b&color=fff"} onError={(event) => { event.currentTarget.onerror = null; event.currentTarget.src = "https://ui-avatars.com/api/?name=Traveler&background=1e293b&color=fff"; }} alt="Profile" />
                   </Menu.Button>
                   <h2 className="block py-2 text-sm text-[#41A4FF]">
                     {user.name}

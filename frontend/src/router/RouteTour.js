@@ -192,6 +192,7 @@ const RouteTour = () => {
       {/* //ishara */}
       <Route path="/tours/home" element={<ToursHome />} />
       <Route path="/tours/:id" element={<TourDetails />} />
+      <Route path="/tours/search" element={<SearchResults />} />
       <Route
         path="/tours/search/:destination/:duration/:maxsize"
         element={<SearchResults />}

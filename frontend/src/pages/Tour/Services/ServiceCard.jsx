@@ -1,74 +1,63 @@
 import React, { useEffect, useState } from "react";
-import { AiFillStar } from "react-icons/ai";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import { formatMoney } from "../../../utils/globalTravel";
 
+const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1000&q=80";
+
 const ServiceCard = () => {
-  const [allTours, setTour] = useState([]);
+  const [allTours, setTours] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
   useEffect(() => {
-    const getTours = async () => {
-      try {
-        const response = await axios.get("/tours");
-        console.log(response.data);
-        setTour(response.data);
-      } catch (err) {
-        console.log(err.message);
-      }
-    };
-    getTours();
+    let active = true;
+    axios.get("/tours")
+      .then((response) => {
+        if (active) setTours(Array.isArray(response.data) ? response.data : []);
+      })
+      .catch((requestError) => {
+        if (active) setError(requestError.response?.data?.message || "Unable to load tour listings.");
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => { active = false; };
   }, []);
+
+  if (loading) return <p className="py-8 text-slate-500">Loading tour packages…</p>;
+  if (error) return <p role="alert" className="rounded-xl bg-red-50 p-4 text-red-800">{error}</p>;
+  if (allTours.length === 0) return (
+    <div className="rounded-2xl border border-dashed border-slate-300 p-8 text-slate-600">
+      No tour packages have been published yet. Providers can add packages for any destination.
+    </div>
+  );
+
   return (
-    <div className="bg-white ">
-      <div className="mt-6 grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3 xl:gap-x-8">
-        {allTours.map((tours) => (
-          <div
-            key={tours._id}
-            className="group relative  rounded-t-3xl shadow-2xl rounded-b-xl border-2 "
-          >
-            <div className="min-h-80 aspect-h-1 aspect-w-1 w-full overflow-hidden rounded-3xl bg-gray-200 lg:aspect-none group-hover:opacity-40 lg:h-80">
-              <img
-                src={tours.img}
-                alt="Tour"
-                className="h-full w-full object-cover object-center rounded-3xl lg:h-full lg:w-full"
-              />
+    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      {allTours.map((tour) => (
+        <article key={tour._id} className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
+          <img
+            src={tour.img || FALLBACK_IMAGE}
+            onError={(event) => { event.currentTarget.onerror = null; event.currentTarget.src = FALLBACK_IMAGE; }}
+            alt={tour.name || "Tour"}
+            loading="lazy"
+            className="h-56 w-full object-cover"
+          />
+          <div className="p-5">
+            <h3 className="text-xl font-bold text-slate-950">{tour.name || "Tour package"}</h3>
+            <p className="mt-2 text-sm text-slate-600">{[tour.cities, tour.country].filter(Boolean).join(" · ") || "Destination not provided"}</p>
+            <div className="mt-4 flex flex-wrap gap-2 text-xs font-semibold text-slate-600">
+              {tour.duration && <span className="rounded-full bg-slate-100 px-3 py-1">{tour.duration} day(s)</span>}
+              {tour.groupCount && <span className="rounded-full bg-slate-100 px-3 py-1">Up to {tour.groupCount} travelers</span>}
             </div>
-            <div className="mt-4 flex justify-between p-3">
-              <h3 className="text-2xl font-bold text-gray-700">
-                <Link to={`/tours/${tours._id}`}>
-                  <span
-                    aria-hidden="true"
-                    className="absolute inset-0 rounded-t-3xl "
-                  />
-                  {tours.name}
-                </Link>
-                <p className="text-lg font-medium text-gray-900">
-                  {tours.duration} days
-                </p>
-              </h3>
-              {/* <div className=" flex flex-row mr-2 space-x-3">
-                <p className="mt-1 text-lg text-gray-500 ">{tours.avgRating}</p>
-                <AiFillStar className="text-xl mt-2 text-yellow-500 " />
-                <p className="mt-1 text-lg">({tours.reviews.length})</p>
-              </div> */}
-            </div>
-            <div className="flex flex-row mr-2 space-x-3 justify-between">
-              <p className="text-sm text-left p-2 font-bold">
-                From {formatMoney(tours.price, tours.currency || "USD")}
-              </p>
-              <button
-                type="button"
-                data-te-ripple-init
-                data-te-ripple-color="light"
-                class="mb-2 inline-block rounded bg-primary px-4 pb-2 pt-2.5 text-xs font-medium uppercase leading-normal text-white shadow-[0_4px_9px_-4px_#3b71ca] transition duration-150 ease-in-out hover:bg-primary-600 hover:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.3),0_4px_18px_0_rgba(59,113,202,0.2)] focus:bg-primary-600 focus:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.3),0_4px_18px_0_rgba(59,113,202,0.2)] focus:outline-none focus:ring-0 active:bg-primary-700 active:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.3),0_4px_18px_0_rgba(59,113,202,0.2)] dark:shadow-[0_4px_9px_-4px_rgba(59,113,202,0.5)] dark:hover:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.2),0_4px_18px_0_rgba(59,113,202,0.1)] dark:focus:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.2),0_4px_18px_0_rgba(59,113,202,0.1)] dark:active:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.2),0_4px_18px_0_rgba(59,113,202,0.1)]"
-                onClick={console.log(tours._id)}
-              >
-                <Link to={`/tours/${tours._id}`}>View Details</Link>
-              </button>
+            <div className="mt-5 flex items-center justify-between gap-3">
+              <p className="font-bold text-slate-950">{formatMoney(tour.price, tour.currency || "USD")} <span className="text-xs font-normal text-slate-500">/ person</span></p>
+              <Link to={`/tours/${tour._id}`} className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-bold text-white hover:bg-blue-700">View details</Link>
             </div>
           </div>
-        ))}
-      </div>
+        </article>
+      ))}
     </div>
   );
 };
