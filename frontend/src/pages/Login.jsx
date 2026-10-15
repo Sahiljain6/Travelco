@@ -38,12 +38,19 @@ const Login = () => {
     setLoading2(true);
     try {
       const res = await axios.post("auth/login", credentials);
+      if (typeof res.data.token === "string" && res.data.token) {
+        // Session-only fallback for browsers that block the cross-site HTTP-only cookie.
+        sessionStorage.setItem("travelcoAccessToken", res.data.token);
+      } else {
+        sessionStorage.removeItem("travelcoAccessToken");
+      }
       const signedInUser = { ...res.data.details, isAdmin: res.data.isAdmin === true };
       dispatch({ type: "LOGIN_SUCCESS", payload: signedInUser });
       if (res.data.isAdmin === true) navigate("/admin");
       else if (signedInUser.type === "financeManager") navigate("/finance");
       else navigate(location.state?.from || "/");
     } catch (err) {
+      sessionStorage.removeItem("travelcoAccessToken");
       const data = err.response?.data || {};
       dispatch({ type: "LOGIN_FAILURE", payload: data.message || "Unable to sign in" });
       if (data.code === "EMAIL_NOT_VERIFIED") {
