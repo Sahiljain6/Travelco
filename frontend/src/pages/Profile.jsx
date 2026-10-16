@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useMemo, useState } from "react";
 import axios from "axios";
-import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/authContext";
 import countries from "../data/countries";
 import { getPreferredCurrency, supportedCurrencies } from "../utils/globalTravel";
