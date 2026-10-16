@@ -4,23 +4,32 @@ const Hotel = require("../models/Hotel.js");
 const { parsePositiveNumber, parsePositiveInteger } = require("../utils/validation");
 
 
-const createRoom= async (req,res,next) =>{
+const createRoom = async (req, res, next) => {
+  const hotelId = req.params.hotelid;
+  const price = parsePositiveNumber(req.body?.price);
+  const maxPeople = parsePositiveInteger(req.body?.maxPeople);
+  const roomNumbers = Array.isArray(req.body?.roomNumbers) ? req.body.roomNumbers : [];
 
-    const hotelId=req.params.hotelid;
-    const newRoom=new Room(req.body)
+  if (price === null) return res.status(400).json({ message: "Room price must be greater than zero. Decimal values are allowed." });
+  if (maxPeople === null) return res.status(400).json({ message: "Maximum people must be a whole number greater than zero." });
+  if (!roomNumbers.length || roomNumbers.some((room) => parsePositiveInteger(room?.number) === null)) {
+    return res.status(400).json({ message: "Provide at least one positive whole-number room number." });
+  }
 
-    try{
-            const savedRoom =await newRoom.save()
-            try{
-                await Hotel.findByIdAndUpdate(hotelId, {$push :{rooms: savedRoom._id}})
-            }catch(err){
-                next(err)
-            }
-            res.status(200).json(savedRoom);
-    }catch(err){
-        next(err)
-    }   
-}
+  try {
+    const newRoom = new Room({
+      ...req.body,
+      price,
+      maxPeople,
+      roomNumbers: roomNumbers.map((room) => ({ ...room, number: Number(room.number) })),
+    });
+    const savedRoom = await newRoom.save();
+    await Hotel.findByIdAndUpdate(hotelId, { $push: { rooms: savedRoom._id } });
+    return res.status(201).json(savedRoom);
+  } catch (error) {
+    return next(error);
+  }
+};
 
 const updateRoom =async (req,res,next)=>{
     try{
