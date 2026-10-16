@@ -53,8 +53,8 @@ export const AddHotel = () => {
       Swal.fire({ icon: "error", title: "Invalid room count", text: "Number of room types must be a whole number greater than zero." });
       return;
     }
-    if (!isOptionalRating(raiting, 5)) {
-      Swal.fire({ icon: "error", title: "Invalid rating", text: "Rating must be between 0 and 5. Decimal values such as 4.5 are allowed." });
+    if (raiting !== "" && (!isOptionalRating(raiting, 5) || Number(raiting) < 1)) {
+      Swal.fire({ icon: "error", title: "Invalid rating", text: "Rating must be between 1 and 5. Decimal values such as 4.5 are allowed." });
       return;
     }
 
@@ -384,7 +384,7 @@ export const AddHotel = () => {
               class="appearance-none block w-full bg-gray-200 text-gray-700 border rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white"
               id="rating"
               type="number"
-              min="0"
+              min="1"
               max="5"
               step="0.1"
               inputMode="decimal"
