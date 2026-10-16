@@ -1,4 +1,5 @@
-const mongoose=require('mongoose')
+const mongoose=require('mongoose');
+const { isValidInternationalPhone, isValidPostalCode } = require("../utils/validation");
 
 const HotelSchema=new mongoose.Schema({
     name:{
@@ -22,7 +23,9 @@ const HotelSchema=new mongoose.Schema({
     },
     zip:{
         type:String,
-        reqiured:true
+        required:true,
+        trim:true,
+        validate:{ validator:isValidPostalCode, message:"Enter a valid postal/ZIP code (2–12 characters; not all zeroes)" }
     },
     address:{
         type:String, 
@@ -38,11 +41,15 @@ const HotelSchema=new mongoose.Schema({
     },
     contactNo:{
         type:String,
-        reqiured:true
+        required:true,
+        trim:true,
+        validate:{ validator:isValidInternationalPhone, message:"Enter a valid international phone number (7–15 digits; not all zeroes)" }
     },
     numberOfRoomTypes:{
-        type:Number, 
-        reqiured:true 
+        type:Number,
+        required:true,
+        min:1,
+        validate:{ validator:Number.isInteger, message:"Number of room types must be a whole number" }
     },
     HotelImg:{
         type:String}
@@ -57,14 +64,15 @@ const HotelSchema=new mongoose.Schema({
         type:String,
         reqiured:true
     }, 
-    cheapestPrice:{ 
+    cheapestPrice:{
         type:Number,
-        reqiured:true 
+        required:true,
+        min:[0.01, "Price must be greater than zero"]
     },
     rating:{
-        type:Number, 
-        min:0,
-        max:5
+        type:Number,
+        min:[0, "Rating cannot be below zero"],
+        max:[5, "Rating cannot exceed five"]
     },
     rooms:{
         type: [String],
