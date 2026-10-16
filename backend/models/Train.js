@@ -9,7 +9,7 @@ const trainSchema =  new Schema({
     depatureTime : {type : String},
     date : {type : String},
     price : { type: Number, required: true, min: [0.01, "Fare must be greater than zero"] },
-    noOfSeats : { type: Number, min: 1, validate: { validator: (value) => Number.isInteger(value), message: "Number of seats must be a positive whole number" } },
+    noOfSeats : { type: Number, required: true, min: 1, validate: { validator: (value) => Number.isInteger(value), message: "Number of seats must be a positive whole number" } },
     description : {type: String,},    
     trainMainImg :{type:String},
     MaxBagage : { type: Number, min: 0 },
