@@ -1,6 +1,7 @@
 const multer = require("multer");
 const Train = require("../models/Train");
 const path = require("path");
+const { parsePositiveNumber, parsePositiveInteger, parseNonNegativeNumber } = require("../utils/validation");
 
 const storage = multer.diskStorage({
     destination : (req,file,cb)=> {
@@ -24,28 +25,41 @@ const upload = multer({
     { name: 'trainMainImg', maxCount: 1 }
   ]);
 
-// add a train admin
-const addTrain = async(req,res)=>{
-    try {
-        upload(req,res,async(err)=>{
-            if(err){
-                console.log(err.message);
-                return res.status(500).json({message:"error in uploading"})
-            }
+// Add a train and validate numeric fields before persisting.
+const addTrain = async (req, res) => {
+  try {
+    upload(req, res, async (err) => {
+      if (err) return res.status(400).json({ message: err.message || "Error uploading train image" });
 
-            const newTrain = new Train({
-                ...req.body,
-               // trainMainImg : req.files.trainMainImg[0].filename
-            })
+      const price = parsePositiveNumber(req.body?.price);
+      if (price === null) return res.status(400).json({ message: "Fare must be greater than zero. Decimal values are allowed." });
+      const noOfSeats = parsePositiveInteger(req.body?.noOfSeats);
+      if (noOfSeats === null) return res.status(400).json({ message: "Number of seats must be a positive whole number." });
 
-            await newTrain.save();
-            res.status(200).json(newTrain);
-        });
-    } catch(err){
-        console.log(err);
-        res.status(500).json({message : err.message})
-    }
-}
+      const normalized = { ...req.body, price, noOfSeats };
+      for (const key of ["MaxBagage", "cancelCharges"]) {
+        const value = req.body?.[key];
+        if (value === undefined || value === null || value === "") {
+          delete normalized[key];
+          continue;
+        }
+        const parsed = parseNonNegativeNumber(value);
+        if (parsed === null) return res.status(400).json({ message: key === "MaxBagage" ? "Baggage weight must be zero or greater. Decimal values are allowed." : "Cancellation charges must be zero or greater. Decimal values are allowed." });
+        normalized[key] = parsed;
+      }
+
+      try {
+        const newTrain = new Train(normalized);
+        await newTrain.save();
+        return res.status(201).json(newTrain);
+      } catch (saveError) {
+        return res.status(400).json({ message: saveError.message || "Unable to add train" });
+      }
+    });
+  } catch (error) {
+    return res.status(500).json({ message: error.message || "Unable to add train" });
+  }
+};
 
 // get all trains admin -- just for now
 const getAllTrains = async(req,res)=>{
@@ -79,25 +93,44 @@ const deleteTrain = async(req,res)=>{
 }
 
 
-// update train -admin
-const updateTrain = async(req,res)=>{
-    const id = req.params.id;
+// Update train with consistent numeric validation.
+const updateTrain = async (req, res) => {
+  const id = req.params.id;
+  const body = req.body || {};
+  const update = {};
 
-    const {trainName,from,to,arrivalTime,depatureTime,date,price,
-        noOfSeats ,description,trainMainImg,MaxBagage,classType,cancelCharges} = req.body;
-    
-    const updatedTrain = {trainName,from,to,arrivalTime,depatureTime,date,price,
-        noOfSeats ,description,trainMainImg,MaxBagage,classType,cancelCharges
+  if (body.price !== undefined) {
+    const price = parsePositiveNumber(body.price);
+    if (price === null) return res.status(400).json({ message: "Fare must be greater than zero. Decimal values are allowed." });
+    update.price = price;
+  }
+  if (body.noOfSeats !== undefined) {
+    const noOfSeats = parsePositiveInteger(body.noOfSeats);
+    if (noOfSeats === null) return res.status(400).json({ message: "Number of seats must be a positive whole number." });
+    update.noOfSeats = noOfSeats;
+  }
+  for (const key of ["MaxBagage", "cancelCharges"]) {
+    if (body[key] === undefined) continue;
+    if (body[key] === "") {
+      update[key] = undefined;
+      continue;
     }
+    const parsed = parseNonNegativeNumber(body[key]);
+    if (parsed === null) return res.status(400).json({ message: key === "MaxBagage" ? "Baggage weight must be zero or greater. Decimal values are allowed." : "Cancellation charges must be zero or greater. Decimal values are allowed." });
+    update[key] = parsed;
+  }
+  for (const key of ["trainName", "from", "to", "arrivalTime", "depatureTime", "date", "description", "trainMainImg", "classType"]) {
+    if (body[key] !== undefined) update[key] = body[key];
+  }
 
-    await Train.findByIdAndUpdate(id,updatedTrain).then(()=>{
-        //const fetehced =  Train.findById(id);
-        res.json({status : "Updated",train:updatedTrain});
-    }).catch((err)=>{
-        res.json(err.message);
-    })
-    
-}
+  try {
+    const updatedTrain = await Train.findByIdAndUpdate(id, { $set: update }, { new: true, runValidators: true });
+    if (!updatedTrain) return res.status(404).json({ message: "Train not found" });
+    return res.status(200).json({ status: "Updated", train: updatedTrain });
+  } catch (error) {
+    return res.status(400).json({ message: error.message || "Unable to update train" });
+  }
+};
 
 // fetch trains by from and To of searh component
 const getTrainFromTo =  async (req,res) =>{
