@@ -6,8 +6,9 @@ const RoomSchema=new mongoose.Schema({
         required:true
     },    
     price:{ 
-        type:Number,   
-        required:true 
+        type:Number,
+        required:true,
+        min:[0.01, "Room price must be greater than zero"] 
     },  
     description:{
         type:String,  
@@ -15,9 +16,14 @@ const RoomSchema=new mongoose.Schema({
     },
     maxPeople:{    
         type:Number,
-        reqiured:true
+        required:true,
+        min:1,
+        validate:{ validator:Number.isInteger, message:"Maximum people must be a whole number" }
     },
-    roomNumbers: [{number : Number, unavailableDates :{type: [Date]}}],
+    roomNumbers: [{
+      number: { type:Number, required:true, min:1, validate:{ validator:Number.isInteger, message:"Room number must be a positive whole number" } },
+      unavailableDates: { type: [Date] }
+    }],
     
 }) 
 module.exports =  mongoose.model("Room",RoomSchema)   
