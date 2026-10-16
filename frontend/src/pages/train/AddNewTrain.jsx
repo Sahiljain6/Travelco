@@ -186,8 +186,7 @@ export default function AddNewTrain() {
 
             <div className="relative mb-3 mt-5">
               <input
-                type="text"
-                className="bordder-[#E9EDF4] w-full rounded-3xl border bg-[#FCFDFE] py-3 px-5 text-base text-body-color placeholder-[#ACB6BE] outline-none focus:border-[#41A4FF] focus-visible:shadow-none"
+                                className="bordder-[#E9EDF4] w-full rounded-3xl border bg-[#FCFDFE] py-3 px-5 text-base text-body-color placeholder-[#ACB6BE] outline-none focus:border-[#41A4FF] focus-visible:shadow-none"
                 id="price"
                 type="number"
                 min="0.01"
@@ -203,8 +202,7 @@ export default function AddNewTrain() {
 
             <div className="relative mb-3 mt-5">
               <input
-                type="text"
-                className="bordder-[#E9EDF4] w-full rounded-3xl border bg-[#FCFDFE] py-3 px-5 text-base text-body-color placeholder-[#ACB6BE] outline-none focus:border-[#41A4FF] focus-visible:shadow-none"
+                                className="bordder-[#E9EDF4] w-full rounded-3xl border bg-[#FCFDFE] py-3 px-5 text-base text-body-color placeholder-[#ACB6BE] outline-none focus:border-[#41A4FF] focus-visible:shadow-none"
                 id="noOfSeats"
                 type="number"
                 min="1"
@@ -231,8 +229,7 @@ export default function AddNewTrain() {
 
             <div className="relative mb-3 mt-5">
               <input
-                type="text"
-                className="bordder-[#E9EDF4] w-full rounded-3xl border bg-[#FCFDFE] py-3 px-5 text-base text-body-color placeholder-[#ACB6BE] outline-none focus:border-[#41A4FF] focus-visible:shadow-none"
+                                className="bordder-[#E9EDF4] w-full rounded-3xl border bg-[#FCFDFE] py-3 px-5 text-base text-body-color placeholder-[#ACB6BE] outline-none focus:border-[#41A4FF] focus-visible:shadow-none"
                 id="MaxBagage"
                 type="number"
                 min="0"
@@ -259,8 +256,7 @@ export default function AddNewTrain() {
 
             <div className="relative mb-3 mt-5">
               <input
-                type="text"
-                className="bordder-[#E9EDF4] w-full rounded-3xl border bg-[#FCFDFE] py-3 px-5 text-base text-body-color placeholder-[#ACB6BE] outline-none focus:border-[#41A4FF] focus-visible:shadow-none"
+                                className="bordder-[#E9EDF4] w-full rounded-3xl border bg-[#FCFDFE] py-3 px-5 text-base text-body-color placeholder-[#ACB6BE] outline-none focus:border-[#41A4FF] focus-visible:shadow-none"
                 id="cancelCharges"
                 type="number"
                 min="0"
