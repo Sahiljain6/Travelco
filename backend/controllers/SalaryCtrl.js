@@ -1,11 +1,24 @@
 const Salary = require("../models/Salary");
 
-const fields = ["Name", "Nic", "Eid", "Position", "BasicSalary", "OtHours", "Numberofdates"];
+const fields = ["Name", "Nic", "Eid", "JobPosition", "BasicSalary", "NetSalary", "OtHours", "Numberaofdates"];
 const getPayload = (body = {}) => Object.fromEntries(fields.filter((key) => body[key] !== undefined).map((key) => [key, body[key]]));
 const validateSalary = (data) => {
-  for (const key of ["BasicSalary", "OtHours", "Numberofdates"]) {
-    if (data[key] !== undefined && (!Number.isFinite(Number(data[key])) || Number(data[key]) < 0)) return key + " must be a non-negative number";
+  if (data.BasicSalary !== undefined && (!Number.isFinite(Number(data.BasicSalary)) || Number(data.BasicSalary) <= 0)) {
+    return "BasicSalary must be greater than zero; decimal values are allowed";
   }
+  if (data.NetSalary !== undefined && (!Number.isFinite(Number(data.NetSalary)) || Number(data.NetSalary) < 0)) {
+    return "NetSalary must be zero or greater";
+  }
+  if (data.OtHours !== undefined && (!Number.isSafeInteger(Number(data.OtHours)) || Number(data.OtHours) < 0 || Number(data.OtHours) > 130)) {
+    return "OtHours must be a whole number between 0 and 130";
+  }
+  if (data.Numberaofdates !== undefined && (!Number.isSafeInteger(Number(data.Numberaofdates)) || Number(data.Numberaofdates) < 1 || Number(data.Numberaofdates) > 26)) {
+    return "Numberaofdates must be a whole number between 1 and 26";
+  }
+  if (data.BasicSalary !== undefined) data.BasicSalary = Number(data.BasicSalary);
+  if (data.NetSalary !== undefined) data.NetSalary = Number(data.NetSalary);
+  if (data.OtHours !== undefined) data.OtHours = Number(data.OtHours);
+  if (data.Numberaofdates !== undefined) data.Numberaofdates = Number(data.Numberaofdates);
   return null;
 };
 
