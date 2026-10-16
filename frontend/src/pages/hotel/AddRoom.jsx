@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { useParams } from "react-router-dom";
 import { useLocation } from "react-router-dom";
 import Swal from "sweetalert2";
+import { isPositiveNumber, isPositiveInteger } from "../../utils/formValidation";
 
 export const AddRoom = () => {
   const location = useLocation();
@@ -19,7 +20,20 @@ export const AddRoom = () => {
   function sendData(e) {
     e.preventDefault();
 
-    const roomNumbersArray = roomNumbers.map((num) => ({ number: num }));
+    if (!isPositiveNumber(price)) {
+      Swal.fire({ icon: "error", title: "Invalid room price", text: "Enter a room price greater than zero. Decimal values such as 99.50 are allowed." });
+      return;
+    }
+    if (!isPositiveInteger(maxPeople)) {
+      Swal.fire({ icon: "error", title: "Invalid capacity", text: "Maximum people must be a whole number greater than zero." });
+      return;
+    }
+    if (!roomNumbers.length || roomNumbers.some((number) => !isPositiveInteger(number))) {
+      Swal.fire({ icon: "error", title: "Invalid room numbers", text: "Enter one or more positive whole-number room numbers." });
+      return;
+    }
+
+    const roomNumbersArray = roomNumbers.map((num) => ({ number: Number(num) }));
     const newRoom = {
       title,
       price,
@@ -89,9 +103,12 @@ export const AddRoom = () => {
             </label>
             <input
               class="appearance-none block w-full bg-gray-200 text-gray-700 border rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white"
-              id="hotelName"
+              id="roomPrice"
               type="number"
-              placeholder=""
+              min="0.01"
+              step="0.01"
+              inputMode="decimal"
+              placeholder="e.g. 99.50"
               required
               onChange={(e) => setPrice(e.target.value)}
             />
@@ -125,8 +142,11 @@ export const AddRoom = () => {
             </label>
             <input
               class="appearance-none block w-full bg-gray-200 text-gray-700 borderrounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white"
-              id="noOfRoomTypes"
+              id="maxPeople"
               type="number"
+              min="1"
+              step="1"
+              required
               onChange={(e) => setMaxPeople(e.target.value)}
             />
           </div>
