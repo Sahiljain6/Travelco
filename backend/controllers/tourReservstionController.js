@@ -1,9 +1,19 @@
 const tourReserve = require("../models/tourBook");
+const { isValidInternationalPhone, parsePositiveInteger } = require("../utils/validation");
 
 const bookTour = async (req, res) => {
   try {
-    console.log("ava");
-    const newRes = new tourReserve(req.body);
+    const body = { ...(req.body || {}) };
+    if (!isValidInternationalPhone(body.phone)) {
+      return res.status(400).json({ status: "Unsuccess", message: "Enter a valid international phone number with 7–15 digits; it cannot be all zeroes." });
+    }
+    const guestCount = parsePositiveInteger(body.guestCount);
+    if (guestCount === null) {
+      return res.status(400).json({ status: "Unsuccess", message: "Guest count must be a positive whole number." });
+    }
+    body.phone = String(body.phone).trim();
+    body.guestCount = guestCount;
+    const newRes = new tourReserve(body);
     const saveRes = await newRes.save();
 
     res.status(200).json({
