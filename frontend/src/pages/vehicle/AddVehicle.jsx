@@ -5,6 +5,7 @@ import Swal from 'sweetalert2'
 import { useContext } from "react";
 import { AuthContext } from "../../context/authContext";
 import { getPreferredCurrency, supportedCurrencies } from "../../utils/globalTravel";
+import { isPositiveNumber, isPositiveInteger } from "../../utils/formValidation";
 
 const AddVehicle = () => {
 
@@ -141,7 +142,7 @@ const AddVehicle = () => {
           {error && <div className='text-[#ff2d2d] pb-4'>{error}</div>}
 
           <label for className='lg:text-lg text-left mt-6'>Number of Seats</label>
-          <input type='number'  className='border rounded-lg w-full p-2 mb-6' placeholder='04' onChange={(e) => setNumberOfSeats(e.target.value) } required/>
+          <input type='number' min='1' step='1' inputMode='numeric' className='border rounded-lg w-full p-2 mb-6' placeholder='4' value={numberOfSeats} onChange={(e) => setNumberOfSeats(e.target.value) } required/>
 
           <label for className='lg:text-lg text-left'>Transmission Type</label>
           <br></br>
