@@ -41,9 +41,10 @@ const updateRecord = async (req, res) => {
     const fields = ["RecordId", "Section", "Income", "Expences", "Month"];
     const data = Object.fromEntries(fields.filter((key) => req.body?.[key] !== undefined).map((key) => [key, req.body[key]]));
     for (const key of ["Income", "Expences"]) {
-      if (data[key] !== undefined && (!Number.isFinite(Number(data[key])) || Number(data[key]) < 0)) {
-        return res.status(400).json({ message: key + " must be a non-negative number" });
+      if (data[key] !== undefined && (data[key] === "" || data[key] === null || !Number.isFinite(Number(data[key])) || Number(data[key]) < 0)) {
+        return res.status(400).json({ message: key + " must be a non-negative number; decimal amounts are allowed" });
       }
+      if (data[key] !== undefined) data[key] = Number(data[key]);
     }
     const record = await Finance.findByIdAndUpdate(req.params.id, data, { new: true, runValidators: true });
     if (!record) return res.status(404).json({ message: "Financial record not found" });
