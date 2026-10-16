@@ -2,6 +2,7 @@ import axios from "axios";
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
+import { isPositiveNumber, isPositiveInteger, isNonNegativeNumber } from "../../utils/formValidation";
 
 const DoUpdateTrain = () => {
 
@@ -34,8 +35,25 @@ const DoUpdateTrain = () => {
     const handleFormSubmit = (event) =>{
         event.preventDefault();
 
+        if (!isPositiveNumber(singleTrain.price)) {
+            Swal.fire("Invalid fare", "Enter a fare greater than zero. Decimal values such as 45.75 are allowed.", "error");
+            return;
+        }
+        if (!isPositiveInteger(singleTrain.noOfSeats)) {
+            Swal.fire("Invalid seat count", "Number of seats must be a whole number greater than zero.", "error");
+            return;
+        }
+        if (singleTrain.MaxBagage !== "" && !isNonNegativeNumber(singleTrain.MaxBagage)) {
+            Swal.fire("Invalid baggage weight", "Baggage weight must be zero or greater; decimal values are allowed.", "error");
+            return;
+        }
+        if (singleTrain.cancelCharges !== "" && !isNonNegativeNumber(singleTrain.cancelCharges)) {
+            Swal.fire("Invalid cancellation charge", "Cancellation charges must be zero or greater. Decimal values are allowed.", "error");
+            return;
+        }
+
         axios.
-            put(`/train/update/${id}`,singleTrain)
+            put(`/train/update/${id}`, { ...singleTrain, price: Number(singleTrain.price), noOfSeats: Number(singleTrain.noOfSeats), MaxBagage: singleTrain.MaxBagage === "" ? "" : Number(singleTrain.MaxBagage), cancelCharges: singleTrain.cancelCharges === "" ? "" : Number(singleTrain.cancelCharges) })
             .then(() => {
                 Swal.fire({
                   title: "Do you want to save the changes?",
@@ -143,8 +161,12 @@ const DoUpdateTrain = () => {
                                 className="bordder-[#E9EDF4] w-full rounded-3xl border bg-[#FCFDFE] py-3 px-5 text-base text-body-color placeholder-[#ACB6BE] outline-none focus:border-[#41A4FF] focus-visible:shadow-none"
                                 id="price"
                                 name="price"
-                                value={singleTrain.price}
-                                placeholder="Price"
+                                type="number"
+                                min="0.01"
+                                step="0.01"
+                                inputMode="decimal"
+                                value={singleTrain.price ?? ""}
+                                placeholder="Fare, e.g. 45.75"
                                 onChange={handleChanges}
                             />
                         </div>
@@ -155,7 +177,10 @@ const DoUpdateTrain = () => {
                                 className="bordder-[#E9EDF4] w-full rounded-3xl border bg-[#FCFDFE] py-3 px-5 text-base text-body-color placeholder-[#ACB6BE] outline-none focus:border-[#41A4FF] focus-visible:shadow-none"
                                 id="noOfSeats"
                                 name="noOfSeats"
-                                value={singleTrain.noOfSeats}
+                                type="number"
+                                min="1"
+                                step="1"
+                                value={singleTrain.noOfSeats ?? ""}
                                 placeholder="Number of seats"
                                 onChange={handleChanges}
                             />
@@ -179,7 +204,11 @@ const DoUpdateTrain = () => {
                                 className="bordder-[#E9EDF4] w-full rounded-3xl border bg-[#FCFDFE] py-3 px-5 text-base text-body-color placeholder-[#ACB6BE] outline-none focus:border-[#41A4FF] focus-visible:shadow-none"
                                 id="MaxBagage"
                                 name="MaxBagage"
-                                placeholder="Max Bagages Weight"
+                                type="number"
+                                min="0"
+                                step="0.1"
+                                inputMode="decimal"
+                                placeholder="Max baggage weight"
                                 value={singleTrain.MaxBagage}
                                 onChange={handleChanges}
                             />
@@ -203,7 +232,11 @@ const DoUpdateTrain = () => {
                                 className="bordder-[#E9EDF4] w-full rounded-3xl border bg-[#FCFDFE] py-3 px-5 text-base text-body-color placeholder-[#ACB6BE] outline-none focus:border-[#41A4FF] focus-visible:shadow-none"
                                 id="cancelCharges"
                                 name="cancelCharges"
-                                placeholder="Cancel Charges"
+                                type="number"
+                                min="0"
+                                step="0.01"
+                                inputMode="decimal"
+                                placeholder="Cancellation charges"
                                 value={singleTrain.cancelCharges}
                                 onChange={handleChanges}
                             />
