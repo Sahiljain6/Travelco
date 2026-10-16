@@ -15,17 +15,23 @@ const SalarySchema = new Schema({
         type : String 
     },
     Numberaofdates:{
-        type:String
+        type:Number,
+        min:1,
+        validate:{ validator:Number.isInteger, message:"Working days must be a positive whole number" }
     },
 
     OtHours:{
-        type:String
+        type:Number,
+        min:0,
+        validate:{ validator:Number.isInteger, message:"Overtime hours must be a non-negative whole number" }
     },
     BasicSalary:{
-        type:String
+        type:Number,
+        min:[0.01, "Basic salary must be greater than zero"]
     },
     NetSalary:{
-        type:String
+        type:Number,
+        min:0
     }
 
 })
