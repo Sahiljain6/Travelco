@@ -52,7 +52,7 @@ const { isValidInternationalPhone, isValidPostalCode, parsePositiveNumber, parse
           return res.status(400).json({ message: "Number of room types must be a whole number greater than zero." });
         }
         if (!isOptionalRating(body.rating, 5) || (body.rating !== "" && Number(body.rating) < 1)) {
-          return res.status(400).json({ message: "Rating must be between 0 and 5. Decimal values such as 4.5 are allowed." });
+          return res.status(400).json({ message: "Rating must be between 1 and 5. Decimal values such as 4.5 are allowed." });
         }
 
         const hotelImg = req.files?.HotelImg?.[0];
