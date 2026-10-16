@@ -1,20 +1,32 @@
 const SeatBookingTrain = require("../models/SeatBooking");
-const path = require("path")
+const path = require("path");
+const { isValidInternationalPhone, parsePositiveInteger } = require("../utils/validation");
 
 // add seat booking - tourists
-const addSeatBooking = async(req,res)=>{
-    const newSeatBooking = new SeatBookingTrain({
-        ...req.body,
-        userId: String(req.user),
-        isApproved: false
-    })
+const addSeatBooking = async (req, res) => {
+    if (!isValidInternationalPhone(req.body?.phoneNumber)) {
+        return res.status(400).json({ message: "Enter a valid international phone number with 7–15 digits; it cannot be all zeroes." });
+    }
+    const noOfTickets = parsePositiveInteger(req.body?.noOfTickets);
+    if (noOfTickets === null) {
+        return res.status(400).json({ message: "Ticket count must be a positive whole number." });
+    }
 
-    await newSeatBooking.save().then((newSeatBooking)=>{
-        res.json(newSeatBooking);
-    }).catch((err)=>{
-        res.json(err.message);
-    })
+    try {
+        const newSeatBooking = new SeatBookingTrain({
+            ...req.body,
+            phoneNumber: String(req.body.phoneNumber).trim(),
+            noOfTickets,
+            userId: String(req.user),
+            isApproved: false
+        });
+        await newSeatBooking.save();
+        return res.status(201).json(newSeatBooking);
+    } catch (error) {
+        return res.status(400).json({ message: error.message || "Unable to create ticket booking." });
+    }
 }
+
 // fetch all tickets - admin (that need to review)
 const fetchAllBookings =  async(req,res)=>{
     await SeatBookingTrain.find().then((allBooking)=>{
@@ -79,14 +91,25 @@ const updateSeatBooking = async (req, res) => {
         if (String(booking.userId) !== String(req.user) && req.authUser?.isAdmin !== true) {
             return res.status(403).json({ message: "You cannot update this ticket" });
         }
+        const update = req.body || {};
         const allowed = ["firstName", "LastName", "nationality", "IdCardNumber", "phoneNumber", "email", "noOfTickets"];
-        for (const field of allowed) {
-            if (req.body[field] !== undefined) booking[field] = req.body[field];
+        if (update.phoneNumber !== undefined && !isValidInternationalPhone(update.phoneNumber)) {
+            return res.status(400).json({ message: "Enter a valid international phone number with 7–15 digits; it cannot be all zeroes." });
         }
+        if (update.noOfTickets !== undefined) {
+            const count = parsePositiveInteger(update.noOfTickets);
+            if (count === null) return res.status(400).json({ message: "Ticket count must be a positive whole number." });
+            booking.noOfTickets = count;
+        }
+        for (const field of allowed) {
+            if (field === "noOfTickets") continue;
+            if (update[field] !== undefined) booking[field] = update[field];
+        }
+        if (update.phoneNumber !== undefined) booking.phoneNumber = String(update.phoneNumber).trim();
         await booking.save();
         return res.status(200).json({ status: "updated", booking });
-    } catch {
-        return res.status(500).json({ message: "Unable to update ticket" });
+    } catch (error) {
+        return res.status(400).json({ message: error.message || "Unable to update ticket" });
     }
 };
 
