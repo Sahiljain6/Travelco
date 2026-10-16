@@ -3,6 +3,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 const nodemailer = require("nodemailer");
+const { isValidInternationalPhone } = require("../utils/validation");
 
 const FRONTEND_URL = (process.env.FRONTEND_URL || process.env.CLIENT_URL || "https://travelxco.netlify.app").replace(/\/+$/, "");
 const TERMS_VERSION = "2026-10";
@@ -79,8 +80,8 @@ const registerUser = async (req, res) => {
     if (!country || typeof country !== "string" || country.trim().length > 80) {
       return res.status(400).json({ message: "Please select your country" });
     }
-    if (!mobile || typeof mobile !== "string" || mobile.trim().length < 7 || mobile.trim().length > 25) {
-      return res.status(400).json({ message: "Please enter a valid phone number" });
+    if (!isValidInternationalPhone(mobile)) {
+      return res.status(400).json({ message: "Enter a valid international phone number with 7–15 digits; it cannot be all zeroes." });
     }
     if (termsAccepted !== true) {
       return res.status(400).json({ message: "You must accept the Terms and Conditions and Privacy Policy to create an account" });
@@ -261,8 +262,8 @@ const updateMyProfile = async (req, res) => {
       user.country = body.country.trim();
     }
     if (Object.prototype.hasOwnProperty.call(body, "mobile")) {
-      if (typeof body.mobile !== "string" || body.mobile.trim().length < 7 || body.mobile.trim().length > 25) {
-        return res.status(400).json({ message: "Please enter a valid phone number" });
+      if (!isValidInternationalPhone(body.mobile)) {
+        return res.status(400).json({ message: "Enter a valid international phone number with 7–15 digits; it cannot be all zeroes." });
       }
       user.mobile = body.mobile.trim();
     }

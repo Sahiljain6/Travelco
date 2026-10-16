@@ -1,9 +1,10 @@
 import React, { useContext, useEffect, useMemo, useState } from "react";
 import axios from "axios";
-import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/authContext";
 import countries from "../data/countries";
 import { getPreferredCurrency, supportedCurrencies } from "../utils/globalTravel";
+import { isValidInternationalPhone } from "../utils/formValidation";
 
 const interests = ["Beaches", "Adventure", "Culture", "Food", "Nature", "Shopping", "History", "Wildlife", "Wellness", "Nightlife", "Road trips", "Photography"];
 const currencies = Array.from(new Set([...supportedCurrencies, "NPR", "HKD"]));
@@ -115,9 +116,13 @@ const Profile = () => {
 
   const saveProfile = async (event) => {
     event.preventDefault();
-    setSaving(true);
     setPageError("");
     setNotice("");
+    if (!isValidInternationalPhone(form.mobile)) {
+      setPageError("Enter an international phone number with 7–15 digits; it cannot be all zeroes.");
+      return;
+    }
+    setSaving(true);
     try {
       const savedDestinations = [...new Set(savedText.split(",").map((value) => value.trim()).filter(Boolean))].slice(0, 20);
       const response = await axios.patch("auth/profile", {
@@ -247,7 +252,7 @@ const Profile = () => {
                     </select>
                   </Field>
                   <Field label="Phone number">
-                    <input type="tel" autoComplete="tel" minLength={7} maxLength={25} value={form.mobile} onChange={(event) => updateField("mobile", event.target.value)} className={inputClass} placeholder="+91 98765 43210" />
+                    <input type="tel" inputMode="tel" autoComplete="tel" minLength={7} maxLength={25} required value={form.mobile} onChange={(event) => updateField("mobile", event.target.value)} className={inputClass} placeholder="+91 98765 43210" />
                   </Field>
                   <Field label="Preferred currency">
                     <select value={form.preferredCurrency} onChange={(event) => updateField("preferredCurrency", event.target.value)} className={inputClass}>

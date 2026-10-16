@@ -7,6 +7,7 @@ import backgroundImage from "../assets/images/bg.jpg";
 import Spinner from "../components/spinner/LoadingSpinner";
 import countries from "../data/countries";
 import { uploadProfileImage } from "../utils/uploadImage";
+import { isValidInternationalPhone } from "../utils/formValidation";
 
 const Register = () => {
   const [loading2, setLoading2] = useState(false);
@@ -60,11 +61,11 @@ const Register = () => {
       Swal.fire("Please enter a valid email address", "", "error");
       return;
     }
-    if (!/^\+?[1-9]\d{6,14}$/.test(mobile.replace(/[\s()-]/g, ""))) {
+    if (!isValidInternationalPhone(mobile)) {
       Swal.fire({
         icon: "error",
         title: "Oops...",
-        text: "enter valid mobile number",
+        text: "Enter an international phone number with 7–15 digits; it cannot be all zeroes.",
       });
       return;
     }
@@ -227,8 +228,12 @@ const Register = () => {
             </div>
             <div className="mb-6">
               <input
-                placeholder="Mobile"
+                placeholder="+1 212 555 0100"
                 type="tel"
+                inputMode="tel"
+                minLength={7}
+                maxLength={25}
+                autoComplete="tel"
                 id="mobile"
                 value={mobile}
                 onChange={(e) => setMobile(e.target.value)}

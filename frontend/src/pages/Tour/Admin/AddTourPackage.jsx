@@ -7,6 +7,7 @@ import axios from "axios";
 import { AuthContext } from "../../../context/authContext";
 import { uploadImage } from "../../../utils/uploadImage";
 import { supportedCurrencies } from "../../../utils/globalTravel";
+import { isPositiveNumber, isPositiveInteger } from "../../../utils/formValidation";
 
 const AddTourPackage = () => {
   useEffect(() => {
@@ -38,10 +39,10 @@ const AddTourPackage = () => {
       file === "" ||
       name === "" ||
       category === "" ||
-      price === 0 ||
-      groupCount === 0 ||
+      !isPositiveNumber(price) ||
+      !isPositiveInteger(groupCount) ||
       languages === "" ||
-      duration === "" ||
+      !isPositiveInteger(duration) ||
       cities === "" ||
       description === "" ||
       introduction === ""
@@ -219,7 +220,11 @@ const AddTourPackage = () => {
                     type="number"
                     name="price"
                     id="price"
-                    placeholder="Type Here"
+                    min="0.01"
+                    step="0.01"
+                    inputMode="decimal"
+                    required
+                    placeholder="Price per person, e.g. 125.50"
                     className="block w-full px-3 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                     onChange={(e) => {
                       setPrice(e.target.value);
@@ -250,6 +255,9 @@ const AddTourPackage = () => {
                     type="number"
                     id="maxsize"
                     name="maxsize"
+                    min="1"
+                    step="1"
+                    required
                     className="block w-full px-3 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                     onChange={(e) => {
                       setGroupCount(e.target.value);

@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import FileBase from "react-file-base64";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import Swal from "sweetalert2";
+import { isValidInternationalPhone } from "../../utils/formValidation";
 const RestaurantForm = () => {
   const navigate = useNavigate();
   const [name, setName] = useState("");
@@ -59,6 +61,10 @@ const RestaurantForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!isValidInternationalPhone(contactNo)) {
+      Swal.fire({ icon: "error", title: "Invalid contact number", text: "Enter an international phone number with 7–15 digits; it cannot be all zeroes." });
+      return;
+    }
     try {
       await axios.post("http://localhost:5000/api/restaurant", {
         name: name,
@@ -349,8 +355,12 @@ const RestaurantForm = () => {
             <input
               className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
               id="contactNo"
-              type="text"
-              placeholder="contactNo"
+              type="tel"
+              inputMode="tel"
+              minLength={7}
+              maxLength={25}
+              autoComplete="tel"
+              placeholder="+1 212 555 0100"
               value={contactNo}
               onChange={handleContactNoChange}
               required

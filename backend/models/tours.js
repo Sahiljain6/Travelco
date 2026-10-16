@@ -21,6 +21,7 @@ const addTourForm = new Schema({
   price: {
     type: Number,
     required: [true, "must provide a price"],
+    min: [0.01, "Price must be greater than zero"],
   },
   currency: {
     type: String,
@@ -30,6 +31,8 @@ const addTourForm = new Schema({
   groupCount: {
     type: Number,
     required: [true, "must provide a Group Count"],
+    min: 1,
+    validate: { validator: Number.isInteger, message: "Group count must be a positive whole number" },
   },
   languages: {
     type: String,
@@ -38,6 +41,7 @@ const addTourForm = new Schema({
   duration: {
     type: String,
     required: [true, "must provide a duration"],
+    validate: { validator: (value) => Number.isSafeInteger(Number(value)) && Number(value) > 0, message: "Duration must be a positive whole number" },
   },
   cities: {
     type: String,

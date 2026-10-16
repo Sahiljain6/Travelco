@@ -3,6 +3,7 @@ import axios from "axios"
 import Swal from "sweetalert2";
 import Payment from "./payment";
 import { useNavigate } from 'react-router-dom';
+import { isValidInternationalPhone, isPositiveInteger } from "../../utils/formValidation";
 
 
 
@@ -33,6 +34,14 @@ export default function AddPassengerDetails() {
 
     function sendData(e) {
         e.preventDefault();
+        if (!isPositiveInteger(noOfTickets)) {
+            Swal.fire({ icon: "error", title: "Invalid ticket count", text: "Number of tickets must be a whole number greater than zero." });
+            return;
+        }
+        if (!isValidInternationalPhone(phoneNumber)) {
+            Swal.fire({ icon: "error", title: "Invalid phone number", text: "Enter an international phone number with 7–15 digits; it cannot be all zeroes." });
+            return;
+        }
 
         const newPassenger = {
             userId,
@@ -91,10 +100,13 @@ export default function AddPassengerDetails() {
 
                         <div className="relative mb-3 mt-5" >
                             <input
-                                type="text"
+                                type="number"
+                                min="1"
+                                step="1"
+                                required
                                 className="bordder-[#E9EDF4] w-full rounded-3xl border bg-[#FCFDFE] py-3 px-5 text-base text-body-color placeholder-[#ACB6BE] outline-none focus:border-[#41A4FF] focus-visible:shadow-none"
                                 id="noOfTickets"
-                                placeholder="Number Of Tickets"
+                                placeholder="Number of tickets"
                                 onChange={(e) => { setnoOfTickets(e.target.value) }}
                             />
                         </div>
@@ -143,10 +155,15 @@ export default function AddPassengerDetails() {
 
                         <div className="relative mb-3 mt-5" >
                             <input
-                                type="text"
+                                type="tel"
+                                inputMode="tel"
+                                minLength={7}
+                                maxLength={25}
+                                autoComplete="tel"
+                                required
                                 className="bordder-[#E9EDF4] w-full rounded-3xl border bg-[#FCFDFE] py-3 px-5 text-base text-body-color placeholder-[#ACB6BE] outline-none focus:border-[#41A4FF] focus-visible:shadow-none"
                                 id="phoneNumber"
-                                placeholder="Phone Number"
+                                placeholder="+91 98765 43210"
                                 onChange={(e) => { setphoneNumber(e.target.value) }}
                             />
                         </div>

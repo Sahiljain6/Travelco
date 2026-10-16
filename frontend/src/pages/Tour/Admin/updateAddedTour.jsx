@@ -8,6 +8,7 @@ import { AuthContext } from "../../../context/authContext";
 import { uploadImage } from "../../../utils/uploadImage";
 import { useLocation } from "react-router-dom";
 import { supportedCurrencies } from "../../../utils/globalTravel";
+import { isPositiveNumber, isPositiveInteger } from "../../../utils/formValidation";
 
 const AddTourPackage = () => {
   useEffect(() => {
@@ -37,6 +38,14 @@ const AddTourPackage = () => {
   //send data to database
   const handleSubmit = async (event) => {
     event.preventDefault();
+    if (!isPositiveNumber(price)) {
+      Swal.fire({ icon: "error", title: "Invalid tour price", text: "Enter a price greater than zero. Decimal values such as 125.50 are allowed." });
+      return;
+    }
+    if (!isPositiveInteger(groupCount) || !isPositiveInteger(duration)) {
+      Swal.fire({ icon: "error", title: "Invalid tour details", text: "Group size and tour duration must be positive whole numbers." });
+      return;
+    }
 
     const result = await Swal.fire({
       title: "Are you sure you want to update?",
@@ -227,7 +236,11 @@ const AddTourPackage = () => {
                     type="number"
                     name="price"
                     id="price"
-                    placeholder="Type Here"
+                    min="0.01"
+                    step="0.01"
+                    inputMode="decimal"
+                    required
+                    placeholder="Price per person, e.g. 125.50"
                     className="block w-full px-3 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                     onChange={(e) => {
                       setPrice(e.target.value);
@@ -259,6 +272,9 @@ const AddTourPackage = () => {
                     type="number"
                     id="maxsize"
                     name="maxsize"
+                    min="1"
+                    step="1"
+                    required
                     className="block w-full px-3 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                     onChange={(e) => {
                       setGroupCount(e.target.value);

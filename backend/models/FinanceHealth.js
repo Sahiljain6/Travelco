@@ -10,10 +10,12 @@ const FinanceHSchema = new Schema({
         type:String
     },
     Income:{
-        type : String
+        type: Number,
+        min: 0
     },
     Expences: {
-        type : String 
+        type: Number,
+        min: 0
     },
     Month:{
         type:String

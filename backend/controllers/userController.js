@@ -1,4 +1,5 @@
 const User = require("../models/userModel");
+const { isValidInternationalPhone } = require("../utils/validation");
 
 const safeUserSelect = "-password -emailVerificationTokenHash -passwordResetTokenHash";
 
@@ -23,8 +24,8 @@ const updateUser = async (req, res) => {
       update.country = update.country.trim();
     }
     if (update.mobile !== undefined) {
-      if (typeof update.mobile !== "string" || update.mobile.trim().length < 7 || update.mobile.trim().length > 25) {
-        return res.status(400).json({ message: "Please enter a valid phone number" });
+      if (!isValidInternationalPhone(update.mobile)) {
+        return res.status(400).json({ message: "Enter a valid international phone number with 7–15 digits; it cannot be all zeroes." });
       }
       update.mobile = update.mobile.trim();
     }

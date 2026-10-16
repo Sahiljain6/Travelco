@@ -4,6 +4,7 @@ import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
 import countries from "../../data/countries";
 import { getPreferredCurrency, supportedCurrencies } from "../../utils/globalTravel";
+import { isValidInternationalPhone, isValidPostalCode, isPositiveNumber, isPositiveInteger, isOptionalRating } from "../../utils/formValidation";
 
 export const AddHotel = () => {
   const navigate = useNavigate();
@@ -36,20 +37,24 @@ export const AddHotel = () => {
   function sendData(e) {
     e.preventDefault();
 
-    if (!String(zip).trim() || String(zip).trim().length > 20) {
-      Swal.fire({ icon: "error", title: "Oops...", text: "Enter a valid postal or ZIP code" });
+    if (!isValidPostalCode(zip)) {
+      Swal.fire({ icon: "error", title: "Invalid postal code", text: "Enter a valid postal/ZIP code (2–12 letters or digits; a value of only zeroes is not valid)." });
       return;
     }
-     if (isNaN(distance)) {
-        Swal.fire({
-          icon: "error",
-          title: "Oops...",
-          text: "Enter distance in Km",
-        });
-         return;
+    if (!isValidInternationalPhone(contactNumber)) {
+      Swal.fire({ icon: "error", title: "Invalid contact number", text: "Enter an international phone number with 7–15 digits; it cannot be all zeroes." });
+      return;
     }
-    if (!/^\+?[0-9\s().-]{7,25}$/.test(contactNumber.trim())) {
-      Swal.fire({ icon: "error", title: "Oops...", text: "Enter a valid international contact number" });
+    if (!isPositiveNumber(price)) {
+      Swal.fire({ icon: "error", title: "Invalid price", text: "Enter a price greater than zero. Decimal prices such as 125.50 are allowed." });
+      return;
+    }
+    if (!isPositiveInteger(noOfRoomTypes)) {
+      Swal.fire({ icon: "error", title: "Invalid room count", text: "Number of room types must be a whole number greater than zero." });
+      return;
+    }
+    if (raiting !== "" && (!isOptionalRating(raiting, 5) || Number(raiting) < 1)) {
+      Swal.fire({ icon: "error", title: "Invalid rating", text: "Rating must be between 1 and 5. Decimal values such as 4.5 are allowed." });
       return;
     }
 
@@ -81,6 +86,7 @@ export const AddHotel = () => {
 
     formData.append("description", description);
     formData.append("cheapestPrice", price);
+    if (raiting !== "") formData.append("rating", raiting);
 
     axios
       .post("/hotels", formData, {
@@ -218,7 +224,12 @@ export const AddHotel = () => {
               class="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
               id="zip"
               type="text"
-              placeholder="90210"
+              inputMode="text"
+              minLength={2}
+              maxLength={12}
+              autoComplete="postal-code"
+              placeholder="e.g. 90210 or SW1A 1AA"
+              required
               onChange={(e) => setZip(e.target.value)}
             />
           </div>
@@ -287,6 +298,12 @@ export const AddHotel = () => {
               class="appearance-none block w-full bg-gray-200 text-gray-700 border rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white"
               id="contactNumber"
               type="tel"
+              inputMode="tel"
+              minLength={7}
+              maxLength={25}
+              autoComplete="tel"
+              placeholder="+1 212 555 0100"
+              required
               onChange={(e) => setContactNumber(e.target.value)}
             />
           </div>
@@ -304,6 +321,9 @@ export const AddHotel = () => {
               class="appearance-none block w-full bg-gray-200 text-gray-700 borderrounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white"
               id="noOfRoomTypes"
               type="number"
+              min="1"
+              step="1"
+              required
               onChange={(e) => setNoOfRoomTypes(e.target.value)}
             />
           </div>
@@ -337,7 +357,12 @@ export const AddHotel = () => {
             <input
               class="appearance-none block w-full bg-gray-200 text-gray-700 border rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white"
               id="price"
-              type="Number"
+              type="number"
+              min="0.01"
+              step="0.01"
+              inputMode="decimal"
+              required
+              placeholder="e.g. 125.50"
               onChange={(e) => setprice(e.target.value)}
             />
             <label class="mt-4 block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2" htmlFor="currency">Listing currency</label>
@@ -358,7 +383,12 @@ export const AddHotel = () => {
             <input
               class="appearance-none block w-full bg-gray-200 text-gray-700 border rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white"
               id="rating"
-              type="Number"
+              type="number"
+              min="1"
+              max="5"
+              step="0.1"
+              inputMode="decimal"
+              placeholder="1–5, e.g. 4.5"
               onChange={(e) => setRaiting(e.target.value)}
             />
           </div>

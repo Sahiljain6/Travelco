@@ -6,7 +6,7 @@ const resturentRateSchema = new Schema({
   resturent: { type: Schema.Types.ObjectId, ref: 'Resturent', required: true },
   date: { type: Date, default: Date.now },
   comment: { type: String, required: true },
-  rate: { type: Number, integer: true, required: true },
+  rate: { type: Number, required: true, min: [1, "Rating must be at least 1"], max: [5, "Rating cannot exceed 5"] },
   status: { type: String, enum: ['VALID', 'INVALID'], default: 'VALID' },
 });
 

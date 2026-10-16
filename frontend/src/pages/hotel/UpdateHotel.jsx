@@ -5,6 +5,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import useFetch from "../../hooks/useFetch";
 import countries from "../../data/countries";
 import { getPreferredCurrency, supportedCurrencies } from "../../utils/globalTravel";
+import { isValidInternationalPhone, isValidPostalCode, isPositiveNumber, isOptionalRating } from "../../utils/formValidation";
 
 
 export const UpdateHotel= () => {
@@ -29,7 +30,8 @@ const location=useLocation();
   const [contactName, setContactName] = React.useState(data.contactName);
   const [contactNo, setContactNumber] = React.useState(data.contactNo || "");
  // const [noOfRoomTypes, setNoOfRoomTypes] = React.useState("");
-  const [cheapestPrice, setprice] = React.useState(data.cheapestPrice || "");
+  const [cheapestPrice, setprice] = React.useState(data.cheapestPrice ?? "");
+  const [rating, setRating] = React.useState(data.rating ?? "");
 
   
 
@@ -52,6 +54,7 @@ const location=useLocation();
     setContactName(data.contactName || "");
     setContactNumber(data.contactNo || "");
     setprice(data.cheapestPrice ?? "");
+    setRating(data.rating ?? "");
     setCurrency(data.currency || getPreferredCurrency());
   }, [data]);
 
@@ -59,6 +62,23 @@ const location=useLocation();
     e.preventDefault();
 
     
+
+    if (!isValidPostalCode(zip)) {
+      Swal.fire({ icon: "error", title: "Invalid postal code", text: "Enter a valid postal/ZIP code (2–12 letters or digits; a value of only zeroes is not valid)." });
+      return;
+    }
+    if (!isValidInternationalPhone(contactNo)) {
+      Swal.fire({ icon: "error", title: "Invalid contact number", text: "Enter an international phone number with 7–15 digits; it cannot be all zeroes." });
+      return;
+    }
+    if (!isPositiveNumber(cheapestPrice)) {
+      Swal.fire({ icon: "error", title: "Invalid price", text: "Enter a price greater than zero. Decimal prices such as 125.50 are allowed." });
+      return;
+    }
+    if (rating !== "" && (!isOptionalRating(rating, 5) || Number(rating) < 1)) {
+      Swal.fire({ icon: "error", title: "Invalid rating", text: "Rating must be between 1 and 5. Decimal values such as 4.5 are allowed." });
+      return;
+    }
 
     const updateHotel = {
         name,
@@ -68,14 +88,15 @@ const location=useLocation();
         country,
         currency,
         province,
-        zip,
+        zip: String(zip).trim(),
         address,
         distance,
         description,
         contactName,
-        contactNo,
-        cheapestPrice
+        contactNo: String(contactNo).trim(),
+        cheapestPrice: Number(cheapestPrice)
       };
+    if (rating !== "") updateHotel.rating = Number(rating);
 
     axios
       .put(`/hotels/${id}`,updateHotel) 
@@ -209,9 +230,14 @@ const location=useLocation();
             <input
               class="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 leading-tight focus:outline-none focus:bg-white focus:border-gray-500"
               id="zip"
-              defaultValue={data.zip}
+              value={zip || ""}
               type="text"
-              
+              inputMode="text"
+              minLength={2}
+              maxLength={12}
+              autoComplete="postal-code"
+              placeholder="e.g. 90210 or SW1A 1AA"
+              required
               onChange={(e) => setZip(e.target.value)}
             />
           </div>
@@ -282,8 +308,14 @@ const location=useLocation();
             <input
               class="appearance-none block w-full bg-gray-200 text-gray-700 border rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white"
               id="contactNumber"
-              defaultValue={data.contactNo}
+              value={contactNo || ""}
               type="tel"
+              inputMode="tel"
+              minLength={7}
+              maxLength={25}
+              autoComplete="tel"
+              placeholder="+1 212 555 0100"
+              required
               onChange={(e) => setContactNumber(e.target.value)}
             />
           </div>
@@ -319,8 +351,13 @@ const location=useLocation();
             <input
               class="appearance-none block w-full bg-gray-200 text-gray-700 border rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white"
               id="price"
-              defaultValue={data.cheapestPrice}
-              type="Number"
+              value={cheapestPrice}
+              type="number"
+              min="0.01"
+              step="0.01"
+              inputMode="decimal"
+              required
+              placeholder="e.g. 125.50"
               onChange={(e) => setprice(e.target.value)}
             />
             <label class="mt-4 block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2" htmlFor="currency">Listing currency</label>
@@ -330,22 +367,27 @@ const location=useLocation();
           </div>
         </div>
 
-        {/* <div class="flex flex-wrap -mx-3 mb-6">
-          <div class="w-full px-3">
-            <label
-              class="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2"
-              for="grid-first-name"
-            >
-              Rating
+        <div className="flex flex-wrap -mx-3 mb-6">
+          <div className="w-full px-3">
+            <label className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2" htmlFor="rating">
+              Rating (optional, 1–5)
             </label>
             <input
-              class="appearance-none block w-full bg-gray-200 text-gray-700 border rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white"
+              className="appearance-none block w-full bg-gray-200 text-gray-700 border rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white"
               id="rating"
-              type="Number"
-              onChange={(e) => setRaiting(e.target.value)}
+              type="number"
+              min="1"
+              max="5"
+              step="0.1"
+              inputMode="decimal"
+              value={rating}
+              placeholder="e.g. 4.5"
+              onChange={(e) => setRating(e.target.value)}
             />
           </div>
-        </div> */}
+        </div>
+
+
 
     
         <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full mb-8">

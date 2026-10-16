@@ -1,5 +1,6 @@
 const multer = require("multer");
 const Vehicle = require("../models/Vehicle");
+const { parsePositiveNumber, parsePositiveInteger } = require("../utils/validation");
 //const AcceptedVehicle = require("../models/AcceptedVehicle");
 const path = require("path");
 
@@ -46,8 +47,14 @@ exports.addVehicle = async(req, res) => {
     
             const mainImage = req.files?.vehicleMainImg?.[0];
             if (!mainImage) return res.status(400).json({ message: "A main vehicle image is required" });
+            const price = parsePositiveNumber(req.body.price);
+            if (price === null) return res.status(400).json({ message: "Price must be greater than zero. Decimal values are allowed." });
+            const capacity = parsePositiveInteger(req.body.capacity);
+            if (capacity === null) return res.status(400).json({ message: "Capacity must be a positive whole number." });
             const newVehicle = new Vehicle({
                 ...req.body,
+                price,
+                capacity,
                 userId: String(req.user),
                 isAccepted: false,
                 vehicleMainImg: mainImage.filename,

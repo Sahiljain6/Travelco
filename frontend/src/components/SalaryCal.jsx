@@ -3,6 +3,7 @@ import axios from 'axios';
 import Swal from 'sweetalert2';
 import { useNavigate } from 'react-router-dom';
 import useFetch from '../hooks/useFetch';
+import { isPositiveNumber, isPositiveInteger } from '../utils/formValidation';
 
 
 
@@ -29,9 +30,9 @@ console.log(newdata)
      
     useEffect(() => {
     if (JobPosition === 'Admin' || JobPosition === 'Manager' || JobPosition === 'Maintaince Staff') {
-      const salaryRate = parseInt(BasicSalary, 10) / 312;
+      const salaryRate = Number(BasicSalary) / 312;
       const otRate = 5;
-      const netSalary = salaryRate * parseInt(Numberaofdates, 10) + otRate * parseInt(OtHours, 10);
+      const netSalary = salaryRate * Number(Numberaofdates) + otRate * Number(OtHours);
       setNetsalary(netSalary.toFixed(2)); 
     }
   }, [JobPosition, BasicSalary, Numberaofdates, OtHours]);
@@ -62,7 +63,7 @@ const filteredData = newdata.some((employee) => employee.Eid ==Eid && employee.B
     const maxHours=130;
     const  NicPattern = /^(?:\d{9}[vV]|\d{12})$/;
     const namePattern = /^[a-zA-Z ]+$/;
-    const numberPattern = /^\d+$/;
+    const numberPattern = /^\d+(\.\d{1,2})?$/;
   
     Swal.fire({
       title: 'Do you want to Calculate the Employee Salary?',
@@ -95,19 +96,23 @@ const filteredData = newdata.some((employee) => employee.Eid ==Eid && employee.B
         title: 'Invalid  Nic',
         text: 'Please enter a  Nic',
       });}
-       else if(parseInt(OtHours)>maxHours){
+       else if(!isPositiveInteger(OtHours) && Number(OtHours)!==0){
+      Swal.fire({ icon: 'error', title: 'Invalid overtime hours', text: 'Overtime hours must be a whole number of zero or more.' });}
+      else if(parseInt(OtHours)>maxHours){
       Swal.fire({
         icon: 'error',
         title: 'Number of Hours cannot exceed 130',
         text: 'Please enter OT Hours',
       });}
+      else if(!isPositiveInteger(Numberaofdates)){
+      Swal.fire({ icon: 'error', title: 'Invalid working days', text: 'Working days must be a whole number greater than zero.' });}
       else if(parseInt(Numberaofdates)>maxDays){
       Swal.fire({
         icon: 'error',
         title: 'Number of Days cannot be exceed 26',
         text: 'Please enter working Days',
       });}
-      else if(!BasicSalary.match(numberPattern)){
+      else if(!numberPattern.test(BasicSalary) || !isPositiveNumber(BasicSalary)){
       Swal.fire({
         icon: 'error',
         title: 'Salary should be valid number',
@@ -264,10 +269,13 @@ const filteredData = newdata.some((employee) => employee.Eid ==Eid && employee.B
   </label>
 
    <input
-              type="text"
+              type="number"
+              min="0.01"
+              step="0.01"
+              inputMode="decimal"
               name="BasicSalary"
               id="basicSalary"
-              placeholder="$"
+              placeholder="Basic salary, e.g. 12500.50"
               onChange={(e) => setBasicSalary(e.target.value)}
               class="w-full rounded-md border border-[#e0e0e0] bg-white py-3 px-6 text-base font-medium text-[#6B7280] outline-none focus:border-[#6A64F1] focus:shadow-md"
             />
@@ -288,6 +296,9 @@ const filteredData = newdata.some((employee) => employee.Eid ==Eid && employee.B
             </label>
             <input
               type="number"
+              min="1"
+              max="26"
+              step="1"
               name="Date"
               id="date"
               onChange={(e) => setNumberaofdates(e.target.value)}
@@ -307,6 +318,9 @@ const filteredData = newdata.some((employee) => employee.Eid ==Eid && employee.B
             </label>
             <input
               type="number"
+              min="0"
+              max="130"
+              step="1"
               name="oTh"
               id="OtH"
               onChange={(e) => setOtHours(e.target.value)}

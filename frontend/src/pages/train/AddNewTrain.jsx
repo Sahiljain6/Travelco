@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import axios from "axios";
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
+import { isPositiveNumber, isPositiveInteger, isNonNegativeNumber } from "../../utils/formValidation";
 
 export default function AddNewTrain() {
 
@@ -22,6 +23,23 @@ export default function AddNewTrain() {
 
   function sendData(e) {
     e.preventDefault();
+
+    if (!isPositiveNumber(price)) {
+      Swal.fire({ icon: "error", title: "Invalid fare", text: "Enter a fare greater than zero. Decimal values such as 45.75 are allowed." });
+      return;
+    }
+    if (!isPositiveInteger(noOfSeats)) {
+      Swal.fire({ icon: "error", title: "Invalid seat count", text: "Number of seats must be a whole number greater than zero." });
+      return;
+    }
+    if (MaxBagage !== "" && !isNonNegativeNumber(MaxBagage)) {
+      Swal.fire({ icon: "error", title: "Invalid baggage weight", text: "Baggage weight must be zero or greater; decimal values are allowed." });
+      return;
+    }
+    if (cancelCharges !== "" && !isNonNegativeNumber(cancelCharges)) {
+      Swal.fire({ icon: "error", title: "Invalid cancellation charge", text: "Cancellation charges must be zero or greater. Decimal values are allowed." });
+      return;
+    }
 
     const newTrain = {
       trainName,
@@ -168,10 +186,14 @@ export default function AddNewTrain() {
 
             <div className="relative mb-3 mt-5">
               <input
-                type="text"
-                className="bordder-[#E9EDF4] w-full rounded-3xl border bg-[#FCFDFE] py-3 px-5 text-base text-body-color placeholder-[#ACB6BE] outline-none focus:border-[#41A4FF] focus-visible:shadow-none"
+                                className="bordder-[#E9EDF4] w-full rounded-3xl border bg-[#FCFDFE] py-3 px-5 text-base text-body-color placeholder-[#ACB6BE] outline-none focus:border-[#41A4FF] focus-visible:shadow-none"
                 id="price"
-                placeholder="Price"
+                type="number"
+                min="0.01"
+                step="0.01"
+                inputMode="decimal"
+                required
+                placeholder="Fare, e.g. 45.75"
                 onChange={(e) => {
                   setPrice(e.target.value);
                 }}
@@ -180,19 +202,15 @@ export default function AddNewTrain() {
 
             <div className="relative mb-3 mt-5">
               <input
-                type="text"
-                className="bordder-[#E9EDF4] w-full rounded-3xl border bg-[#FCFDFE] py-3 px-5 text-base text-body-color placeholder-[#ACB6BE] outline-none focus:border-[#41A4FF] focus-visible:shadow-none"
+                                className="bordder-[#E9EDF4] w-full rounded-3xl border bg-[#FCFDFE] py-3 px-5 text-base text-body-color placeholder-[#ACB6BE] outline-none focus:border-[#41A4FF] focus-visible:shadow-none"
                 id="noOfSeats"
+                type="number"
+                min="1"
+                step="1"
+                required
                 placeholder="Number of seats"
                 onChange={(e) => {
                   setnoOfSeats(e.target.value);
-                }}
-                onKeyPress={(event) => {
-                  // Only allow numbers
-                  const charCode = event.which ? event.which : event.keyCode;
-                  if (charCode > 31 && (charCode < 48 || charCode > 57)) {
-                    event.preventDefault();
-                  }
                 }}
               />
             </div>
@@ -211,10 +229,13 @@ export default function AddNewTrain() {
 
             <div className="relative mb-3 mt-5">
               <input
-                type="text"
-                className="bordder-[#E9EDF4] w-full rounded-3xl border bg-[#FCFDFE] py-3 px-5 text-base text-body-color placeholder-[#ACB6BE] outline-none focus:border-[#41A4FF] focus-visible:shadow-none"
+                                className="bordder-[#E9EDF4] w-full rounded-3xl border bg-[#FCFDFE] py-3 px-5 text-base text-body-color placeholder-[#ACB6BE] outline-none focus:border-[#41A4FF] focus-visible:shadow-none"
                 id="MaxBagage"
-                placeholder="Max Bagages Weight"
+                type="number"
+                min="0"
+                step="0.1"
+                inputMode="decimal"
+                placeholder="Max baggage weight"
                 onChange={(e) => {
                   setMaxBagage(e.target.value);
                 }}
@@ -235,10 +256,13 @@ export default function AddNewTrain() {
 
             <div className="relative mb-3 mt-5">
               <input
-                type="text"
-                className="bordder-[#E9EDF4] w-full rounded-3xl border bg-[#FCFDFE] py-3 px-5 text-base text-body-color placeholder-[#ACB6BE] outline-none focus:border-[#41A4FF] focus-visible:shadow-none"
+                                className="bordder-[#E9EDF4] w-full rounded-3xl border bg-[#FCFDFE] py-3 px-5 text-base text-body-color placeholder-[#ACB6BE] outline-none focus:border-[#41A4FF] focus-visible:shadow-none"
                 id="cancelCharges"
-                placeholder="Cancel Charges"
+                type="number"
+                min="0"
+                step="0.01"
+                inputMode="decimal"
+                placeholder="Cancellation charges"
                 onChange={(e) => {
                   setcancelCharges(e.target.value);
                 }}

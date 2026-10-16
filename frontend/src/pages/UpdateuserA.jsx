@@ -6,6 +6,7 @@ import moment from "moment";
 import Swal from "sweetalert2";
 import Spinner from "../components/spinner/LoadingSpinner";
 import { uploadImage } from "../utils/uploadImage";
+import { isValidInternationalPhone } from "../utils/formValidation";
 
 const UpdateuserA = () => {
   const { state } = useLocation();
@@ -29,6 +30,10 @@ const UpdateuserA = () => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    if (!isValidInternationalPhone(mobile)) {
+      Swal.fire({ icon: "error", title: "Invalid phone number", text: "Enter an international phone number with 7–15 digits; it cannot be all zeroes." });
+      return;
+    }
 
     const confirmResult = await Swal.fire({
       title: "Are you sure you want to update?",
@@ -179,7 +184,11 @@ const UpdateuserA = () => {
               <label className="flex flex-col items-start">
                 <span className="pb-1 font-bold">Mobile:</span>
                 <input
-                  type="text"
+                  type="tel"
+                  inputMode="tel"
+                  minLength={7}
+                  maxLength={25}
+                  autoComplete="tel"
                   value={mobile}
                   onChange={(event) => setMobile(event.target.value)}
                   className="px-2 py-2 w-full rounded-lg placeholder-slate-300 text-slate-600 relative bg-white text-sm border border-slate-300 outline-none focus:outline-none focus:ring"

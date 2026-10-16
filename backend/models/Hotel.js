@@ -1,4 +1,5 @@
-const mongoose=require('mongoose')
+const mongoose=require('mongoose');
+const { isValidInternationalPhone, isValidPostalCode } = require("../utils/validation");
 
 const HotelSchema=new mongoose.Schema({
     name:{
@@ -18,31 +19,37 @@ const HotelSchema=new mongoose.Schema({
     currency:{ type:String, default:"USD", enum:["USD","EUR","GBP","INR","LKR","AUD","CAD","NZD","JPY","CNY","SGD","ZAR","CHF","AED","BRL","MXN","KRW","THB","MYR","IDR","PHP","TRY","SAR","NGN","PKR"] },
     province:{
         type:String,
-        reqiured:true
+        required:true
     },
     zip:{
         type:String,
-        reqiured:true
+        required:true,
+        trim:true,
+        validate:{ validator:isValidPostalCode, message:"Enter a valid postal/ZIP code (2–12 characters; not all zeroes)" }
     },
     address:{
         type:String, 
-        reqiured:true
+        required:true
     }, 
     distance:{
         type:String, 
-        reqiured:true
+        required:true
     },
     contactName:{
         type:String,
-        reqiured:true
+        required:true
     },
     contactNo:{
         type:String,
-        reqiured:true
+        required:true,
+        trim:true,
+        validate:{ validator:isValidInternationalPhone, message:"Enter a valid international phone number (7–15 digits; not all zeroes)" }
     },
     numberOfRoomTypes:{
-        type:Number, 
-        reqiured:true 
+        type:Number,
+        required:true,
+        min:1,
+        validate:{ validator:Number.isInteger, message:"Number of room types must be a whole number" }
     },
     HotelImg:{
         type:String}
@@ -55,16 +62,17 @@ const HotelSchema=new mongoose.Schema({
     },
     description:{ 
         type:String,
-        reqiured:true
+        required:true
     }, 
-    cheapestPrice:{ 
+    cheapestPrice:{
         type:Number,
-        reqiured:true 
+        required:true,
+        min:[0.01, "Price must be greater than zero"]
     },
     rating:{
-        type:Number, 
-        min:0,
-        max:5
+        type:Number,
+        min:[1, "Rating must be at least one"],
+        max:[5, "Rating cannot exceed five"]
     },
     rooms:{
         type: [String],
