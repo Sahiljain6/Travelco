@@ -57,6 +57,7 @@ const SearchBar = () => {
           <input
             type="number"
             id="tour-duration"
+            step="1"
             value={duration}
             onChange={(event) => setDuration(event.target.value)}
             min="1"
@@ -70,6 +71,7 @@ const SearchBar = () => {
           <input
             type="number"
             id="tour-group-size"
+            step="1"
             value={groupSize}
             onChange={(event) => setGroupSize(event.target.value)}
             min="1"
