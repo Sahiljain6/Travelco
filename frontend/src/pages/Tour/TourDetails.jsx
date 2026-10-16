@@ -10,6 +10,7 @@ import { AuthContext } from "../../context/authContext";
 import Swal from "sweetalert2";
 import axios from "axios";
 import { formatMoney } from "../../utils/globalTravel";
+import { isValidInternationalPhone, isPositiveInteger } from "../../utils/formValidation";
 
 const TourDetails = () => {
   const { id } = useParams();
@@ -63,16 +64,20 @@ const TourDetails = () => {
       return;
     }
 
-    if (phone.length !== 10) {
+    if (!isValidInternationalPhone(phone)) {
       Swal.fire({
         icon: "error",
         title: "Oops...",
-        text: "enter valid mobile number",
+        text: "Enter an international phone number with 7–15 digits; it cannot be all zeroes.",
       });
       return;
     }
 
-    if (guestCount > allTours.groupCount) {
+    if (!isPositiveInteger(guestCount)) {
+      Swal.fire({ icon: "error", title: "Invalid guest count", text: "Number of guests must be a whole number greater than zero." });
+      return;
+    }
+    if (Number(guestCount) > allTours.groupCount) {
       Swal.fire({
         icon: "error",
         title: "Oops...",
@@ -346,6 +351,11 @@ const TourDetails = () => {
                       <div class="relative mb-6" data-te-input-wrapper-init>
                         <input
                           type="tel"
+                          inputMode="tel"
+                          minLength={7}
+                          maxLength={25}
+                          autoComplete="tel"
+                          required
                           class="peer block min-h-[auto] w-full rounded border-0 bg-transparent px-3 py-[0.32rem] leading-[1.6] outline-none transition-all duration-200 ease-linear focus:placeholder:opacity-100 data-[te-input-state-active]:placeholder:opacity-100 motion-reduce:transition-none dark:text-black dark:placeholder:text-neutral-200 [&:not([data-te-input-placeholder-active])]:placeholder:opacity-0"
                           id="phone"
                           placeholder="First name"
@@ -363,6 +373,10 @@ const TourDetails = () => {
                       <div class="relative mb-6" data-te-input-wrapper-init>
                         <input
                           type="number"
+                          min="1"
+                          max={allTours.groupCount || undefined}
+                          step="1"
+                          required
                           class="peer block min-h-[auto] w-full rounded border-0 bg-transparent px-3 py-[0.32rem] leading-[1.6] outline-none transition-all duration-200 ease-linear focus:placeholder:opacity-100 data-[te-input-state-active]:placeholder:opacity-100 motion-reduce:transition-none dark:text-black dark:placeholder:text-neutral-200 [&:not([data-te-input-placeholder-active])]:placeholder:opacity-0"
                           id="countGuest"
                           placeholder="Last name"
