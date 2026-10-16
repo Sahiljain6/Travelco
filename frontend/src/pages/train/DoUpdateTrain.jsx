@@ -43,17 +43,24 @@ const DoUpdateTrain = () => {
             Swal.fire("Invalid seat count", "Number of seats must be a whole number greater than zero.", "error");
             return;
         }
-        if (singleTrain.MaxBagage !== "" && !isNonNegativeNumber(singleTrain.MaxBagage)) {
+        if (singleTrain.MaxBagage !== "" && singleTrain.MaxBagage != null && !isNonNegativeNumber(singleTrain.MaxBagage)) {
             Swal.fire("Invalid baggage weight", "Baggage weight must be zero or greater; decimal values are allowed.", "error");
             return;
         }
-        if (singleTrain.cancelCharges !== "" && !isNonNegativeNumber(singleTrain.cancelCharges)) {
+        if (singleTrain.cancelCharges !== "" && singleTrain.cancelCharges != null && !isNonNegativeNumber(singleTrain.cancelCharges)) {
             Swal.fire("Invalid cancellation charge", "Cancellation charges must be zero or greater. Decimal values are allowed.", "error");
             return;
         }
 
         axios.
-            put(`/train/update/${id}`, { ...singleTrain, price: Number(singleTrain.price), noOfSeats: Number(singleTrain.noOfSeats), MaxBagage: singleTrain.MaxBagage === "" ? "" : Number(singleTrain.MaxBagage), cancelCharges: singleTrain.cancelCharges === "" ? "" : Number(singleTrain.cancelCharges) })
+            put(`/train/update/${id}`, (() => {
+              const update = { ...singleTrain, price: Number(singleTrain.price), noOfSeats: Number(singleTrain.noOfSeats) };
+              if (singleTrain.MaxBagage === "" || singleTrain.MaxBagage == null) delete update.MaxBagage;
+              else update.MaxBagage = Number(singleTrain.MaxBagage);
+              if (singleTrain.cancelCharges === "" || singleTrain.cancelCharges == null) delete update.cancelCharges;
+              else update.cancelCharges = Number(singleTrain.cancelCharges);
+              return update;
+            })())
             .then(() => {
                 Swal.fire({
                   title: "Do you want to save the changes?",
