@@ -388,7 +388,7 @@ export const AddHotel = () => {
               max="5"
               step="0.1"
               inputMode="decimal"
-              placeholder="0–5, e.g. 4.5"
+              placeholder="1–5, e.g. 4.5"
               onChange={(e) => setRaiting(e.target.value)}
             />
           </div>
