@@ -51,7 +51,7 @@ const { isValidInternationalPhone, isValidPostalCode, parsePositiveNumber, parse
         if (numberOfRoomTypes === null) {
           return res.status(400).json({ message: "Number of room types must be a whole number greater than zero." });
         }
-        if (!isOptionalRating(body.rating, 5)) {
+        if (!isOptionalRating(body.rating, 5) || (body.rating !== "" && Number(body.rating) < 1)) {
           return res.status(400).json({ message: "Rating must be between 0 and 5. Decimal values such as 4.5 are allowed." });
         }
 
@@ -99,7 +99,7 @@ const updateHotel = async (req, res, next) => {
     body.numberOfRoomTypes = roomTypes;
   }
   if (Object.prototype.hasOwnProperty.call(body, "rating")) {
-    if (!isOptionalRating(body.rating, 5)) return res.status(400).json({ message: "Rating must be between 0 and 5." });
+    if (!isOptionalRating(body.rating, 5) || (body.rating !== "" && Number(body.rating) < 1)) return res.status(400).json({ message: "Rating must be between 1 and 5." });
     if (body.rating === "") delete body.rating;
     else body.rating = Number(body.rating);
   }
