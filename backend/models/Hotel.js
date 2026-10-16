@@ -19,7 +19,7 @@ const HotelSchema=new mongoose.Schema({
     currency:{ type:String, default:"USD", enum:["USD","EUR","GBP","INR","LKR","AUD","CAD","NZD","JPY","CNY","SGD","ZAR","CHF","AED","BRL","MXN","KRW","THB","MYR","IDR","PHP","TRY","SAR","NGN","PKR"] },
     province:{
         type:String,
-        reqiured:true
+        required:true
     },
     zip:{
         type:String,
@@ -29,15 +29,15 @@ const HotelSchema=new mongoose.Schema({
     },
     address:{
         type:String, 
-        reqiured:true
+        required:true
     }, 
     distance:{
         type:String, 
-        reqiured:true
+        required:true
     },
     contactName:{
         type:String,
-        reqiured:true
+        required:true
     },
     contactNo:{
         type:String,
@@ -62,7 +62,7 @@ const HotelSchema=new mongoose.Schema({
     },
     description:{ 
         type:String,
-        reqiured:true
+        required:true
     }, 
     cheapestPrice:{
         type:Number,
@@ -71,7 +71,7 @@ const HotelSchema=new mongoose.Schema({
     },
     rating:{
         type:Number,
-        min:[0, "Rating cannot be below zero"],
+        min:[1, "Rating must be at least one"],
         max:[5, "Rating cannot exceed five"]
     },
     rooms:{
