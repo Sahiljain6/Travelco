@@ -50,7 +50,13 @@ const AddVehicle = () => {
     e.preventDefault();
 
 
-    if (!validateVehicleNumber()) {
+    if (!validateVehicleNumber()) return;
+    if (!isPositiveInteger(numberOfSeats)) {
+      Swal.fire({ icon: "error", title: "Invalid seat count", text: "Number of seats must be a whole number greater than zero." });
+      return;
+    }
+    if (!isPositiveNumber(rentPrice)) {
+      Swal.fire({ icon: "error", title: "Invalid rent price", text: "Enter a price greater than zero. Decimal prices such as 125.50 are allowed." });
       return;
     }
   
