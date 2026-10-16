@@ -2,6 +2,7 @@ const Hotel = require("../models/Hotel");
 const Room = require("../models/Room");
 const multer = require("multer");
 const path = require("path");
+const { isValidInternationalPhone, isValidPostalCode, parsePositiveNumber, parsePositiveInteger, isOptionalRating } = require("../utils/validation");
 
 
 //img upload part
@@ -29,51 +30,87 @@ const path = require("path");
     { name: 'certificates', maxCount: 2}
   ]);
 
-  // Create a new hotel
+  // Create a new hotel with the same validation used by update forms.
   const createHotel = async (req, res) => {
-    try {
-      // Use Multer middleware to handle file upload
-      upload(req, res, async (err) => {
-        if (err) {
-          console.log(err);
-          return res.status(500).json({ message: "Error uploading images" });
-        }  
-  
-        // Extract the file names from the request object
-        const hotelImg = req.files.HotelImg[0].filename;
-        const HotelImgs = req.files.HotelImgs.map((file) => file.filename);
-        const certificates=req.files.certificates.map((file)=>file.filename);
-  
-        // Create a new hotel object from the request body and file names
-        const newHotel = new Hotel({ 
-          ...req.body,   
-          HotelImg: hotelImg,
-          HotelImgs:HotelImgs,
-          certificates:certificates
-        }); 
-  
-        // Save the new hotel to the database
-        await newHotel.save();
-  
-        // Send a response with the new hotel object 
-        res.status(200).json(newHotel); 
-      });
-    } catch (err) {
-      console.log(err);
-      res.status(500).json({ message: err.message });
-    } 
-  };  
-  
- // update Hotel
-const  updateHotel =async (req,res,next)=>{
-    try{
-        const updatedHotel= await Hotel.findByIdAndUpdate(req.params.id, {$set:req.body}
-            ,{new:true})
-        res.status(200).json(updatedHotel);
+    upload(req, res, async (err) => {
+      if (err) return res.status(400).json({ message: err.message || "Error uploading images" });
 
-    }catch(err){ 
-        next(err);
-    }
+      try {
+        const body = req.body || {};
+        if (!isValidPostalCode(body.zip)) {
+          return res.status(400).json({ message: "Enter a valid postal/ZIP code (2–12 characters; not all zeroes)." });
+        }
+        if (!isValidInternationalPhone(body.contactNo)) {
+          return res.status(400).json({ message: "Enter a valid international contact number with 7–15 digits; it cannot be all zeroes." });
+        }
+        const cheapestPrice = parsePositiveNumber(body.cheapestPrice);
+        if (cheapestPrice === null) {
+          return res.status(400).json({ message: "Cheapest price must be greater than zero. Decimal values are allowed." });
+        }
+        const numberOfRoomTypes = parsePositiveInteger(body.numberOfRoomTypes);
+        if (numberOfRoomTypes === null) {
+          return res.status(400).json({ message: "Number of room types must be a whole number greater than zero." });
+        }
+        if (!isOptionalRating(body.rating, 5)) {
+          return res.status(400).json({ message: "Rating must be between 0 and 5. Decimal values such as 4.5 are allowed." });
+        }
+
+        const hotelImg = req.files?.HotelImg?.[0];
+        if (!hotelImg) return res.status(400).json({ message: "A main hotel image is required." });
+
+        const newHotel = new Hotel({
+          ...body,
+          zip: String(body.zip).trim(),
+          contactNo: String(body.contactNo).trim(),
+          numberOfRoomTypes,
+          cheapestPrice,
+          ...(body.rating === undefined || body.rating === "" ? { rating: undefined } : { rating: Number(body.rating) }),
+          HotelImg: hotelImg.filename,
+          HotelImgs: (req.files?.HotelImgs || []).map((file) => file.filename),
+          certificates: (req.files?.certificates || []).map((file) => file.filename),
+        });
+
+        await newHotel.save();
+        return res.status(201).json(newHotel);
+      } catch (error) {
+        return res.status(400).json({ message: error.message || "Unable to create hotel." });
+      }
+    });
+  };
+
+  // update Hotel
+const updateHotel = async (req, res, next) => {
+  const body = { ...(req.body || {}) };
+
+  if (Object.prototype.hasOwnProperty.call(body, "zip") && !isValidPostalCode(body.zip)) {
+    return res.status(400).json({ message: "Enter a valid postal/ZIP code (2–12 characters; not all zeroes)." });
+  }
+  if (Object.prototype.hasOwnProperty.call(body, "contactNo") && !isValidInternationalPhone(body.contactNo)) {
+    return res.status(400).json({ message: "Enter a valid international contact number with 7–15 digits; it cannot be all zeroes." });
+  }
+  if (Object.prototype.hasOwnProperty.call(body, "cheapestPrice")) {
+    const price = parsePositiveNumber(body.cheapestPrice);
+    if (price === null) return res.status(400).json({ message: "Cheapest price must be greater than zero. Decimal values are allowed." });
+    body.cheapestPrice = price;
+  }
+  if (Object.prototype.hasOwnProperty.call(body, "numberOfRoomTypes")) {
+    const roomTypes = parsePositiveInteger(body.numberOfRoomTypes);
+    if (roomTypes === null) return res.status(400).json({ message: "Number of room types must be a whole number greater than zero." });
+    body.numberOfRoomTypes = roomTypes;
+  }
+  if (Object.prototype.hasOwnProperty.call(body, "rating")) {
+    if (!isOptionalRating(body.rating, 5)) return res.status(400).json({ message: "Rating must be between 0 and 5." });
+    if (body.rating === "") delete body.rating;
+    else body.rating = Number(body.rating);
+  }
+
+  try {
+    const updatedHotel = await Hotel.findByIdAndUpdate(req.params.id, { $set: body }, { new: true, runValidators: true });
+    if (!updatedHotel) return res.status(404).json({ message: "Hotel not found." });
+    return res.status(200).json(updatedHotel);
+  } catch (error) {
+    return res.status(400).json({ message: error.message || "Unable to update hotel." });
+  }
 }
 
 //delete Hotel
