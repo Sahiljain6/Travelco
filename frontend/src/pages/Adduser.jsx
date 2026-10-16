@@ -5,6 +5,7 @@ import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
 import Spinner from "../components/spinner/LoadingSpinner";
 import { uploadProfileImage } from "../utils/uploadImage";
+import { isValidInternationalPhone } from "../utils/formValidation";
 
 const Adduser = () => {
   const [loading2, setLoading2] = useState(false);
@@ -53,11 +54,11 @@ const Adduser = () => {
       });
       return;
     }
-    if (mobile.length !== 10) {
+    if (!isValidInternationalPhone(mobile)) {
       Swal.fire({
         icon: "error",
         title: "Oops...",
-        text: "Enter a valid mobile number",
+        text: "Enter an international phone number with 7–15 digits; it cannot be all zeroes.",
       });
       return;
     }
@@ -169,8 +170,13 @@ const Adduser = () => {
             />
             <input
               type="text"
-              placeholder="Mobile"
+              placeholder="+1 212 555 0100"
               id="mobile"
+              type="tel"
+              inputMode="tel"
+              minLength={7}
+              maxLength={25}
+              autoComplete="tel"
               value={mobile}
               onChange={(e) => setMobile(e.target.value)}
               className="w-full px-4 py-2 rounded-lg placeholder-gray-400 text-gray-600 bg-white border border-gray-300 outline-none focus:outline-none focus:ring-2 focus:ring-blue-500"
