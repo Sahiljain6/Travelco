@@ -75,8 +75,8 @@ const location=useLocation();
       Swal.fire({ icon: "error", title: "Invalid price", text: "Enter a price greater than zero. Decimal prices such as 125.50 are allowed." });
       return;
     }
-    if (!isOptionalRating(rating, 5)) {
-      Swal.fire({ icon: "error", title: "Invalid rating", text: "Rating must be between 0 and 5. Decimal values such as 4.5 are allowed." });
+    if (rating !== "" && (!isOptionalRating(rating, 5) || Number(rating) < 1)) {
+      Swal.fire({ icon: "error", title: "Invalid rating", text: "Rating must be between 1 and 5. Decimal values such as 4.5 are allowed." });
       return;
     }
 
@@ -376,7 +376,7 @@ const location=useLocation();
               className="appearance-none block w-full bg-gray-200 text-gray-700 border rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white"
               id="rating"
               type="number"
-              min="0"
+              min="1"
               max="5"
               step="0.1"
               inputMode="decimal"
