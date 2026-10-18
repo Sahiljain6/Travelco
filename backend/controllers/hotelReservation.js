@@ -1,8 +1,9 @@
 const HotelReservation = require("../models/hotelReservationModel");
 const Hotel = require("../models/Hotel");
 const Room = require("../models/Room");
+const { withKeyedLocks } = require("../utils/keyedLock");
 
-const reservation = async (req, res) => {
+const reservationHandler = async (req, res) => {
   try {
     const hotelId = String(req.body.hotelId || "");
     const selectedRoomIds = Array.isArray(req.body.selectedRoomIds)
@@ -84,6 +85,22 @@ const reservation = async (req, res) => {
   } catch {
     return res.status(500).json({ message: "Unable to create hotel reservation" });
   }
+};
+
+// Serialize bookings for the same room IDs inside this single application process.
+// Multi-instance coordination requires a database-backed lock/transaction strategy.
+const reservation = async (req, res) => {
+  const requestedIds = Array.isArray(req.body?.selectedRoomIds) &&
+    req.body.selectedRoomIds.length > 0 &&
+    req.body.selectedRoomIds.length <= 10 &&
+    req.body.selectedRoomIds.every((value) => typeof value === "string" && value.length <= 64)
+      ? [...new Set(req.body.selectedRoomIds.map(String))]
+      : ["invalid-request:" + String(req.user)];
+
+  return withKeyedLocks(
+    requestedIds.map((id) => "hotel-room-reservation:" + id),
+    () => reservationHandler(req, res)
+  );
 };
 
 const getAllReservation = async (req, res) => {
