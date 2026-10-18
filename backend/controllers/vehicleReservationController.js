@@ -15,7 +15,7 @@ const publicReservation = (reservation) => {
 };
 
 exports.addReservation = async (req, res) => {
-  const requestedVehicleId = typeof req.body?.vehicleId === "string" ? req.body.vehicleId.trim() : "";
+  const requestedVehicleId = typeof req.body?.vehicleId === "string" ? req.body.vehicleId.trim().toLowerCase() : "";
   // This mutex coordinates requests inside the current single Node process. The
   // explicit unique index migration below supplies database-level idempotency.
   const lockId = /^[a-f\d]{24}$/i.test(requestedVehicleId)
