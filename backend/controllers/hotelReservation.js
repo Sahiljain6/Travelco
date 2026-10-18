@@ -5,9 +5,9 @@ const { withKeyedLocks } = require("../utils/keyedLock");
 
 const reservationHandler = async (req, res) => {
   try {
-    const hotelId = String(req.body.hotelId || "");
+    const hotelId = String(req.body.hotelId || "").toLowerCase();
     const selectedRoomIds = Array.isArray(req.body.selectedRoomIds)
-      ? [...new Set(req.body.selectedRoomIds.map(String))]
+      ? [...new Set(req.body.selectedRoomIds.map((id) => String(id).toLowerCase()))]
       : [];
     const checkIn = new Date(req.body.checkInDate);
     const checkOut = new Date(req.body.checkOutDate);
