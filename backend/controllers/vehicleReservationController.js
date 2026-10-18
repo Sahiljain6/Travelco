@@ -5,6 +5,15 @@ const logger = require("../utils/logger");
 const { withKeyedLock } = require("../utils/keyedLock");
 const { parseIdempotencyKey, fingerprintVehicleReservationRequest } = require("../utils/idempotency");
 
+const publicReservation = (reservation) => {
+  const data = reservation && typeof reservation.toObject === "function"
+    ? reservation.toObject()
+    : { ...reservation };
+  delete data.idempotencyKey;
+  delete data.requestFingerprint;
+  return data;
+};
+
 exports.addReservation = async (req, res) => {
   const requestedVehicleId = typeof req.body?.vehicleId === "string" ? req.body.vehicleId.trim() : "";
   // This mutex coordinates requests inside the current single Node process. The
@@ -53,7 +62,7 @@ exports.addReservation = async (req, res) => {
             return res.status(409).json({ message: "This Idempotency-Key was already used for a different reservation request." });
           }
           res.set("Idempotency-Replayed", "true");
-          return res.status(200).json(previous);
+          return res.status(200).json(publicReservation(previous));
         }
       }
 
@@ -114,12 +123,12 @@ exports.addReservation = async (req, res) => {
               return res.status(409).json({ message: "This Idempotency-Key was already used for a different reservation request." });
             }
             res.set("Idempotency-Replayed", "true");
-            return res.status(200).json(existing);
+            return res.status(200).json(publicReservation(existing));
           }
         }
         throw error;
       }
-      return res.status(200).json(newReservation);
+      return res.status(200).json(publicReservation(newReservation));
     } catch (error) {
       logger.error({
         event: "vehicle_reservation_create_failed",
