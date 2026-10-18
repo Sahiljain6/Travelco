@@ -46,7 +46,7 @@ const bookingCreationLimit = createRateLimiter({
 const privateImageUploadLimit = createRateLimiter({
   windowMs: 15 * 60 * 1000,
   max: 20,
-  keyGenerator: (req) => req.user || req.ip || (req.socket && req.socket.remoteAddress),
+  keyGenerator: userOrIpKey,
   message: "Too many image uploads. Please wait before trying again.",
 });
 
