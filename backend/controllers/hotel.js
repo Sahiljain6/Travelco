@@ -2,61 +2,117 @@ const Hotel = require("../models/Hotel");
 const Room = require("../models/Room");
 const multer = require("multer");
 const path = require("path");
+const fs = require("fs");
+const crypto = require("crypto");
 const { isValidInternationalPhone, isValidPostalCode, parsePositiveNumber, parsePositiveInteger, isOptionalRating } = require("../utils/validation");
 
 
 //img upload part
  const storage = multer.diskStorage({
-    destination : (req, file, cb) => {
-        cb(null,"images")
+    destination: (req, file, cb) => {
+      cb(null, "images");
     },
-    filename : (req, file, cb) => {
-        console.log(file);
-        cb(null, Date.now() + path.extname(file.originalname) );
-    } 
-});
+    filename: (req, file, cb) => {
+      cb(null, crypto.randomUUID() + path.extname(file.originalname).toLowerCase());
+    }
+  });
 
- const upload = multer({ 
-    storage: storage,
-    fileFilter: function (req, file, cb) {
-      if (!file.originalname.match(/\.(jpg|jpeg|png)$/)) {
-        return cb(new Error('Only image files are allowed!'));
+  const upload = multer({
+    storage,
+    limits: { fileSize: 5 * 1024 * 1024, files: 8, fields: 100, parts: 120 },
+    fileFilter(_req, file, cb) {
+      const extension = path.extname(file.originalname).toLowerCase();
+      const expectedMime = extension === ".jpg" || extension === ".jpeg"
+        ? "image/jpeg"
+        : extension === ".png" ? "image/png" : null;
+      if (!expectedMime || file.mimetype !== expectedMime) {
+        return cb(new Error("Only valid JPG or PNG images are allowed."));
       }
-      cb(null, true);
+      return cb(null, true);
     }
   }).fields([
-    { name: 'HotelImg', maxCount: 1 },
-    { name: 'HotelImgs', maxCount: 5 },
-    { name: 'certificates', maxCount: 2}
+    { name: "HotelImg", maxCount: 1 },
+    { name: "HotelImgs", maxCount: 5 },
+    { name: "certificates", maxCount: 2 }
   ]);
+
+  const removeUploadedFiles = async (files) => {
+    const uploaded = Object.values(files || {}).flat();
+    await Promise.all(uploaded.map((file) => fs.promises.unlink(file.path).catch(() => {})));
+  };
+
+  const hasValidImageSignature = async (file) => {
+    let handle;
+    try {
+      handle = await fs.promises.open(file.path, "r");
+      const header = Buffer.alloc(8);
+      const { bytesRead } = await handle.read(header, 0, header.length, 0);
+      if (file.mimetype === "image/jpeg") {
+        return bytesRead >= 3 && header[0] === 0xff && header[1] === 0xd8 && header[2] === 0xff;
+      }
+      if (file.mimetype === "image/png") {
+        return bytesRead >= 8 &&
+          header[0] === 0x89 && header[1] === 0x50 && header[2] === 0x4e &&
+          header[3] === 0x47 && header[4] === 0x0d && header[5] === 0x0a &&
+          header[6] === 0x1a && header[7] === 0x0a;
+      }
+      return false;
+    } catch {
+      return false;
+    } finally {
+      if (handle) await handle.close().catch(() => {});
+    }
+  };
 
   // Create a new hotel with the same validation used by update forms.
   const createHotel = async (req, res) => {
     upload(req, res, async (err) => {
-      if (err) return res.status(400).json({ message: err.message || "Error uploading images" });
+      if (err) {
+        await removeUploadedFiles(req.files);
+        const message = err.code === "LIMIT_FILE_SIZE"
+          ? "Each hotel image must be 5 MB or smaller."
+          : "Hotel image upload is invalid. Use JPG or PNG files within the size limit.";
+        return res.status(400).json({ message });
+      }
 
       try {
         const body = req.body || {};
         if (!isValidPostalCode(body.zip)) {
+          await removeUploadedFiles(req.files);
           return res.status(400).json({ message: "Enter a valid postal/ZIP code (2–12 characters; not all zeroes)." });
         }
         if (!isValidInternationalPhone(body.contactNo)) {
+          await removeUploadedFiles(req.files);
           return res.status(400).json({ message: "Enter a valid international contact number with 7–15 digits; it cannot be all zeroes." });
         }
         const cheapestPrice = parsePositiveNumber(body.cheapestPrice);
         if (cheapestPrice === null) {
+          await removeUploadedFiles(req.files);
           return res.status(400).json({ message: "Cheapest price must be greater than zero. Decimal values are allowed." });
         }
         const numberOfRoomTypes = parsePositiveInteger(body.numberOfRoomTypes);
         if (numberOfRoomTypes === null) {
+          await removeUploadedFiles(req.files);
           return res.status(400).json({ message: "Number of room types must be a whole number greater than zero." });
         }
         if (!isOptionalRating(body.rating, 5) || (body.rating !== "" && Number(body.rating) < 1)) {
+          await removeUploadedFiles(req.files);
           return res.status(400).json({ message: "Rating must be between 1 and 5. Decimal values such as 4.5 are allowed." });
         }
 
+        const uploadedFiles = Object.values(req.files || {}).flat();
+        for (const file of uploadedFiles) {
+          if (!(await hasValidImageSignature(file))) {
+            await removeUploadedFiles(req.files);
+            return res.status(400).json({ message: "One or more files are not valid JPG or PNG images." });
+          }
+        }
+
         const hotelImg = req.files?.HotelImg?.[0];
-        if (!hotelImg) return res.status(400).json({ message: "A main hotel image is required." });
+        if (!hotelImg) {
+          await removeUploadedFiles(req.files);
+          return res.status(400).json({ message: "A main hotel image is required." });
+        }
 
         const newHotel = new Hotel({
           ...body,
@@ -73,6 +129,7 @@ const { isValidInternationalPhone, isValidPostalCode, parsePositiveNumber, parse
         await newHotel.save();
         return res.status(201).json(newHotel);
       } catch (error) {
+        await removeUploadedFiles(req.files);
         return res.status(400).json({ message: error.message || "Unable to create hotel." });
       }
     });

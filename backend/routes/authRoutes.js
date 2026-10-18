@@ -14,15 +14,22 @@ const {
   changePassword,
 } = require("../controllers/authController");
 const { verifyToken } = require("../middleware/verifyToken");
+const {
+  authRegisterLimit,
+  authLoginLimit,
+  passwordRecoveryLimit,
+  verificationLimit,
+  emailCheckLimit,
+} = require("../middleware/routeLimits");
 
-router.post("/register", registerUser);
-router.post("/login", loginUser);
+router.post("/register", authRegisterLimit, registerUser);
+router.post("/login", authLoginLimit, loginUser);
 router.post("/logout", logoutUser);
-router.post("/forgot-password", resetpasswordrequest);
-router.post("/reset-password", resetpassword);
-router.get("/check-email", checkEmailExists);
-router.post("/verify-email", verifyEmail);
-router.post("/resend-verification", resendVerification);
+router.post("/forgot-password", passwordRecoveryLimit, resetpasswordrequest);
+router.post("/reset-password", passwordRecoveryLimit, resetpassword);
+router.get("/check-email", emailCheckLimit, checkEmailExists);
+router.post("/verify-email", verificationLimit, verifyEmail);
+router.post("/resend-verification", passwordRecoveryLimit, resendVerification);
 router.get("/me", verifyToken, getCurrentUser);
 router.patch("/profile", verifyToken, updateMyProfile);
 router.post("/change-password", verifyToken, changePassword);

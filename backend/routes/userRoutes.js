@@ -17,6 +17,7 @@ const {
   authUser,
 } = require("../controllers/userControllers");
 const { protect } = require("../middleware/verifyToken");
+const { authLoginLimit } = require("../middleware/routeLimits");
 
 const router = express.Router();
 
@@ -50,6 +51,6 @@ router.route("/").post(registerUser);
 //search api
 router.route("/").get(protect, allUsers);
 
-router.route("/login").post(authUser);
+router.route("/login").post(authLoginLimit, authUser);
 
 module.exports = router;

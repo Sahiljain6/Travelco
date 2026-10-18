@@ -21,7 +21,7 @@ const authenticate = async (req, res) => {
     return null;
   }
   try {
-    const decoded = jwt.verify(token, process.env.JWT);
+    const decoded = jwt.verify(token, process.env.JWT, { algorithms: ["HS256"] });
     if (!decoded || !decoded.id) {
       res.status(401).json({ message: "Invalid session" });
       return null;

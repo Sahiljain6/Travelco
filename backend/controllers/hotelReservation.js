@@ -1,16 +1,19 @@
 const HotelReservation = require("../models/hotelReservationModel");
 const Hotel = require("../models/Hotel");
 const Room = require("../models/Room");
+const { withKeyedLocks } = require("../utils/keyedLock");
 
-const reservation = async (req, res) => {
+const reservationHandler = async (req, res) => {
   try {
-    const hotelId = String(req.body.hotelId || "");
+    const hotelId = String(req.body.hotelId || "").toLowerCase();
     const selectedRoomIds = Array.isArray(req.body.selectedRoomIds)
-      ? [...new Set(req.body.selectedRoomIds.map(String))]
+      ? [...new Set(req.body.selectedRoomIds.map((id) => String(id).toLowerCase()))]
       : [];
     const checkIn = new Date(req.body.checkInDate);
     const checkOut = new Date(req.body.checkOutDate);
     if (!hotelId || selectedRoomIds.length === 0 || selectedRoomIds.length > 10 ||
+        !/^[a-f\d]{24}$/i.test(hotelId) ||
+        selectedRoomIds.some((id) => !/^[a-f\d]{24}$/i.test(id)) ||
         !req.body.checkInDate || !req.body.checkOutDate ||
         Number.isNaN(checkIn.getTime()) || Number.isNaN(checkOut.getTime())) {
       return res.status(400).json({ message: "Choose a hotel, one or more rooms, and valid check-in/check-out dates" });
@@ -84,6 +87,22 @@ const reservation = async (req, res) => {
   } catch {
     return res.status(500).json({ message: "Unable to create hotel reservation" });
   }
+};
+
+// Serialize bookings for the same room IDs inside this single application process.
+// Multi-instance coordination requires a database-backed lock/transaction strategy.
+const reservation = async (req, res) => {
+  const requestedIds = Array.isArray(req.body?.selectedRoomIds) &&
+    req.body.selectedRoomIds.length > 0 &&
+    req.body.selectedRoomIds.length <= 10 &&
+    req.body.selectedRoomIds.every((value) => typeof value === "string" && /^[a-f\d]{24}$/i.test(value))
+      ? [...new Set(req.body.selectedRoomIds.map((value) => value.toLowerCase()))]
+      : ["invalid-request:" + String(req.user)];
+
+  return withKeyedLocks(
+    requestedIds.map((id) => "hotel-room-reservation:" + id),
+    () => reservationHandler(req, res)
+  );
 };
 
 const getAllReservation = async (req, res) => {
