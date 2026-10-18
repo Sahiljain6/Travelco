@@ -7,6 +7,7 @@ const { parseIdempotencyKey, fingerprintVehicleReservationRequest } = require(".
 const { withKeyedLock, withKeyedLocks } = require("../utils/keyedLock");
 const { userOrIpKey } = require("../middleware/routeLimits");
 const { createTTLCache } = require("../utils/ttlCache");
+const { getPublicCatalog, invalidatePublicCatalog } = require("../utils/publicCatalogCache");
 const {
   withTransientRetry,
   createCircuitBreaker,
@@ -294,4 +295,21 @@ test("concurrency limiter bounds simultaneous external work and caps its queue",
   assert.equal(await first, 1);
   assert.equal(await second, 2);
   assert.equal(secondStarted, true);
+});
+
+
+test("public catalogue cache is disabled by default and opt-in when configured", async () => {
+  invalidatePublicCatalog();
+  let loads = 0;
+  const loader = async () => ({ calls: ++loads });
+
+  assert.deepEqual(await getPublicCatalog("test:off", loader, {}), { calls: 1 });
+  assert.deepEqual(await getPublicCatalog("test:off", loader, {}), { calls: 2 });
+
+  const enabled = { ENABLE_PUBLIC_CATALOG_CACHE: "true" };
+  assert.deepEqual(await getPublicCatalog("test:on", loader, enabled), { calls: 3 });
+  assert.deepEqual(await getPublicCatalog("test:on", loader, enabled), { calls: 3 });
+
+  invalidatePublicCatalog();
+  assert.deepEqual(await getPublicCatalog("test:on", loader, enabled), { calls: 4 });
 });
