@@ -1,0 +1,647 @@
+{
+  "attribution": "Compact QA sample derived from the user-provided airports.csv, countries.csv, regions.csv and airport-frequencies.csv. Field names match an OurAirports-style export. These are geographic/radio reference records, not flight schedules, live availability or operational navigation data.",
+  "countries": [
+    {
+      "sourceId": 302634,
+      "code": "IN",
+      "name": "India",
+      "continent": "AS"
+    },
+    {
+      "sourceId": 302661,
+      "code": "SG",
+      "name": "Singapore",
+      "continent": "AS"
+    },
+    {
+      "sourceId": 302618,
+      "code": "AE",
+      "name": "United Arab Emirates",
+      "continent": "AS"
+    },
+    {
+      "sourceId": 302688,
+      "code": "GB",
+      "name": "United Kingdom",
+      "continent": "EU"
+    },
+    {
+      "sourceId": 302687,
+      "code": "FR",
+      "name": "France",
+      "continent": "EU"
+    },
+    {
+      "sourceId": 302681,
+      "code": "DE",
+      "name": "Germany",
+      "continent": "EU"
+    },
+    {
+      "sourceId": 302755,
+      "code": "US",
+      "name": "United States",
+      "continent": null
+    },
+    {
+      "sourceId": 302730,
+      "code": "CA",
+      "name": "Canada",
+      "continent": null
+    },
+    {
+      "sourceId": 302791,
+      "code": "BR",
+      "name": "Brazil",
+      "continent": "SA"
+    },
+    {
+      "sourceId": 302610,
+      "code": "ZA",
+      "name": "South Africa",
+      "continent": "AF"
+    },
+    {
+      "sourceId": 302764,
+      "code": "AU",
+      "name": "Australia",
+      "continent": "OC"
+    },
+    {
+      "sourceId": 302776,
+      "code": "NZ",
+      "name": "New Zealand",
+      "continent": "OC"
+    },
+    {
+      "sourceId": 302648,
+      "code": "LK",
+      "name": "Sri Lanka",
+      "continent": "AS"
+    },
+    {
+      "sourceId": 302654,
+      "code": "NP",
+      "name": "Nepal",
+      "continent": "AS"
+    },
+    {
+      "sourceId": 302631,
+      "code": "HK",
+      "name": "Hong Kong",
+      "continent": "AS"
+    },
+    {
+      "sourceId": 302747,
+      "code": "MX",
+      "name": "Mexico",
+      "continent": null
+    }
+  ],
+  "regions": [
+    {
+      "sourceId": 304183,
+      "code": "IN-MM",
+      "name": "Maharashtra",
+      "countryCode": "IN"
+    },
+    {
+      "sourceId": 304171,
+      "code": "IN-DL",
+      "name": "Delhi (National Capital Territory)",
+      "countryCode": "IN"
+    },
+    {
+      "sourceId": 304179,
+      "code": "IN-KA",
+      "name": "Karnataka",
+      "countryCode": "IN"
+    },
+    {
+      "sourceId": 306653,
+      "code": "SG-04",
+      "name": "South East",
+      "countryCode": "SG"
+    },
+    {
+      "sourceId": 302821,
+      "code": "AE-DU",
+      "name": "Dubai Emirate",
+      "countryCode": "AE"
+    },
+    {
+      "sourceId": 306374,
+      "code": "GB-ENG",
+      "name": "England",
+      "countryCode": "GB"
+    },
+    {
+      "sourceId": 306342,
+      "code": "FR-IDF",
+      "name": "Île-de-France",
+      "countryCode": "FR"
+    },
+    {
+      "sourceId": 303552,
+      "code": "DE-HE",
+      "name": "Hesse",
+      "countryCode": "DE"
+    },
+    {
+      "sourceId": 306110,
+      "code": "US-NY",
+      "name": "New York",
+      "countryCode": "US"
+    },
+    {
+      "sourceId": 306080,
+      "code": "US-CA",
+      "name": "California",
+      "countryCode": "US"
+    },
+    {
+      "sourceId": 303224,
+      "code": "BR-SP",
+      "name": "São Paulo",
+      "countryCode": "BR"
+    },
+    {
+      "sourceId": 306297,
+      "code": "ZA-GT",
+      "name": "Gauteng",
+      "countryCode": "ZA"
+    },
+    {
+      "sourceId": 306304,
+      "code": "ZA-WC",
+      "name": "Western Cape",
+      "countryCode": "ZA"
+    },
+    {
+      "sourceId": 302969,
+      "code": "AU-NSW",
+      "name": "New South Wales",
+      "countryCode": "AU"
+    },
+    {
+      "sourceId": 304970,
+      "code": "NZ-AUK",
+      "name": "Auckland Region",
+      "countryCode": "NZ"
+    },
+    {
+      "sourceId": 306760,
+      "code": "LK-1",
+      "name": "Western Province",
+      "countryCode": "LK"
+    },
+    {
+      "sourceId": 306444,
+      "code": "NP-P3",
+      "name": "Bagmati Province",
+      "countryCode": "NP"
+    },
+    {
+      "sourceId": 504838,
+      "code": "HK-NT",
+      "name": "New Territories",
+      "countryCode": "HK"
+    },
+    {
+      "sourceId": 303302,
+      "code": "CA-ON",
+      "name": "Ontario",
+      "countryCode": "CA"
+    },
+    {
+      "sourceId": 304798,
+      "code": "MX-DIF",
+      "name": "Ciudad de México",
+      "countryCode": "MX"
+    }
+  ],
+  "airports": [
+    {
+      "sourceId": 26434,
+      "ident": "VABB",
+      "iata": "BOM",
+      "name": "Chhatrapati Shivaji Maharaj International Airport",
+      "type": "large_airport",
+      "countryCode": "IN",
+      "country": "India",
+      "regionCode": "IN-MM",
+      "region": "Maharashtra",
+      "city": "Mumbai",
+      "lat": 19.0887,
+      "lon": 72.8679
+    },
+    {
+      "sourceId": 26555,
+      "ident": "VIDP",
+      "iata": "DEL",
+      "name": "Indira Gandhi International Airport",
+      "type": "large_airport",
+      "countryCode": "IN",
+      "country": "India",
+      "regionCode": "IN-DL",
+      "region": "Delhi (National Capital Territory)",
+      "city": "New Delhi",
+      "lat": 28.5556,
+      "lon": 77.0952
+    },
+    {
+      "sourceId": 35145,
+      "ident": "VOBL",
+      "iata": "BLR",
+      "name": "Kempegowda International Airport Bengaluru",
+      "type": "large_airport",
+      "countryCode": "IN",
+      "country": "India",
+      "regionCode": "IN-KA",
+      "region": "Karnataka",
+      "city": "Bengaluru",
+      "lat": 13.1979,
+      "lon": 77.7063
+    },
+    {
+      "sourceId": 26887,
+      "ident": "WSSS",
+      "iata": "SIN",
+      "name": "Singapore Changi Airport",
+      "type": "large_airport",
+      "countryCode": "SG",
+      "country": "Singapore",
+      "regionCode": "SG-04",
+      "region": "South East",
+      "city": "Singapore",
+      "lat": 1.3502,
+      "lon": 103.994
+    },
+    {
+      "sourceId": 5235,
+      "ident": "OMDB",
+      "iata": "DXB",
+      "name": "Dubai International Airport",
+      "type": "large_airport",
+      "countryCode": "AE",
+      "country": "United Arab Emirates",
+      "regionCode": "AE-DU",
+      "region": "Dubai Emirate",
+      "city": "Dubai",
+      "lat": 25.2498,
+      "lon": 55.371
+    },
+    {
+      "sourceId": 2434,
+      "ident": "EGLL",
+      "iata": "LHR",
+      "name": "London Heathrow Airport",
+      "type": "large_airport",
+      "countryCode": "GB",
+      "country": "United Kingdom",
+      "regionCode": "GB-ENG",
+      "region": "England",
+      "city": "London",
+      "lat": 51.4707,
+      "lon": -0.4599
+    },
+    {
+      "sourceId": 4185,
+      "ident": "LFPG",
+      "iata": "CDG",
+      "name": "Charles de Gaulle International Airport",
+      "type": "large_airport",
+      "countryCode": "FR",
+      "country": "France",
+      "regionCode": "FR-IDF",
+      "region": "Île-de-France",
+      "city": "Paris",
+      "lat": 49.009,
+      "lon": 2.5541
+    },
+    {
+      "sourceId": 2212,
+      "ident": "EDDF",
+      "iata": "FRA",
+      "name": "Frankfurt Main Airport",
+      "type": "large_airport",
+      "countryCode": "DE",
+      "country": "Germany",
+      "regionCode": "DE-HE",
+      "region": "Hesse",
+      "city": "Frankfurt am Main",
+      "lat": 50.0267,
+      "lon": 8.5584
+    },
+    {
+      "sourceId": 3622,
+      "ident": "KJFK",
+      "iata": "JFK",
+      "name": "John F. Kennedy International Airport",
+      "type": "large_airport",
+      "countryCode": "US",
+      "country": "United States",
+      "regionCode": "US-NY",
+      "region": "New York",
+      "city": "New York",
+      "lat": 40.6394,
+      "lon": -73.7793
+    },
+    {
+      "sourceId": 3632,
+      "ident": "KLAX",
+      "iata": "LAX",
+      "name": "Los Angeles International Airport",
+      "type": "large_airport",
+      "countryCode": "US",
+      "country": "United States",
+      "regionCode": "US-CA",
+      "region": "California",
+      "city": "Los Angeles",
+      "lat": 33.9425,
+      "lon": -118.408
+    },
+    {
+      "sourceId": 1990,
+      "ident": "CYYZ",
+      "iata": "YYZ",
+      "name": "Toronto Pearson International Airport",
+      "type": "large_airport",
+      "countryCode": "CA",
+      "country": "Canada",
+      "regionCode": "CA-ON",
+      "region": "Ontario",
+      "city": "Toronto",
+      "lat": 43.6759,
+      "lon": -79.6294
+    },
+    {
+      "sourceId": 4731,
+      "ident": "MMMX",
+      "iata": "MEX",
+      "name": "Mexico City Benito Juárez International Airport",
+      "type": "large_airport",
+      "countryCode": "MX",
+      "country": "Mexico",
+      "regionCode": "MX-DIF",
+      "region": "Ciudad de México",
+      "city": "Mexico City",
+      "lat": 19.4358,
+      "lon": -99.0703
+    },
+    {
+      "sourceId": 5910,
+      "ident": "SBGR",
+      "iata": "GRU",
+      "name": "São Paulo/Guarulhos International Airport",
+      "type": "large_airport",
+      "countryCode": "BR",
+      "country": "Brazil",
+      "regionCode": "BR-SP",
+      "region": "São Paulo",
+      "city": "São Paulo",
+      "lat": -23.4313,
+      "lon": -46.47
+    },
+    {
+      "sourceId": 31055,
+      "ident": "FAOR",
+      "iata": "JNB",
+      "name": "O.R. Tambo International Airport",
+      "type": "large_airport",
+      "countryCode": "ZA",
+      "country": "South Africa",
+      "regionCode": "ZA-GT",
+      "region": "Gauteng",
+      "city": "Johannesburg",
+      "lat": -26.1401,
+      "lon": 28.2468
+    },
+    {
+      "sourceId": 2775,
+      "ident": "FACT",
+      "iata": "CPT",
+      "name": "Cape Town International Airport",
+      "type": "large_airport",
+      "countryCode": "ZA",
+      "country": "South Africa",
+      "regionCode": "ZA-WC",
+      "region": "Western Cape",
+      "city": "Cape Town",
+      "lat": -33.974,
+      "lon": 18.6043
+    },
+    {
+      "sourceId": 27145,
+      "ident": "YSSY",
+      "iata": "SYD",
+      "name": "Sydney Kingsford Smith International Airport",
+      "type": "large_airport",
+      "countryCode": "AU",
+      "country": "Australia",
+      "regionCode": "AU-NSW",
+      "region": "New South Wales",
+      "city": "Sydney",
+      "lat": -33.9461,
+      "lon": 151.177
+    },
+    {
+      "sourceId": 5023,
+      "ident": "NZAA",
+      "iata": "AKL",
+      "name": "Auckland International Airport",
+      "type": "large_airport",
+      "countryCode": "NZ",
+      "country": "New Zealand",
+      "regionCode": "NZ-AUK",
+      "region": "Auckland Region",
+      "city": "Auckland",
+      "lat": -37.012,
+      "lon": 174.7863
+    },
+    {
+      "sourceId": 26463,
+      "ident": "VCBI",
+      "iata": "CMB",
+      "name": "Bandaranaike International Colombo Airport",
+      "type": "large_airport",
+      "countryCode": "LK",
+      "country": "Sri Lanka",
+      "regionCode": "LK-1",
+      "region": "Western Province",
+      "city": "Colombo",
+      "lat": 7.1808,
+      "lon": 79.8841
+    },
+    {
+      "sourceId": 26596,
+      "ident": "VNKT",
+      "iata": "KTM",
+      "name": "Tribhuvan International Airport",
+      "type": "large_airport",
+      "countryCode": "NP",
+      "country": "Nepal",
+      "regionCode": "NP-P3",
+      "region": "Bagmati Province",
+      "city": "Kathmandu",
+      "lat": 27.6966,
+      "lon": 85.3591
+    },
+    {
+      "sourceId": 26535,
+      "ident": "VHHH",
+      "iata": "HKG",
+      "name": "Hong Kong International Airport",
+      "type": "large_airport",
+      "countryCode": "HK",
+      "country": "Hong Kong",
+      "regionCode": "HK-NT",
+      "region": "New Territories",
+      "city": "Hong Kong",
+      "lat": 22.3118,
+      "lon": 113.9149
+    }
+  ],
+  "airportFrequencies": [
+    {
+      "sourceId": 53936,
+      "airportIdent": "VABB",
+      "type": "ACC",
+      "description": "MUMBAI",
+      "frequencyMHz": 120.5
+    },
+    {
+      "sourceId": 53958,
+      "airportIdent": "VIDP",
+      "type": "APP",
+      "description": "DELHI APP",
+      "frequencyMHz": 126.35
+    },
+    {
+      "sourceId": 298672,
+      "airportIdent": "VOBL",
+      "type": "APP",
+      "description": null,
+      "frequencyMHz": 121.25
+    },
+    {
+      "sourceId": 57188,
+      "airportIdent": "WSSS",
+      "type": "A/D",
+      "description": "APP/DEP",
+      "frequencyMHz": 120.3
+    },
+    {
+      "sourceId": 48217,
+      "airportIdent": "OMDB",
+      "type": "ARR",
+      "description": "ARR",
+      "frequencyMHz": 124.9
+    },
+    {
+      "sourceId": 323434,
+      "airportIdent": "EGLL",
+      "type": "ATIS",
+      "description": "Heathrow ATIS",
+      "frequencyMHz": 113.75
+    },
+    {
+      "sourceId": 52436,
+      "airportIdent": "LFPG",
+      "type": "APP",
+      "description": "DE GAULLE APP",
+      "frequencyMHz": 121.15
+    },
+    {
+      "sourceId": 52761,
+      "airportIdent": "EDDF",
+      "type": "A/D",
+      "description": "LANGEN RADAR",
+      "frequencyMHz": 118.45
+    },
+    {
+      "sourceId": 69293,
+      "airportIdent": "KJFK",
+      "type": "APP",
+      "description": "NEW YORK APP",
+      "frequencyMHz": 125.7
+    },
+    {
+      "sourceId": 60767,
+      "airportIdent": "KLAX",
+      "type": "APP",
+      "description": "SOCAL APP",
+      "frequencyMHz": 36.07
+    },
+    {
+      "sourceId": 315000,
+      "airportIdent": "CYYZ",
+      "type": "APRON",
+      "description": "SOUTH APRON",
+      "frequencyMHz": 122.07
+    },
+    {
+      "sourceId": 55485,
+      "airportIdent": "MMMX",
+      "type": "APP",
+      "description": "MEXICO APP",
+      "frequencyMHz": 121.2
+    },
+    {
+      "sourceId": 49687,
+      "airportIdent": "SBGR",
+      "type": "APP",
+      "description": "SAO PAULO APP",
+      "frequencyMHz": 119.8
+    },
+    {
+      "sourceId": 57056,
+      "airportIdent": "FAOR",
+      "type": "APP",
+      "description": "Radar West",
+      "frequencyMHz": 123.7
+    },
+    {
+      "sourceId": 57102,
+      "airportIdent": "FACT",
+      "type": "AC",
+      "description": "Apron Control",
+      "frequencyMHz": 122.65
+    },
+    {
+      "sourceId": 48766,
+      "airportIdent": "YSSY",
+      "type": "APP",
+      "description": "APP",
+      "frequencyMHz": 135.1
+    },
+    {
+      "sourceId": 56018,
+      "airportIdent": "NZAA",
+      "type": "APP",
+      "description": "APP",
+      "frequencyMHz": 124.3
+    },
+    {
+      "sourceId": 51092,
+      "airportIdent": "VCBI",
+      "type": "APP",
+      "description": "COLOMBO APP",
+      "frequencyMHz": 120.9
+    },
+    {
+      "sourceId": 55877,
+      "airportIdent": "VNKT",
+      "type": "APP",
+      "description": "KATHMANDU APP",
+      "frequencyMHz": 120.6
+    },
+    {
+      "sourceId": 53475,
+      "airportIdent": "VHHH",
+      "type": "AFIS",
+      "description": "FLIGHT SERVICE",
+      "frequencyMHz": 122.4
+    }
+  ]
+}

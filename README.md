@@ -21,6 +21,7 @@ Travelco is a MERN-stack travel and tourism platform and a learning project for 
 - [AWS services](#aws-services)
 - [Deployment constraints](#deployment-constraints)
 - [Local development](#local-development)
+- [Demo data and test fixtures](#demo-data-and-test-fixtures)
 - [Environment configuration](#environment-configuration)
 - [AWS deployment workflow](#aws-deployment-workflow)
 - [Smoke tests and rollback](#smoke-tests-and-rollback)
@@ -193,6 +194,12 @@ For the frontend build:
 cd frontend
 npm run build
 ~~~
+
+## Demo data and test fixtures
+
+A repeatable, non-destructive Faker dataset and a compact airport/country/region reference sample are documented in [backend/data/demo/README.md](backend/data/demo/README.md).
+
+The optional command is run manually from the backend folder with a dedicated development/staging database. It refuses production mode, requires explicit opt-in, and only upserts deterministic demo IDs. It does not generate real user credentials or bookings, change flight search, or configure AWS. **Never point the demo seeder at the production database.**
 
 ## Environment configuration
 

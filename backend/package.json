@@ -10,7 +10,8 @@
     "seed": "node seed.js",
     "inspect:indexes": "node scripts/inspectIndexes.js",
     "migrate:vehicle-idempotency-index": "node scripts/createVehicleReservationIdempotencyIndex.js",
-    "audit:production": "npm audit --omit=dev --audit-level=high"
+    "audit:production": "npm audit --omit=dev --audit-level=high",
+    "seed:demo": "node scripts/seedDemoData.js"
   },
   "keywords": [],
   "author": "",
@@ -35,6 +36,7 @@
     "uuid": "^9.0.0"
   },
   "devDependencies": {
-    "nodemon": "^2.0.22"
+    "nodemon": "^2.0.22",
+    "@faker-js/faker": "8.4.1"
   }
 }
