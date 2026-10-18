@@ -72,7 +72,7 @@ function priceForCurrency(currency, kind = "hotel") {
   return faker.number.int({ min: range[0], max: range[1] });
 }
 
-function buildRooms(hotelIndex, roomCount) {
+function buildRooms(hotelIndex, roomCount, currency) {
   const rooms = [];
   for (let roomIndex = 0; roomIndex < roomCount; roomIndex += 1) {
     const roomId = stableObjectId("room:" + hotelIndex + ":" + roomIndex);
@@ -80,7 +80,7 @@ function buildRooms(hotelIndex, roomCount) {
     rooms.push({
       _id: roomId,
       title: faker.helpers.arrayElement(ROOM_TYPES),
-      price: Number((priceForCurrency("USD", "hotel") * (0.8 + roomIndex * 0.2)).toFixed(2)),
+      price: Number((priceForCurrency(currency, "hotel") * (0.8 + roomIndex * 0.2)).toFixed(2)),
       description: faker.lorem.sentence(),
       maxPeople: faker.number.int({ min: 1, max: 6 }),
       roomNumbers: Array.from({ length: 4 }, (_unused, numberIndex) => ({
@@ -115,7 +115,7 @@ function createDemoData(options = {}) {
     const city = cleanCity(airport.city);
     const currency = currencyForCountry(airport.countryCode);
     const roomCount = 2 + (index % 2);
-    const hotelRooms = buildRooms(index, roomCount);
+    const hotelRooms = buildRooms(index, roomCount, currency);
     rooms.push(...hotelRooms);
 
     hotels.push({
