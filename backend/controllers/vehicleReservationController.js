@@ -1,66 +1,134 @@
 const Reservation = require("../models/VehicleReservation");
 const Vehicle = require("../models/Vehicle");
 const { v4: uuidv4 } = require("uuid");
+const logger = require("../utils/logger");
+const { withKeyedLock } = require("../utils/keyedLock");
+const { parseIdempotencyKey, fingerprintVehicleReservationRequest } = require("../utils/idempotency");
 
 exports.addReservation = async (req, res) => {
-  //tested in postman - working well
-  try {
-    // Fetch vehicle details to calculate price
-    const vehicle = await Vehicle.findOne({ _id: req.body.vehicleId, isAccepted: true });
+  const requestedVehicleId = typeof req.body?.vehicleId === "string" ? req.body.vehicleId.trim() : "";
+  // This mutex coordinates requests inside the current single Node process. The
+  // explicit unique index migration below supplies database-level idempotency.
+  const lockId = /^[a-f\d]{24}$/i.test(requestedVehicleId)
+    ? requestedVehicleId.toLowerCase()
+    : "invalid-" + String(req.user);
 
-    if (!vehicle) {
-      return res.status(404).json({ message: "Vehicle not found" });
-    }
+  return withKeyedLock("vehicle-reservation:" + lockId, async () => {
+    try {
+      const pickupDate = new Date(req.body?.pickupDate);
+      const returnDate = new Date(req.body?.returnDate);
+      if (!req.body?.pickupDate || !req.body?.returnDate ||
+          Number.isNaN(pickupDate.getTime()) || Number.isNaN(returnDate.getTime())) {
+        return res.status(400).json({ message: "Valid pickup and return dates are required" });
+      }
+      pickupDate.setUTCHours(0, 0, 0, 0);
+      returnDate.setUTCHours(0, 0, 0, 0);
+      const numberOfDays = (returnDate - pickupDate) / 86400000;
+      if (numberOfDays <= 0 || numberOfDays > 90) {
+        return res.status(400).json({ message: "Return date must be after pickup and within 90 days" });
+      }
 
-    const pickupDate = new Date(req.body.pickupDate);
-    const returnDate = new Date(req.body.returnDate);
-    if (!req.body.pickupDate || !req.body.returnDate || Number.isNaN(pickupDate.getTime()) || Number.isNaN(returnDate.getTime())) {
-      return res.status(400).json({ message: "Valid pickup and return dates are required" });
-    }
-    pickupDate.setUTCHours(0, 0, 0, 0);
-    returnDate.setUTCHours(0, 0, 0, 0);
-    const numberOfDays = (returnDate - pickupDate) / 86400000;
-    if (numberOfDays <= 0 || numberOfDays > 90) {
-      return res.status(400).json({ message: "Return date must be after pickup and within 90 days" });
-    }
-    if (!Number.isFinite(Number(vehicle.price)) || Number(vehicle.price) <= 0) {
-      return res.status(400).json({ message: "Vehicle has an invalid rental price" });
-    }
-    let amount = numberOfDays * Number(vehicle.price);
-    if (req.body.needDriver === true || req.body.needDriver === "true") {
-      amount += numberOfDays * Math.max(0, Number(vehicle.driverDailyFee ?? process.env.DRIVER_DAILY_FEE ?? 0));
-    }
+      const parsedKey = parseIdempotencyKey(req.get("Idempotency-Key"));
+      if (parsedKey.provided && !parsedKey.valid) {
+        return res.status(400).json({
+          message: "Idempotency-Key must be 16–128 characters using letters, numbers, dots, underscores, colons or hyphens.",
+        });
+      }
 
-    const existingReservation = await Reservation.findOne({
-      vehicleId: String(vehicle._id),
-      pickupDate: { $lt: returnDate },
-      returnDate: { $gt: pickupDate }
-    });
-    if (existingReservation) {
-      return res.status(409).json({ message: "This vehicle is already reserved for part of those dates" });
+      let requestFingerprint;
+      if (parsedKey.key) {
+        requestFingerprint = fingerprintVehicleReservationRequest({
+          vehicleId: requestedVehicleId,
+          pickupDate,
+          returnDate,
+          needDriver: req.body.needDriver,
+        });
+        const previous = await Reservation.findOne({
+          userId: String(req.user),
+          idempotencyKey: parsedKey.key,
+        }).select("+idempotencyKey +requestFingerprint");
+
+        if (previous) {
+          if (previous.requestFingerprint !== requestFingerprint) {
+            return res.status(409).json({ message: "This Idempotency-Key was already used for a different reservation request." });
+          }
+          res.set("Idempotency-Replayed", "true");
+          return res.status(200).json(previous);
+        }
+      }
+
+      if (!/^[a-f\d]{24}$/i.test(requestedVehicleId)) {
+        return res.status(400).json({ message: "A valid vehicle ID is required." });
+      }
+
+      const vehicle = await Vehicle.findOne({ _id: requestedVehicleId, isAccepted: true });
+      if (!vehicle) return res.status(404).json({ message: "Vehicle not found" });
+
+      if (!Number.isFinite(Number(vehicle.price)) || Number(vehicle.price) <= 0) {
+        return res.status(400).json({ message: "Vehicle has an invalid rental price" });
+      }
+      let amount = numberOfDays * Number(vehicle.price);
+      if (req.body.needDriver === true || req.body.needDriver === "true") {
+        amount += numberOfDays * Math.max(0, Number(vehicle.driverDailyFee ?? process.env.DRIVER_DAILY_FEE ?? 0));
+      }
+
+      const existingReservation = await Reservation.findOne({
+        vehicleId: String(vehicle._id),
+        pickupDate: { $lt: returnDate },
+        returnDate: { $gt: pickupDate },
+      });
+      if (existingReservation) {
+        return res.status(409).json({ message: "This vehicle is already reserved for part of those dates" });
+      }
+
+      const reservationData = {
+        userId: String(req.user),
+        vehicleId: vehicle.id,
+        vehicleNumber: vehicle.vehicleNumber,
+        date: new Date(),
+        location: vehicle.location,
+        pickupDate: req.body.pickupDate,
+        returnDate: req.body.returnDate,
+        price: amount,
+        currency: vehicle.currency || "USD",
+        needDriver: req.body.needDriver,
+        vehicleOwnerId: vehicle.userId,
+        transactionId: uuidv4(),
+      };
+      if (parsedKey.key) {
+        reservationData.idempotencyKey = parsedKey.key;
+        reservationData.requestFingerprint = requestFingerprint;
+      }
+
+      const newReservation = new Reservation(reservationData);
+      try {
+        await newReservation.save();
+      } catch (error) {
+        if (parsedKey.key && error && error.code === 11000) {
+          const existing = await Reservation.findOne({
+            userId: String(req.user),
+            idempotencyKey: parsedKey.key,
+          }).select("+idempotencyKey +requestFingerprint");
+          if (existing) {
+            if (existing.requestFingerprint !== requestFingerprint) {
+              return res.status(409).json({ message: "This Idempotency-Key was already used for a different reservation request." });
+            }
+            res.set("Idempotency-Replayed", "true");
+            return res.status(200).json(existing);
+          }
+        }
+        throw error;
+      }
+      return res.status(200).json(newReservation);
+    } catch (error) {
+      logger.error({
+        event: "vehicle_reservation_create_failed",
+        requestId: req.requestId,
+        errorName: error && error.name ? error.name : "UnknownError",
+      });
+      return res.status(500).json({ message: "Unable to create vehicle reservation right now." });
     }
-
-    const newReservation = new Reservation({
-      userId: String(req.user),
-      vehicleId: vehicle.id,
-      vehicleNumber: vehicle.vehicleNumber,
-      date: new Date(),
-      location: vehicle.location,
-      pickupDate: req.body.pickupDate,
-      returnDate: req.body.returnDate,
-      price: amount,
-      currency: vehicle.currency || "USD",
-      needDriver : req.body.needDriver,
-      vehicleOwnerId: vehicle.userId,
-      transactionId: uuidv4(),
-    });
-
-    await newReservation.save();
-    res.status(200).json(newReservation);
-  } catch (err) {
-    console.log(err);
-    res.status(500).json({ message: err.message });
-  }
+  });
 };
 
 //get my all reservations - traveler                               //postman tested working well.
