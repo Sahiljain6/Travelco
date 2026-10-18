@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const logger = require("../utils/logger");
 
 const connectDB = async () => {
   const uri =
@@ -8,16 +9,16 @@ const connectDB = async () => {
     process.env.DATABASE_URL;
 
   if (!uri) {
-    console.error("❌ ERROR: No MongoDB URI found in environment variables (MONGO_URI or MONGO_URL).");
+    logger.error({ event: "database_uri_missing" });
     process.exit(1);
   }
 
   try {
-    const conn = await mongoose.connect(uri);
-    console.log(`MongoDB connected : ${conn.connection.host} 😎`);
+    await mongoose.connect(uri);
+    logger.info({ event: "database_connected" });
   } catch (error) {
     // Avoid printing driver options or connection details that could contain credentials.
-    console.error("MongoDB connection failed. Check the configured URI and Atlas network access.", error.name);
+    logger.error({ event: "database_connection_failed", errorName: error && error.name ? error.name : "UnknownError" });
     process.exit(1);
   }
 };

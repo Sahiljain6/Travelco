@@ -4,6 +4,7 @@ const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 const nodemailer = require("nodemailer");
 const { isValidInternationalPhone } = require("../utils/validation");
+const { getAuthCookieOptions } = require("../utils/securityConfig");
 
 const FRONTEND_URL = (process.env.FRONTEND_URL || process.env.CLIENT_URL || "https://travelxco.netlify.app").replace(/\/+$/, "");
 const TERMS_VERSION = "2026-10";
@@ -157,14 +158,7 @@ const loginUser = async (req, res) => {
     }
 
     const token = jwt.sign({ id: String(user._id), isAdmin: user.isAdmin === true }, process.env.JWT, { expiresIn: "7d" });
-    const isProduction = process.env.NODE_ENV === "production";
-    const cookieOptions = {
-      httpOnly: true,
-      secure: isProduction,
-      sameSite: isProduction ? "none" : "lax",
-      path: "/",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    };
+    const cookieOptions = getAuthCookieOptions(process.env);
     return res
       .cookie("access_token", token, cookieOptions)
       .status(200)
@@ -176,13 +170,7 @@ const loginUser = async (req, res) => {
 };
 
 const logoutUser = (req, res) => {
-  const isProduction = process.env.NODE_ENV === "production";
-  res.clearCookie("access_token", {
-    httpOnly: true,
-    secure: isProduction,
-    sameSite: isProduction ? "none" : "lax",
-    path: "/",
-  });
+  res.clearCookie("access_token", getAuthCookieOptions(process.env, true));
   return res.status(200).json({ message: "Logged out successfully" });
 };
 
