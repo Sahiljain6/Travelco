@@ -5,6 +5,7 @@ const securityHeaders = require("../middleware/securityHeaders");
 const { buildMongoOptions } = require("../utils/mongoOptions");
 const { parseIdempotencyKey, fingerprintVehicleReservationRequest } = require("../utils/idempotency");
 const { withKeyedLock, withKeyedLocks } = require("../utils/keyedLock");
+const { userOrIpKey } = require("../middleware/routeLimits");
 
 function mockResponse() {
   return {
@@ -185,4 +186,10 @@ test("pagination accepts normal values and rejects unsafe bounds", () => {
   assert.equal(parsePagination({ page: "1", limit: "1000" }), null);
   assert.equal(parsePagination({ page: "1.5", limit: "20" }), null);
   assert.equal(parsePagination({ page: "10001", limit: "10" }), null);
+});
+
+test("rate limit keys use a stable authenticated user ID when available", () => {
+  assert.equal(userOrIpKey({ user: "user-123", ip: "203.0.113.10" }), "user-123");
+  assert.equal(userOrIpKey({ user: { id: "user-456" }, ip: "203.0.113.11" }), "user-456");
+  assert.equal(userOrIpKey({ ip: "203.0.113.12" }), "203.0.113.12");
 });
