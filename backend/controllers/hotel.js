@@ -5,6 +5,7 @@ const path = require("path");
 const fs = require("fs");
 const crypto = require("crypto");
 const { isValidInternationalPhone, isValidPostalCode, parsePositiveNumber, parsePositiveInteger, isOptionalRating } = require("../utils/validation");
+const { getPublicCatalog, invalidatePublicCatalog } = require("../utils/publicCatalogCache");
 
 
 //img upload part
@@ -127,6 +128,7 @@ const { isValidInternationalPhone, isValidPostalCode, parsePositiveNumber, parse
         });
 
         await newHotel.save();
+        invalidatePublicCatalog();
         return res.status(201).json(newHotel);
       } catch (error) {
         await removeUploadedFiles(req.files);
@@ -164,6 +166,7 @@ const updateHotel = async (req, res, next) => {
   try {
     const updatedHotel = await Hotel.findByIdAndUpdate(req.params.id, { $set: body }, { new: true, runValidators: true });
     if (!updatedHotel) return res.status(404).json({ message: "Hotel not found." });
+    invalidatePublicCatalog();
     return res.status(200).json(updatedHotel);
   } catch (error) {
     return res.status(400).json({ message: error.message || "Unable to update hotel." });
@@ -175,6 +178,7 @@ const deleteHotel =async (req,res,next)=>{
     try{
         console.log(req.params.id)
         const deleteHotel= await Hotel.findByIdAndDelete(req.params.id);
+        invalidatePublicCatalog();
         res.status(200).json("Hotel has been deleted.");
 
     }catch(err){
@@ -186,7 +190,10 @@ const deleteHotel =async (req,res,next)=>{
 //get Hotel
 const getHotel =async (req,res,next)=>{
     try{
-        const viewHotel= await Hotel.findOne({ _id: req.params.id, isApproved: true });
+        const viewHotel = await getPublicCatalog(
+          "hotel:detail:" + String(req.params.id),
+          () => Hotel.findOne({ _id: req.params.id, isApproved: true })
+        );
         res.status(200).json(viewHotel);
 
     }catch(err){
@@ -204,7 +211,11 @@ const getAllHotel = async (req, res) => {
     return res.status(400).json({ message: "Invalid price range" });
   }
   try {
-    const hotels = await Hotel.find({ isApproved: true, cheapestPrice: { $gte: min, $lte: max } }).limit(limit);
+    const key = "hotel:list:" + JSON.stringify({ min, max, limit });
+    const hotels = await getPublicCatalog(
+      key,
+      () => Hotel.find({ isApproved: true, cheapestPrice: { $gte: min, $lte: max } }).limit(limit)
+    );
     return res.status(200).json(hotels);
   } catch {
     return res.status(500).json({ message: "Unable to retrieve hotels" });
@@ -215,9 +226,10 @@ const getAllHotel = async (req, res) => {
  const countByCity =async (req,res,next)=>{
     const cities = req.query.cities.split(",")
     try{
-        const list = await Promise.all(cities.map(city => {
-            return Hotel.countDocuments({city: city})
-        }))
+        const list = await getPublicCatalog(
+            "hotel:count-city:" + cities.join(","),
+            () => Promise.all(cities.map(city => Hotel.countDocuments({ city: city })))
+        )
 
         res.status(200).json(list);
 
@@ -232,19 +244,22 @@ const countByType =async (req,res,next)=>{
     
     try{
 
-    const hotelCount  =await Hotel.countDocuments({type:"Hotel"})
-    const apratmentCount =await Hotel.countDocuments({type:"apartment"})
-    const resortCount  =await Hotel.countDocuments({type:"resort"})
-    const villaCount  =await Hotel.countDocuments({type:"villa"})
-    const cabinCount  =await Hotel.countDocuments({type:"cabin"})
-   
-        res.status(200).json([
-            {type:"hotel", count:hotelCount},
-            {type:"apartment", count:apratmentCount},
-            {type:"resort", count:resortCount},
-            {type:"villa", count:villaCount},
-            {type:"cabin", count:cabinCount},
-        ]);
+    const counts = await getPublicCatalog("hotel:count-type", async () => {
+      const hotelCount = await Hotel.countDocuments({ type: "Hotel" });
+      const apratmentCount = await Hotel.countDocuments({ type: "apartment" });
+      const resortCount = await Hotel.countDocuments({ type: "resort" });
+      const villaCount = await Hotel.countDocuments({ type: "villa" });
+      const cabinCount = await Hotel.countDocuments({ type: "cabin" });
+      return [
+        { type: "hotel", count: hotelCount },
+        { type: "apartment", count: apratmentCount },
+        { type: "resort", count: resortCount },
+        { type: "villa", count: villaCount },
+        { type: "cabin", count: cabinCount },
+      ];
+    });
+
+    res.status(200).json(counts);
 
     }catch(err){
         res.status(500).json(err);
@@ -272,7 +287,10 @@ const getHotelbyCity = async (req, res) => {
       ]
     };
     if (parts.length > 1) query.country = { $regex: escapeRegex(parts[1]), $options: "i" };
-    const hotels = await Hotel.find(query).limit(100);
+    const hotels = await getPublicCatalog(
+      "hotel:destination:" + destination.toLowerCase(),
+      () => Hotel.find(query).limit(100)
+    );
     return res.status(200).json(hotels);
   } catch {
     return res.status(500).json({ message: "Unable to search hotels" });
