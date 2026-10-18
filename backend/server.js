@@ -17,6 +17,7 @@ const {
   isOriginAllowed,
   parseTrustProxyHops,
 } = require("./utils/securityConfig");
+const securityHeaders = require("./middleware/securityHeaders");
 
 // Preserve the existing deployment behavior (one trusted proxy hop) unless an
 // operator explicitly configures and validates a different value for the AWS path.
@@ -24,6 +25,8 @@ const trustProxyHops = process.env.TRUST_PROXY_HOPS === undefined
   ? 1
   : parseTrustProxyHops(process.env.TRUST_PROXY_HOPS);
 app.set("trust proxy", trustProxyHops);
+app.disable("x-powered-by");
+app.use(securityHeaders);
 
 if (process.env.NODE_ENV === "production" && !process.env.JWT) {
   logger.error({ event: "startup_blocked", reason: "JWT secret is not configured" });
@@ -155,6 +158,29 @@ app.get("/", (req, res) => res.send("API is Running Successfully"));
 app.use("/api/message", messageRoutes);
 app.use("/api/user", userRoutes);
 app.use("/api/chat", chatRoutes);
+
+// Normalize payload/parser errors so malformed or oversized requests do not
+// fall through to Express's default HTML error page. Do not return raw exceptions.
+app.use((error, req, res, next) => {
+  if (res.headersSent) return next(error);
+
+  if (error && (error.type === "entity.too.large" || error.status === 413 || error.statusCode === 413)) {
+    return res.status(413).json({ message: "Request payload is too large." });
+  }
+  if (error && error.type === "entity.parse.failed") {
+    return res.status(400).json({ message: "Request body is invalid." });
+  }
+  if (error && error.message === "Origin is not allowed by CORS") {
+    return res.status(403).json({ message: "Origin is not allowed." });
+  }
+
+  logger.error({
+    event: "request_error",
+    requestId: req.requestId,
+    errorName: error && error.name ? error.name : "UnknownError",
+  });
+  return res.status(500).json({ message: "An unexpected server error occurred." });
+});
 
 const port = process.env.PORT || 5000;
 const server = app.listen(port, () => {
