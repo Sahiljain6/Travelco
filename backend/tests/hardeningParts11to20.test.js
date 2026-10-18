@@ -175,3 +175,14 @@ test("multi-key lock deduplicates and acquires locks without interleaving identi
   await Promise.all([operation("first"), operation("second")]);
   assert.deepEqual(events, ["first:start", "first:end", "second:start", "second:end"]);
 });
+
+const { parsePagination } = require("../utils/pagination");
+
+test("pagination accepts normal values and rejects unsafe bounds", () => {
+  assert.deepEqual(parsePagination({}), { page: 1, limit: 100, skip: 0 });
+  assert.deepEqual(parsePagination({ page: "3", limit: "20" }), { page: 3, limit: 20, skip: 40 });
+  assert.equal(parsePagination({ page: "0", limit: "20" }), null);
+  assert.equal(parsePagination({ page: "1", limit: "1000" }), null);
+  assert.equal(parsePagination({ page: "1.5", limit: "20" }), null);
+  assert.equal(parsePagination({ page: "10001", limit: "10" }), null);
+});
