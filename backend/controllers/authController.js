@@ -18,7 +18,16 @@ const makeMailer = () => {
   const secure = process.env.SMTP_SECURE
     ? process.env.SMTP_SECURE.toLowerCase() === "true"
     : port === 465;
-  return nodemailer.createTransport({ host, port, secure, auth: { user, pass } });
+  return nodemailer.createTransport({
+    host,
+    port,
+    secure,
+    auth: { user, pass },
+    // Bound provider waits so a slow SMTP server cannot hold an API request indefinitely.
+    connectionTimeout: 10000,
+    greetingTimeout: 10000,
+    socketTimeout: 30000,
+  });
 };
 
 const sendEmail = async ({ to, subject, text, html }) => {

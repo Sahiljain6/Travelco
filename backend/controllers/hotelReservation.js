@@ -2,8 +2,13 @@ const HotelReservation = require("../models/hotelReservationModel");
 const Hotel = require("../models/Hotel");
 const Room = require("../models/Room");
 const { withKeyedLocks } = require("../utils/keyedLock");
+const logger = require("../utils/logger");
 
 const reservationHandler = async (req, res) => {
+  let createdBooking = null;
+  const updatedRoomIds = [];
+  let rollbackCheckIn = null;
+  let rollbackCheckOut = null;
   try {
     const hotelId = String(req.body.hotelId || "").toLowerCase();
     const selectedRoomIds = Array.isArray(req.body.selectedRoomIds)
@@ -20,6 +25,8 @@ const reservationHandler = async (req, res) => {
     }
     checkIn.setUTCHours(0, 0, 0, 0);
     checkOut.setUTCHours(0, 0, 0, 0);
+    rollbackCheckIn = new Date(checkIn);
+    rollbackCheckOut = new Date(checkOut);
     const totalDays = (checkOut - checkIn) / 86400000;
     if (!Number.isInteger(totalDays) || totalDays < 1 || totalDays > 90) {
       return res.status(400).json({ message: "Check-out must be after check-in and the stay cannot exceed 90 nights" });
@@ -61,7 +68,7 @@ const reservationHandler = async (req, res) => {
       return res.status(400).json({ message: "Selected rooms have invalid prices" });
     }
 
-    const booking = await HotelReservation.create({
+    createdBooking = await HotelReservation.create({
       hotelId: String(hotel._id),
       hotelName: hotel.name,
       userId: String(req.user),
@@ -75,16 +82,52 @@ const reservationHandler = async (req, res) => {
     });
 
     for (const roomId of selectedRoomIds) {
-      await Room.updateOne(
+      const updateResult = await Room.updateOne(
         { "roomNumbers._id": roomId },
         { $push: { "roomNumbers.$.unavailableDates": { $each: blockedDates } } }
       );
+      if (!updateResult.matchedCount) {
+        throw new Error("The selected room no longer exists");
+      }
+      updatedRoomIds.push(roomId);
     }
     return res.status(201).json({
       message: "Reservation request created. Payment is not enabled in Travelco yet.",
-      reservation: booking
+      reservation: createdBooking
     });
-  } catch {
+  } catch (error) {
+    // Best-effort compensation for partial multi-document writes. Full atomicity
+    // still requires a MongoDB deployment configured for transactions.
+    for (const roomId of updatedRoomIds.reverse()) {
+      try {
+        await Room.updateOne(
+          { "roomNumbers._id": roomId },
+          { $pull: { "roomNumbers.$.unavailableDates": { $gte: rollbackCheckIn, $lt: rollbackCheckOut } } }
+        );
+      } catch (rollbackError) {
+        logger.error({
+          event: "hotel_reservation_room_rollback_failed",
+          requestId: req.requestId,
+          errorName: rollbackError && rollbackError.name ? rollbackError.name : "UnknownError",
+        });
+      }
+    }
+    if (createdBooking) {
+      try {
+        await HotelReservation.deleteOne({ _id: createdBooking._id });
+      } catch (rollbackError) {
+        logger.error({
+          event: "hotel_reservation_record_rollback_failed",
+          requestId: req.requestId,
+          errorName: rollbackError && rollbackError.name ? rollbackError.name : "UnknownError",
+        });
+      }
+    }
+    logger.error({
+      event: "hotel_reservation_create_failed",
+      requestId: req.requestId,
+      errorName: error && error.name ? error.name : "UnknownError",
+    });
     return res.status(500).json({ message: "Unable to create hotel reservation" });
   }
 };

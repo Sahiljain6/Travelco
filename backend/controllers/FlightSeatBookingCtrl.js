@@ -1,5 +1,10 @@
 const SeatBookingFlight = require("../models/FlightSeatBooking")
 const axios = require("axios");
+const {
+  withTransientRetry,
+  flightSearchBreaker,
+  flightSearchConcurrency,
+} = require("../utils/externalResilience");
 
 // get all the selected flights   -- search
 const searchFlight = async (req,res)=>{
@@ -28,9 +33,14 @@ const searchFlight = async (req,res)=>{
       };
       
       try {
-          const response = await axios.request(options);
+          const response = await flightSearchConcurrency.run(() => flightSearchBreaker.execute(() =>
+              withTransientRetry(() => axios.request({ ...options, timeout: 8000 }), { maxRetries: 1 })
+          ));
           return res.status(200).json(response.data?.itineraries?.results || []);
-      } catch {
+      } catch (error) {
+          if (error && (error.code === "CIRCUIT_OPEN" || error.code === "EXTERNAL_CONCURRENCY_LIMIT")) {
+              return res.status(503).json({ message: "Flight search is temporarily busy. Please try again shortly." });
+          }
           return res.status(502).json({ message: "Flight search provider is temporarily unavailable" });
       }
 }

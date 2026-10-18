@@ -1,4 +1,10 @@
 const axios = require("axios");
+const {
+  withTransientRetry,
+  weatherGeocodingBreaker,
+  weatherDataBreaker,
+  weatherConcurrency,
+} = require("../utils/externalResilience");
 
 const WINDOW_MS = 10 * 60 * 1000;
 const MAX_WEATHER_REQUESTS_PER_WINDOW = 40;
@@ -39,19 +45,23 @@ const getWeather = async (req, res) => {
 
   try {
     // Use OpenWeather's dedicated geocoding API instead of the legacy built-in city geocoder.
-    const geocoded = await axios.get("https://api.openweathermap.org/geo/1.0/direct", {
+    const geocoded = await weatherConcurrency.run(() => weatherGeocodingBreaker.execute(() =>
+      withTransientRetry(() => axios.get("https://api.openweathermap.org/geo/1.0/direct", {
       params: { q: city, limit: 1, appid: apiKey },
       timeout: 8000,
-    });
+      }), { maxRetries: 1 })
+    ));
     const place = Array.isArray(geocoded.data) ? geocoded.data[0] : null;
     if (!place || !Number.isFinite(place.lat) || !Number.isFinite(place.lon)) {
       return res.status(404).json({ message: "We couldn't find that city. Try adding the country code." });
     }
 
-    const response = await axios.get("https://api.openweathermap.org/data/2.5/weather", {
+    const response = await weatherConcurrency.run(() => weatherDataBreaker.execute(() =>
+      withTransientRetry(() => axios.get("https://api.openweathermap.org/data/2.5/weather", {
       params: { lat: place.lat, lon: place.lon, appid: apiKey, units: "metric" },
       timeout: 8000,
-    });
+      }), { maxRetries: 1 })
+    ));
     const data = response.data || {};
     const details = Array.isArray(data.weather) ? data.weather[0] || {} : {};
     const icon = typeof details.icon === "string" && /^\d{2}[dn]$/.test(details.icon)
@@ -74,6 +84,9 @@ const getWeather = async (req, res) => {
       source: "OpenWeather",
     });
   } catch (error) {
+    if (error && (error.code === "CIRCUIT_OPEN" || error.code === "EXTERNAL_CONCURRENCY_LIMIT")) {
+      return res.status(503).json({ message: "Weather is temporarily busy. Please try again shortly." });
+    }
     const status = error.response && error.response.status;
     if (status === 404) {
       return res.status(404).json({ message: "We couldn't find that city. Check the spelling and try again." });
