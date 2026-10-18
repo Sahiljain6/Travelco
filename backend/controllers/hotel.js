@@ -78,20 +78,25 @@ const { isValidInternationalPhone, isValidPostalCode, parsePositiveNumber, parse
       try {
         const body = req.body || {};
         if (!isValidPostalCode(body.zip)) {
+          await removeUploadedFiles(req.files);
           return res.status(400).json({ message: "Enter a valid postal/ZIP code (2–12 characters; not all zeroes)." });
         }
         if (!isValidInternationalPhone(body.contactNo)) {
+          await removeUploadedFiles(req.files);
           return res.status(400).json({ message: "Enter a valid international contact number with 7–15 digits; it cannot be all zeroes." });
         }
         const cheapestPrice = parsePositiveNumber(body.cheapestPrice);
         if (cheapestPrice === null) {
+          await removeUploadedFiles(req.files);
           return res.status(400).json({ message: "Cheapest price must be greater than zero. Decimal values are allowed." });
         }
         const numberOfRoomTypes = parsePositiveInteger(body.numberOfRoomTypes);
         if (numberOfRoomTypes === null) {
+          await removeUploadedFiles(req.files);
           return res.status(400).json({ message: "Number of room types must be a whole number greater than zero." });
         }
         if (!isOptionalRating(body.rating, 5) || (body.rating !== "" && Number(body.rating) < 1)) {
+          await removeUploadedFiles(req.files);
           return res.status(400).json({ message: "Rating must be between 1 and 5. Decimal values such as 4.5 are allowed." });
         }
 
