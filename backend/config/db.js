@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const logger = require("../utils/logger");
+const { buildMongoOptions } = require("../utils/mongoOptions");
 
 const connectDB = async () => {
   const uri =
@@ -14,7 +15,7 @@ const connectDB = async () => {
   }
 
   try {
-    await mongoose.connect(uri);
+    await mongoose.connect(uri, buildMongoOptions(process.env));
     logger.info({ event: "database_connected" });
   } catch (error) {
     // Avoid printing driver options or connection details that could contain credentials.
