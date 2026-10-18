@@ -64,12 +64,12 @@ Before any production deployment, manually or automatically verify:
 
 ## Parts 9–10: reverse proxy, origin and browser session protection
 
-- TRUST_PROXY_HOPS defaults to 0. Leave it there until the exact proxy chain and forwarded headers are verified. Do not set a permissive trust-all value. A numeric hop count may be configured only after direct-origin access is restricted and nginx/CloudFront header behavior is confirmed.
+- TRUST_PROXY_HOPS defaults to the existing one-hop setting to avoid changing current request-IP behavior. Keep that setting until the exact proxy chain and forwarded headers are verified. Do not set a permissive trust-all value. Change the hop count only after direct-origin access is restricted and nginx/CloudFront header behavior is confirmed.
 - The AWS report describes CloudFront-to-origin HTTP. Prefer HTTPS to the origin after configuring a valid origin certificate and testing nginx/CloudFront behavior. Browser HTTPS alone does not encrypt the separate CloudFront-to-origin HTTP leg.
 - Restrict direct origin access. A CloudFront managed prefix list limits source IP ranges but can allow requests from other distributions; consider a distribution-specific secret origin header checked at nginx, with the value kept out of source control and rotated if exposed.
 - Keep the CloudFront behavior's API and Socket.IO paths working. Review allowed methods, origin request policy, cache policy and any attached WAF/edge functions before addressing the documented upload 403. Do not broadly disable security protections or set arbitrary request-size limits.
 - CORS_ORIGINS should list only the exact active browser origins, including the staging origin separately where needed. CORS is not authentication; sensitive routes must continue enforcing server-side authorization.
-- Auth cookies default to HttpOnly, Secure in production, Path=/, and SameSite=Lax. Set AUTH_COOKIE_SAME_SITE=none only if a verified cross-site cookie flow requires it; None requires HTTPS/Secure. Keep cookie creation and clearing attributes aligned.
+- Auth cookies default to HttpOnly, Secure in production, Path=/, and preserve the existing production SameSite=None behavior. AUTH_COOKIE_SAME_SITE may be changed only after staging confirms login, logout, cross-site behavior where relevant, and API calls. None requires HTTPS/Secure. Keep cookie creation and clearing attributes aligned.
 - The backend rejects browser requests with a present but unallowlisted Origin. Requests without Origin remain possible for non-browser clients and must be protected by authentication, authorization and rate limits on sensitive endpoints.
 - The current API also returns a token in the login JSON response for compatibility. Do not remove or change that response contract without tracing frontend token usage and planning a separate migration.
 
