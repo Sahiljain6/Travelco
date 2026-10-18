@@ -18,7 +18,11 @@ const {
   parseTrustProxyHops,
 } = require("./utils/securityConfig");
 
-const trustProxyHops = parseTrustProxyHops(process.env.TRUST_PROXY_HOPS);
+// Preserve the existing deployment behavior (one trusted proxy hop) unless an
+// operator explicitly configures and validates a different value for the AWS path.
+const trustProxyHops = process.env.TRUST_PROXY_HOPS === undefined
+  ? 1
+  : parseTrustProxyHops(process.env.TRUST_PROXY_HOPS);
 app.set("trust proxy", trustProxyHops);
 
 if (process.env.NODE_ENV === "production" && !process.env.JWT) {
@@ -61,26 +65,14 @@ app.use((req, res, next) => {
   next();
 });
 
-// CORS headers alone do not stop simple cross-origin requests from reaching the
-// server. Reject an unallowlisted browser Origin before route handlers execute.
-app.use((req, res, next) => {
-  const origin = req.get("Origin");
-  if (!isOriginAllowed(origin, allowedOrigins)) {
-    logger.warn({
-      event: "origin_rejected",
-      requestId: req.requestId,
-      method: req.method,
-      path: req.path,
-    });
-    return res.status(403).json({ message: "Origin is not allowed" });
-  }
-  next();
-});
-
+// Keep existing CORS request behavior while normalizing configured origins.
+// This middleware only controls browser-readable CORS responses; application
+// authentication and authorization remain the security boundary.
 app.use(cors({
   origin(origin, callback) {
-    if (!origin) return callback(null, false);
-    return callback(null, isOriginAllowed(origin, allowedOrigins));
+    if (!origin || isOriginAllowed(origin, allowedOrigins)) return callback(null, true);
+    logger.warn({ event: "cors_origin_denied" });
+    return callback(new Error("Origin is not allowed by CORS"));
   },
   credentials: true,
 }));
