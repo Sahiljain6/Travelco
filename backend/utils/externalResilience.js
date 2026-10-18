@@ -157,7 +157,8 @@ function createConcurrencyLimiter({ maxConcurrent = 8, maxQueued = 16 } = {}) {
 }
 
 const flightSearchBreaker = createCircuitBreaker({ service: "flight-search", failureThreshold: 3, cooldownMs: 30000 });
-const weatherBreaker = createCircuitBreaker({ service: "weather", failureThreshold: 3, cooldownMs: 30000 });
+const weatherGeocodingBreaker = createCircuitBreaker({ service: "weather-geocoding", failureThreshold: 3, cooldownMs: 30000 });
+const weatherDataBreaker = createCircuitBreaker({ service: "weather-data", failureThreshold: 3, cooldownMs: 30000 });
 const flightSearchConcurrency = createConcurrencyLimiter({ maxConcurrent: 4, maxQueued: 8 });
 const weatherConcurrency = createConcurrencyLimiter({ maxConcurrent: 6, maxQueued: 12 });
 
@@ -168,7 +169,8 @@ module.exports = {
   createCircuitBreaker,
   createConcurrencyLimiter,
   flightSearchBreaker,
-  weatherBreaker,
+  weatherGeocodingBreaker,
+  weatherDataBreaker,
   flightSearchConcurrency,
   weatherConcurrency,
 };
