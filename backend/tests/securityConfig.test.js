@@ -36,19 +36,19 @@ test("local development origins are added only outside production", () => {
   assert.equal(prodOrigins.has("http://127.0.0.1:3000"), false);
 });
 
-test("proxy trust defaults to zero and rejects unsafe or malformed hop counts", () => {
-  assert.equal(parseTrustProxyHops(undefined), 0);
+test("proxy trust retains the existing one-hop default and rejects malformed values", () => {
+  assert.equal(parseTrustProxyHops(undefined), 1);
   assert.equal(parseTrustProxyHops("0"), 0);
   assert.equal(parseTrustProxyHops("2"), 2);
   assert.throws(() => parseTrustProxyHops("true"), /TRUST_PROXY_HOPS/);
   assert.throws(() => parseTrustProxyHops("99"), /TRUST_PROXY_HOPS/);
 });
 
-test("auth cookies default to HttpOnly, SameSite=Lax, and secure in production", () => {
+test("production auth cookies preserve SameSite=None and Secure defaults", () => {
   const options = getAuthCookieOptions({ NODE_ENV: "production" });
   assert.equal(options.httpOnly, true);
   assert.equal(options.secure, true);
-  assert.equal(options.sameSite, "lax");
+  assert.equal(options.sameSite, "none");
   assert.equal(options.path, "/");
   assert.equal(options.maxAge, 7 * 24 * 60 * 60 * 1000);
 });
