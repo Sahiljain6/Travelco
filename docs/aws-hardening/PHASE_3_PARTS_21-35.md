@@ -20,7 +20,7 @@ Successful hotel create/update/delete and room create/delete operations invalida
 ## Parts 24–26 — External service resilience
 
 ### Part 24: Timeouts
-The flight-search provider request uses an 8-second Axios timeout. Existing weather calls retain their 8-second timeouts; Cloudinary upload already uses a bounded 25-second timeout. Audit any future provider integrations for bounded deadlines.
+The flight-search provider request uses an 8-second Axios timeout. Existing weather calls retain their 8-second timeouts; Cloudinary upload already uses a bounded 25-second timeout. SMTP delivery now uses bounded connection/greeting (10 seconds) and socket (30 seconds) waits. Audit any future provider integrations for bounded deadlines.
 
 ### Part 25: Bounded retry with backoff
 A reusable retry helper retries only explicitly transient network failures and HTTP 502/503/504 responses, with a single retry by default and a small bounded delay. It is used for read-only flight/weather GET requests only. Do not wrap booking creation, cancellation, uploads or other non-idempotent operations in automatic retries.
