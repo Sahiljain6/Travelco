@@ -12,6 +12,8 @@ const reservationHandler = async (req, res) => {
     const checkIn = new Date(req.body.checkInDate);
     const checkOut = new Date(req.body.checkOutDate);
     if (!hotelId || selectedRoomIds.length === 0 || selectedRoomIds.length > 10 ||
+        !/^[a-f\d]{24}$/i.test(hotelId) ||
+        selectedRoomIds.some((id) => !/^[a-f\d]{24}$/i.test(id)) ||
         !req.body.checkInDate || !req.body.checkOutDate ||
         Number.isNaN(checkIn.getTime()) || Number.isNaN(checkOut.getTime())) {
       return res.status(400).json({ message: "Choose a hotel, one or more rooms, and valid check-in/check-out dates" });
@@ -93,8 +95,8 @@ const reservation = async (req, res) => {
   const requestedIds = Array.isArray(req.body?.selectedRoomIds) &&
     req.body.selectedRoomIds.length > 0 &&
     req.body.selectedRoomIds.length <= 10 &&
-    req.body.selectedRoomIds.every((value) => typeof value === "string" && value.length <= 64)
-      ? [...new Set(req.body.selectedRoomIds.map(String))]
+    req.body.selectedRoomIds.every((value) => typeof value === "string" && /^[a-f\d]{24}$/i.test(value))
+      ? [...new Set(req.body.selectedRoomIds.map((value) => value.toLowerCase()))]
       : ["invalid-request:" + String(req.user)];
 
   return withKeyedLocks(
