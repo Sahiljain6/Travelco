@@ -1,5 +1,11 @@
 const { createRateLimiter } = require("./rateLimit");
 
+function userOrIpKey(req) {
+  if (typeof req.user === "string" && req.user) return req.user;
+  if (req.user && typeof req.user.id === "string" && req.user.id) return req.user.id;
+  return req.ip || (req.socket && req.socket.remoteAddress) || "unknown";
+}
+
 const authRegisterLimit = createRateLimiter({
   windowMs: 15 * 60 * 1000,
   max: 10,
@@ -33,7 +39,7 @@ const emailCheckLimit = createRateLimiter({
 const bookingCreationLimit = createRateLimiter({
   windowMs: 10 * 60 * 1000,
   max: 12,
-  keyGenerator: (req) => req.user || req.ip || (req.socket && req.socket.remoteAddress),
+  keyGenerator: userOrIpKey,
   message: "Too many booking requests. Please wait before trying again.",
 });
 
@@ -59,4 +65,5 @@ module.exports = {
   bookingCreationLimit,
   privateImageUploadLimit,
   flightSearchLimit,
+  userOrIpKey,
 };
