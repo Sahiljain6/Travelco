@@ -2,6 +2,7 @@
 const Room = require("../models/Room.js");
 const Hotel = require("../models/Hotel.js");
 const { parsePositiveNumber, parsePositiveInteger } = require("../utils/validation");
+const { invalidatePublicCatalog } = require("../utils/publicCatalogCache");
 
 
 const createRoom = async (req, res, next) => {
@@ -25,6 +26,7 @@ const createRoom = async (req, res, next) => {
     });
     const savedRoom = await newRoom.save();
     await Hotel.findByIdAndUpdate(hotelId, { $push: { rooms: savedRoom._id } });
+    invalidatePublicCatalog();
     return res.status(201).json(savedRoom);
   } catch (error) {
     return next(error);
@@ -84,6 +86,7 @@ const deleteRoom =async (req,res,next)=>{
         const deleteRoom= await Room.findByIdAndDelete(req.params.id);
         try{
             await Hotel.findByIdAndUpdate(hotelId, {$pull :{rooms: req.params.id}})
+            invalidatePublicCatalog()
         }catch(err){
             next(err)
         }
