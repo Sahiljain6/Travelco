@@ -1,7 +1,8 @@
 const axios = require("axios");
 const {
   withTransientRetry,
-  weatherBreaker,
+  weatherGeocodingBreaker,
+  weatherDataBreaker,
   weatherConcurrency,
 } = require("../utils/externalResilience");
 
@@ -44,7 +45,7 @@ const getWeather = async (req, res) => {
 
   try {
     // Use OpenWeather's dedicated geocoding API instead of the legacy built-in city geocoder.
-    const geocoded = await weatherConcurrency.run(() => weatherBreaker.execute(() =>
+    const geocoded = await weatherConcurrency.run(() => weatherGeocodingBreaker.execute(() =>
       withTransientRetry(() => axios.get("https://api.openweathermap.org/geo/1.0/direct", {
       params: { q: city, limit: 1, appid: apiKey },
       timeout: 8000,
@@ -55,7 +56,7 @@ const getWeather = async (req, res) => {
       return res.status(404).json({ message: "We couldn't find that city. Try adding the country code." });
     }
 
-    const response = await weatherConcurrency.run(() => weatherBreaker.execute(() =>
+    const response = await weatherConcurrency.run(() => weatherDataBreaker.execute(() =>
       withTransientRetry(() => axios.get("https://api.openweathermap.org/data/2.5/weather", {
       params: { lat: place.lat, lon: place.lon, appid: apiKey, units: "metric" },
       timeout: 8000,
