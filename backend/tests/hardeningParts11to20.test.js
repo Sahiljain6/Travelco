@@ -6,6 +6,12 @@ const { buildMongoOptions } = require("../utils/mongoOptions");
 const { parseIdempotencyKey, fingerprintVehicleReservationRequest } = require("../utils/idempotency");
 const { withKeyedLock, withKeyedLocks } = require("../utils/keyedLock");
 const { userOrIpKey } = require("../middleware/routeLimits");
+const { createTTLCache } = require("../utils/ttlCache");
+const {
+  withTransientRetry,
+  createCircuitBreaker,
+  createConcurrencyLimiter,
+} = require("../utils/externalResilience");
 
 function mockResponse() {
   return {
@@ -192,4 +198,100 @@ test("rate limit keys use a stable authenticated user ID when available", () => 
   assert.equal(userOrIpKey({ user: "user-123", ip: "203.0.113.10" }), "user-123");
   assert.equal(userOrIpKey({ user: { id: "user-456" }, ip: "203.0.113.11" }), "user-456");
   assert.equal(userOrIpKey({ ip: "203.0.113.12" }), "203.0.113.12");
+});
+
+
+test("TTL cache coalesces concurrent loads, expires entries, and invalidates prefixes", async () => {
+  let now = 1000;
+  const cache = createTTLCache({ maxEntries: 5, now: () => now });
+  let loads = 0;
+  const loader = async () => {
+    loads += 1;
+    return { value: loads };
+  };
+
+  const [first, concurrent] = await Promise.all([
+    cache.getOrSet("hotel:list:a", 100, loader),
+    cache.getOrSet("hotel:list:a", 100, loader),
+  ]);
+  assert.deepEqual(first, { value: 1 });
+  assert.deepEqual(concurrent, { value: 1 });
+  assert.equal(loads, 1);
+
+  now += 101;
+  assert.deepEqual(await cache.getOrSet("hotel:list:a", 100, loader), { value: 2 });
+  assert.equal(cache.invalidatePrefix("hotel:"), 1);
+  assert.equal(cache.size, 0);
+});
+
+test("TTL cache evicts old entries at its configured size bound", async () => {
+  const cache = createTTLCache({ maxEntries: 2, now: () => 1000 });
+  await cache.getOrSet("a", 1000, async () => 1);
+  await cache.getOrSet("b", 1000, async () => 2);
+  await cache.getOrSet("c", 1000, async () => 3);
+  assert.equal(cache.size, 2);
+  assert.equal(cache.invalidate("a"), false);
+});
+
+test("safe retry helper retries a transient read failure only up to the configured bound", async () => {
+  let attempts = 0;
+  const result = await withTransientRetry(async () => {
+    attempts += 1;
+    if (attempts === 1) {
+      const error = new Error("temporary reset");
+      error.code = "ECONNRESET";
+      throw error;
+    }
+    return "ok";
+  }, { maxRetries: 1, sleepFn: async () => {} });
+
+  assert.equal(result, "ok");
+  assert.equal(attempts, 2);
+
+  attempts = 0;
+  await assert.rejects(withTransientRetry(async () => {
+    attempts += 1;
+    const error = new Error("bad request");
+    error.response = { status: 400 };
+    throw error;
+  }, { maxRetries: 2, sleepFn: async () => {} }));
+  assert.equal(attempts, 1);
+});
+
+test("circuit breaker opens after repeated failures and allows a recovery probe", async () => {
+  let now = 1000;
+  const breaker = createCircuitBreaker({
+    service: "test-provider",
+    failureThreshold: 2,
+    cooldownMs: 100,
+    now: () => now,
+  });
+  const failure = async () => { throw new Error("provider down"); };
+
+  await assert.rejects(breaker.execute(failure));
+  await assert.rejects(breaker.execute(failure));
+  assert.equal(breaker.getState(), "open");
+  await assert.rejects(breaker.execute(async () => "too early"), (error) => error.code === "CIRCUIT_OPEN");
+
+  now += 101;
+  assert.equal(await breaker.execute(async () => "recovered"), "recovered");
+  assert.equal(breaker.getState(), "closed");
+  assert.equal(breaker.getFailureCount(), 0);
+});
+
+test("concurrency limiter bounds simultaneous external work and caps its queue", async () => {
+  const limiter = createConcurrencyLimiter({ maxConcurrent: 1, maxQueued: 1 });
+  let releaseFirst;
+  const first = limiter.run(() => new Promise((resolve) => { releaseFirst = resolve; }));
+  await Promise.resolve();
+
+  let secondStarted = false;
+  const second = limiter.run(async () => { secondStarted = true; return 2; });
+  await assert.rejects(limiter.run(async () => 3), (error) => error.code === "EXTERNAL_CONCURRENCY_LIMIT");
+  assert.equal(secondStarted, false);
+
+  releaseFirst(1);
+  assert.equal(await first, 1);
+  assert.equal(await second, 2);
+  assert.equal(secondStarted, true);
 });
