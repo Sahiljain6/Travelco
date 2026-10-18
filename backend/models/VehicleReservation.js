@@ -13,6 +13,10 @@ const ReservationSchema = new Schema({
     currency: { type: String, default: "USD" },
     vehicleOwnerId : {type: String, required: true},
     transactionId : {type: String, required: true},
+    // Optional, only populated when clients send an Idempotency-Key header.
+    // Index creation is a separate, explicit migration.
+    idempotencyKey: { type: String, select: false },
+    requestFingerprint: { type: String, select: false },
     needDriver : {type: Boolean, required: true , default: false},
     
 });
