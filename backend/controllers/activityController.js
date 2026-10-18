@@ -1,4 +1,5 @@
 const SpecialActivity = require('../models/SpecialActivityModel.js');
+const { parsePagination } = require("../utils/pagination");
 
 const moment = require('moment');
 const createActivity = async (req, res) => {
@@ -75,11 +76,13 @@ const approveActivity = async (req, res) => {
 };
 
 const getApprovedActivities = async (req, res) => {
-  const { page = 1, limit = 100 } = req.query;
+  const pagination = parsePagination(req.query);
+  if (!pagination) return res.status(400).json({ error: "Page must be 1–10000 and limit must be 1–100." });
+  const { page, limit, skip } = pagination;
   try {
     const activities = await SpecialActivity.find({ status: 'APPROVED' })
-      .limit(limit * 1)
-      .skip((page - 1) * limit)
+      .limit(limit)
+      .skip(skip)
       .exec();
 
     const count = await SpecialActivity.countDocuments({ status: 'APPROVED' });
@@ -99,13 +102,15 @@ const getApprovedActivities = async (req, res) => {
 };
 
 const getMyActivities = async (req, res) => {
-  const { page = 1, limit = 100 } = req.query;
+  const pagination = parsePagination(req.query);
+  if (!pagination) return res.status(400).json({ error: "Page must be 1–10000 and limit must be 1–100." });
+  const { page, limit, skip } = pagination;
   const user = req.user;
   try {
     const activities = await SpecialActivity.find({ user: user })
-      .sort({ createdAt: 1 }) // add this line to sort by creation date in descending order
-      .limit(limit * 1)
-      .skip((page - 1) * limit)
+      .sort({ createdAt: 1 }) // Preserve the existing order for compatibility.
+      .limit(limit)
+      .skip(skip)
       .exec();
 
     const count = await SpecialActivity.countDocuments({ user: user });
@@ -125,11 +130,13 @@ const getMyActivities = async (req, res) => {
 };
 
 const getPendingActivities = async (req, res) => {
-  const { page = 1, limit = 100 } = req.query;
+  const pagination = parsePagination(req.query);
+  if (!pagination) return res.status(400).json({ error: "Page must be 1–10000 and limit must be 1–100." });
+  const { page, limit, skip } = pagination;
   try {
     const activities = await SpecialActivity.find()
-      .limit(limit * 1)
-      .skip((page - 1) * limit)
+      .limit(limit)
+      .skip(skip)
       .exec();
 
     const count = await SpecialActivity.countDocuments();
