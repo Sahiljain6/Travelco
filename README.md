@@ -24,6 +24,7 @@ Travelco is a full-stack travel and tourism web application that brings trip pla
 - [Roles and Access](#roles-and-access)
 - [Deployment](#deployment)
 - [Security and Production Notes](#security-and-production-notes)
+- [AWS Hardening and Operations](#aws-hardening-and-operations)
 - [Roadmap](#roadmap)
 - [License](#license)
 
@@ -76,32 +77,40 @@ Feature availability depends on application configuration, database records, and
 | Database | MongoDB, Mongoose ODM |
 | Media | Cloudinary and configured local-upload support |
 | Reports and charts | jsPDF, jspdf-autotable, Recharts |
-| Hosting | Netlify frontend; Railway backend/API (as currently documented) |
+| Hosting | AWS CloudFront + EC2/nginx + PM2 and MongoDB in Docker (per the AWS deployment report) |
 
 ## Architecture
 
-Travelco follows a client-server architecture. The React single-page application communicates with the Express API over HTTP and with the Socket.IO service for real-time messaging.
+Travelco follows a client-server architecture. The React single-page application communicates with the Express API over HTTP and with the Socket.IO service for real-time messaging. The active AWS deployment documented in the project report uses CloudFront in front of an Ubuntu EC2 host running nginx, a React build, Node.js/Express under PM2, and MongoDB in Docker on that same host. Confirm the live console settings before applying any infrastructure change.
 
 ```text
 ┌──────────────────────────────┐
-│        React Frontend        │
-│   React Router / UI modules  │
-│     Hosted on Netlify        │
+│ Browser: React UI            │
+│ Existing layout and routes   │
 └──────────────┬───────────────┘
-               │ REST API / Socket.IO
+               │ HTTPS
                ▼
 ┌──────────────────────────────┐
-│       Node.js Backend        │
-│    Express API + JWT auth    │
-│      Hosted on Railway       │
-└────────┬───────────┬─────────┘
-         │           │
-         ▼           ▼
-┌────────────────┐ ┌────────────────────┐
-│ MongoDB Atlas  │ │ External services   │
-│ Mongoose models│ │ Cloudinary / SMTP   │
-└────────────────┘ └────────────────────┘
+│ Amazon CloudFront             │
+│ Viewer TLS / CDN              │
+└──────────────┬───────────────┘
+               │ Origin traffic
+               ▼
+┌────────────────────────────────────────┐
+│ Amazon EC2 — Ubuntu                    │
+│ nginx                                  │
+│  ├─ React build: /var/www/travelco      │
+│  ├─ /api and Socket.IO → localhost:5000 │
+│  └─ Node.js / Express under PM2         │
+│                                        │
+│ MongoDB in Docker, bound to loopback    │
+└────────────────────────────────────────┘
+
+Supporting services noted in the AWS report:
+SES · IAM · CloudWatch · SNS · S3
 ```
+
+The report describes the CloudFront-to-origin connection as HTTP and MongoDB as sharing the EC2 host. Origin encryption/access restrictions, database isolation, backups, and failover are operational topics; repository code changes do not configure AWS resources.
 
 ### Main data domains
 
@@ -220,15 +229,17 @@ Before release, verify permissions for each role against the actual backend midd
 
 ## Deployment
 
-The current project documentation identifies:
+The AWS deployment report documents:
 
-- **Frontend:** Netlify — [travelxco.netlify.app](https://travelxco.netlify.app/)
-- **Backend/API:** Railway
-- **Database:** MongoDB Atlas
+- **Viewer/CDN:** Amazon CloudFront
+- **Application host:** Ubuntu on Amazon EC2, with nginx serving the React build and proxying API/Socket.IO traffic
+- **API process:** Node.js/Express supervised by PM2
+- **Database:** MongoDB in Docker on the same EC2 host, bound to loopback
+- **Supporting services:** SES, IAM, CloudWatch, SNS, and an S3 bucket that is not currently the website origin in that report
 
-Deployment settings can change independently of the source code. Configure the deployed frontend's API base URL, backend environment variables, CORS allowlist, database networking, and any external service credentials in the corresponding provider dashboards.
+The README previously referenced Netlify and Railway; treat those links as legacy/demo documentation unless you have separately verified that they are still active production components. The CloudFront/EC2 description reflects the provided AWS report, not a live inspection of the AWS console.
 
-After a deployment, test sign-in, API connectivity, media upload, email workflows, booking validation, role-based access, and any provider-dependent features. Confirm the frontend and backend URLs and health checks in the hosting dashboards rather than relying on local development settings.
+Do not apply an infrastructure configuration from this README without confirming the actual resources and origin path. Before a release, verify backup/restore and application rollback, then test sign-in, API connectivity, uploads, email workflows, booking validation, role-based access, Socket.IO, health checks, and provider-dependent features.
 
 ## Security and Production Notes
 
@@ -240,6 +251,16 @@ After a deployment, test sign-in, API connectivity, media upload, email workflow
 - Development/demo listings are not verified real-world inventory. Do not run destructive seed scripts against production data.
 - The deployment described by prior project notes may not have HTTPS configured end-to-end. Verify the live setup and enable HTTPS before processing real customer information.
 - Run the repository's available build checks and tests, then manually verify anonymous, traveler, business-owner (if enabled), finance, and administrator access paths.
+
+## AWS Hardening and Operations
+
+The staged hardening work is tracked in these runbooks:
+
+- [Parts 1–10: AWS baseline, diagnostics, secrets, proxy and session protections](docs/aws-hardening/PHASE_1_PARTS_1-10.md)
+- [Parts 11–20: headers, rate limits, upload/query protections, idempotency and booking contention](docs/aws-hardening/PHASE_2_PARTS_11-20.md)
+- [Parts 21–35: transactions, caching, external-provider resilience, scaling, deployment, and monitoring](docs/aws-hardening/PHASE_3_PARTS_21-35.md)
+
+These controls are designed to preserve the React UI. Some runtime controls are active once merged; public-catalog caching remains opt-in. Run the backend tests and frontend production build, then validate all booking, authentication, upload, and Socket.IO workflows in staging before production release. Several AWS-console tasks and any replica-set/transaction or multi-instance changes require separate operator action; they are not performed by GitHub code changes.
 
 ## Roadmap
 
