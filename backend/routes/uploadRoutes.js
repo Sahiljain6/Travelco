@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const { verifyToken } = require("../middleware/verifyToken");
+const { privateImageUploadLimit } = require("../middleware/routeLimits");
 const {
   uploadProfileFile,
   uploadPrivateFile,
@@ -19,6 +20,6 @@ router.post(
 );
 
 // All other image uploads require a valid session; the backend forwards files to Cloudinary.
-router.post("/image", verifyToken, uploadPrivateFile, uploadPrivateImage);
+router.post("/image", verifyToken, privateImageUploadLimit, uploadPrivateFile, uploadPrivateImage);
 
 module.exports = router;
