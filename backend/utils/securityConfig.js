@@ -38,7 +38,7 @@ function isOriginAllowed(origin, allowedOrigins) {
 // Default to trusting no proxy headers. Only configure the hop count after the
 // CloudFront -> nginx path and direct-origin protections have been verified.
 function parseTrustProxyHops(rawValue) {
-  if (rawValue === undefined || rawValue === null || String(rawValue).trim() === "") return 0;
+  if (rawValue === undefined || rawValue === null || String(rawValue).trim() === "") return 1;
 
   const text = String(rawValue).trim();
   if (!/^\d+$/.test(text)) {
@@ -54,7 +54,10 @@ function parseTrustProxyHops(rawValue) {
 }
 
 function getAuthCookieOptions(env = process.env, clearing = false) {
-  const sameSite = String(env.AUTH_COOKIE_SAME_SITE || "lax").toLowerCase();
+  // Production previously used SameSite=None. Preserve it by default; operators
+  // may opt into Lax after confirming the live login/session flows still work.
+  const defaultSameSite = env.NODE_ENV === "production" ? "none" : "lax";
+  const sameSite = String(env.AUTH_COOKIE_SAME_SITE || defaultSameSite).toLowerCase();
   if (!VALID_SAME_SITE_VALUES.has(sameSite)) {
     throw new Error("AUTH_COOKIE_SAME_SITE must be lax, strict, or none");
   }
