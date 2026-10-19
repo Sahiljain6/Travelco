@@ -11,7 +11,7 @@ const accessChat = AsyncHandler(async (req, res) => {
   if (!/^[a-f0-9]{24}$/i.test(userId)) {
     return res.status(400).json({ message: "A valid chat participant is required." });
   }
-  if (String(req.user._id) === userId) {
+  if (String(req.user._id).toLowerCase() === userId.toLowerCase()) {
     return res.status(400).json({ message: "You cannot start a direct chat with yourself." });
   }
 
