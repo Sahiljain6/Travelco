@@ -6,7 +6,6 @@ const { isOwnerOrAdmin } = require("../utils/authorization");
 const moment = require('moment');
 const createActivity = async (req, res) => {
   const user = req.user;
-  console.log(req.user);
   try {
     const {
       id, // Only available for editing an existing activity
@@ -59,14 +58,13 @@ const createActivity = async (req, res) => {
       res.status(201).json({ created: true, activity: savedActivity });
     }
   } catch (error) {
-    console.error(error);
+    console.error("Activity operation failed:", error && error.name ? error.name : "UnknownError");
     res.status(500).json({ error: 'Internal server error' });
   }
 };
 
 const approveActivity = async (req, res) => {
   try {
-    console.log(req.params);
     const activityId = req.params.id;
     const updatedActivity = await SpecialActivity.findByIdAndUpdate(
       activityId,
@@ -75,7 +73,7 @@ const approveActivity = async (req, res) => {
     );
     res.status(200).json({ success: true, activity: updatedActivity });
   } catch (error) {
-    console.error(error);
+    console.error("Activity operation failed:", error && error.name ? error.name : "UnknownError");
     res.status(500).json({ error: 'Internal server error' });
   }
 };
@@ -101,7 +99,7 @@ const getApprovedActivities = async (req, res) => {
       activities,
     });
   } catch (error) {
-    console.error(error);
+    console.error("Activity operation failed:", error && error.name ? error.name : "UnknownError");
     res.status(500).json({ error: 'Internal server error' });
   }
 };
@@ -129,7 +127,7 @@ const getMyActivities = async (req, res) => {
       activities,
     });
   } catch (error) {
-    console.error(error);
+    console.error("Activity operation failed:", error && error.name ? error.name : "UnknownError");
     res.status(500).json({ error: 'Internal server error' });
   }
 };
@@ -155,7 +153,7 @@ const getPendingActivities = async (req, res) => {
       activities,
     });
   } catch (error) {
-    console.error(error);
+    console.error("Activity operation failed:", error && error.name ? error.name : "UnknownError");
     res.status(500).json({ error: 'Internal server error' });
   }
 };
@@ -170,7 +168,7 @@ const declineActivity = async (req, res) => {
     );
     res.status(200).json({ success: true, activity: updatedActivity });
   } catch (error) {
-    console.error(error);
+    console.error("Activity operation failed:", error && error.name ? error.name : "UnknownError");
     res.status(500).json({ error: 'Internal server error' });
   }
 };
