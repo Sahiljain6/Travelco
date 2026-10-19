@@ -4,9 +4,7 @@ const { isOwnerOrAdmin } = require('../utils/authorization.js');
 
 const getMyReservations = async (req, res) => {
     try {
-        const user = req.user;
-        console.log(user);
-        const reservations = await Reservation.find({ user: user }).populate('activity', 'name type description');
+        const reservations = await Reservation.find({ user: req.user }).populate('activity', 'name type description status');
         res.status(200).json(reservations);
     } catch (error) {
         res.status(404).json({ message: error.message });
@@ -21,15 +19,13 @@ const getPendingReservations = async (req, res) => {
 
         const specialActivities = await SpecialActivity.find({ user: user }, '_id');
         const activityIds = specialActivities.map(activity => activity._id);
-        console.log(activityIds);
         const pendingReservations = await Reservation.find({
             activity: { $in: activityIds },
             status: 'PENDING',
-        }).populate('user').populate('activity');
+        }).populate('user', 'name email').populate('activity', 'name type location user');
 
         res.status(200).json({ pendingReservations });
     } catch (err) {
-        console.log(err);
         res.status(500).json({ message: 'Internal server error' });
     }
 };
