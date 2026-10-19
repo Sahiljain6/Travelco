@@ -58,6 +58,12 @@ const privateImageUploadLimit = createRateLimiter({
   message: "Too many image uploads. Please wait before trying again.",
 });
 
+const contactMessageLimit = createRateLimiter({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  message: "Too many contact messages. Please wait before trying again.",
+});
+
 const flightSearchLimit = createRateLimiter({
   windowMs: 10 * 60 * 1000,
   max: 30,
@@ -74,5 +80,6 @@ module.exports = {
   bookingCreationLimit,
   privateImageUploadLimit,
   flightSearchLimit,
+  contactMessageLimit,
   userOrIpKey,
 };
