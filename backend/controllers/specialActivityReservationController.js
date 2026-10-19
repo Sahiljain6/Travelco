@@ -61,39 +61,50 @@ const approveReservation = (req, res) => changeReservationStatus(req, res, 'APPR
 
 const createReservation = async (req, res) => {
     try {
-        const { activity_id, startDate, startTime, endDate, endTime } = req.body;
+        const { activity_id, startDate, startTime, endDate, endTime } = req.body || {};
+        if (typeof activity_id !== 'string' || !/^[a-f0-9]{24}$/i.test(activity_id)) {
+            return res.status(400).json({ message: 'A valid activity is required' });
+        }
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+        if (!startDate || !endDate || Number.isNaN(start.getTime()) ||
+            Number.isNaN(end.getTime()) || end <= start) {
+            return res.status(400).json({ message: 'A valid reservation date range is required' });
+        }
+        if (typeof startTime !== 'string' || typeof endTime !== 'string' ||
+            !/^([01]\d|2[0-3]):[0-5]\d$/.test(startTime) ||
+            !/^([01]\d|2[0-3]):[0-5]\d$/.test(endTime)) {
+            return res.status(400).json({ message: 'Valid start and end times are required' });
+        }
+        const activity = await SpecialActivity.findOne({ _id: activity_id, status: 'APPROVED' }).select('_id');
+        if (!activity) return res.status(404).json({ message: 'Activity not found' });
+
         const reservation = new Reservation({
             user: req.user,
-            dateRange: {
-                startDate,
-                endDate,
-            },
-            timeRange: {
-                startTime,
-                endTime,
-            },
-            activity: activity_id,
+            dateRange: { startDate: start, endDate: end },
+            timeRange: { startTime, endTime },
+            activity: activity._id,
+            status: 'PENDING',
         });
         const savedReservation = await reservation.save();
-        res.status(201).json(savedReservation);
-    } catch (error) {
-        res.status(400).json({ message: error.message });
+        return res.status(201).json(savedReservation);
+    } catch (_error) {
+        return res.status(400).json({ message: 'Unable to create reservation with the supplied details' });
     }
 };
 
 
 const deleteReservation = async (req, res) => {
     try {
-        const id = req.params.id;
-        console.log(id);
-        const deletedReservation = await Reservation.findByIdAndDelete(id);
-        if (!deletedReservation) {
-            res.status(404).json({ message: 'Reservation not found' });
-        } else {
-            res.status(200).json(deletedReservation);
+        const reservation = await Reservation.findById(req.params.id);
+        if (!reservation) return res.status(404).json({ message: 'Reservation not found' });
+        if (!isOwnerOrAdmin(reservation.user, req)) {
+            return res.status(403).json({ message: 'You can only cancel your own reservation' });
         }
-    } catch (error) {
-        res.status(400).json({ message: error.message });
+        await reservation.deleteOne();
+        return res.status(200).json({ message: 'Reservation cancelled' });
+    } catch (_error) {
+        return res.status(400).json({ message: 'Unable to cancel reservation' });
     }
 };
 
