@@ -10,23 +10,34 @@ const getRestaurantReservations = async (req, res, next) => {
 };
 
 const createReservation = async (req, res, next) => {
-    const newReservation = new ResturentReservation(req.body);
-    const existingReservation = await ResturentReservation.find({
-        resturent: newReservation.resturent,
-        tableNo: newReservation.tableNo,
-        date: newReservation.date,
-        time: newReservation.time
-    });
     try {
-        if (existingReservation.length != 0) {
-            return res.status(200).json({ existingReservation, error: true, message: "Table Booked Already" });
+        const body = req.body || {};
+        const newReservation = new ResturentReservation({
+            resturent: body.resturent,
+            tableNo: body.tableNo,
+            date: body.date,
+            time: body.time,
+            propleCount: body.propleCount,
+            title: body.title,
+            user: req.user,
+            status: "PENDING",
+        });
+        const existingReservation = await ResturentReservation.find({
+            resturent: newReservation.resturent,
+            tableNo: newReservation.tableNo,
+            date: newReservation.date,
+            time: newReservation.time,
+            status: { $in: ["PENDING", "ACCEPTED"] },
+        });
+        if (existingReservation.length !== 0) {
+            return res.status(409).json({ error: true, message: "Table is already booked for that time" });
         }
-        const savedReservation = await newReservation.save();
-        res.status(200).json({ error: false, newReservation });
-    } catch (err) {
-        next(err);
+        await newReservation.save();
+        return res.status(201).json({ error: false, newReservation });
+    } catch (_error) {
+        return res.status(400).json({ message: "Unable to create restaurant reservation with the supplied details" });
     }
-}
+};
 
 const getRerservationRequests = async (req, res, next) => {
     const id = req.body.user;
