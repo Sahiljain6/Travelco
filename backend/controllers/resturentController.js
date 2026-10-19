@@ -1,60 +1,108 @@
 const Resturent = require("../models/resturentModel");
+const { escapeRegex } = require("../utils/securityValidation");
 
 const createResturent = async (req, res, next) => {
-    const newResturent = new Resturent(req.body);
-    const existingRestaurant = await Resturent.find({
-        registrationNo: newResturent.registrationNo,
-    });
+    const isAdmin = req.authUser?.isAdmin === true;
+    if (!isAdmin && req.authUser?.type !== "resturentOwner") {
+        return res.status(403).json({ message: "Restaurant-owner access is required to submit a listing" });
+    }
+
+    const allowedFields = [
+        "name", "district", "address", "pricePerHour", "tableCount",
+        "chefQualification", "resturentImages", "registrationImages",
+        "returentType", "staffAmount", "mobileNo", "registrationNo"
+    ];
+    const payload = {};
+    for (const field of allowedFields) {
+        if (Object.prototype.hasOwnProperty.call(req.body || {}, field)) payload[field] = req.body[field];
+    }
+    payload.user = req.user;
+    // A listing owner cannot publish a record by injecting status into the request.
+    payload.status = isAdmin && req.body?.status === "APPROVED" ? "APPROVED" : "PENDING";
+
     try {
-        if (existingRestaurant.length != 0) {
-            return res.status(200).json({ existingRestaurant, error: true, message: "Restaurant already exists" });
+        const newResturent = new Resturent(payload);
+        const existingRestaurant = await Resturent.findOne({ registrationNo: newResturent.registrationNo });
+        if (existingRestaurant) {
+            return res.status(409).json({ error: true, message: "Restaurant already exists" });
         }
         const savedResturent = await newResturent.save();
-        res.status(200).json(savedResturent);
-    } catch (err) {
-        next(err);
+        return res.status(201).json(savedResturent);
+    } catch (_error) {
+        return res.status(400).json({ message: "Unable to submit restaurant listing. Check the supplied fields." });
     }
-}
+};
 
 
 const findResturentById = async (req, res, next) => {
-    const id = req.body.id;
-    const resturent = await Resturent.find({
-        _id: id
-    }).populate('district').populate('user');
+    const id = typeof req.body?.id === "string" ? req.body.id : "";
     try {
-        if (resturent.length != 0) {
-            return res.status(200).json(resturent);
-        }
-        return res.status(200).json({ error: true, message: "No Resturent Found!" });
-    } catch (err) {
-        next(err);
+        const restaurants = await Resturent.find({ _id: id, status: "APPROVED" }).populate("district");
+        if (!restaurants.length) return res.status(404).json({ error: true, message: "No restaurant found" });
+        return res.status(200).json(restaurants);
+    } catch (_error) {
+        return res.status(400).json({ error: true, message: "Invalid restaurant identifier" });
     }
 };
+
 const findResturentByName = async (req, res, next) => {
-    const name = req.body.query;
-    const regex = new RegExp(name, 'i');
-    const resturents = await Resturent.find({
-        name: regex
-    }).populate('district').populate('user');
+    const name = typeof req.body?.query === "string" ? req.body.query.trim().slice(0, 80) : "";
+    if (!name) return res.status(400).json({ error: true, message: "A restaurant name is required" });
     try {
-        if (resturents.length != 0) {
-            return res.status(200).json(resturents);
-        }
-        return res.status(200).json({ error: true, message: "No Resturents Found!" });
-    } catch (err) {
-        next(err);
+        const regex = new RegExp(escapeRegex(name), "i");
+        const restaurants = await Resturent.find({ name: regex, status: "APPROVED" })
+            .populate("district")
+            .limit(50)
+            .select("-__v");
+        if (!restaurants.length) return res.status(200).json({ error: true, message: "No restaurants found" });
+        return res.status(200).json(restaurants);
+    } catch (_error) {
+        return res.status(400).json({ error: true, message: "Unable to search restaurants" });
     }
 };
+
 const findFirstFiveResturents = async (req, res, next) => {
-    const resturents = await Resturent.find().sort({ createdAt: -1 }).limit(5).populate('district').populate('user');
     try {
-        if (resturents.length != 0) {
-            return res.status(200).json(resturents);
-        }
-        return res.status(200).json({ error: true, message: "No Resturents Found!" });
-    } catch (err) {
-        next(err);
+        const restaurants = await Resturent.find({ status: "APPROVED" })
+            .sort({ createdAt: -1 })
+            .limit(5)
+            .populate("district")
+            .select("-__v");
+        if (!restaurants.length) return res.status(200).json({ error: true, message: "No restaurants found" });
+        return res.status(200).json(restaurants);
+    } catch (_error) {
+        return res.status(500).json({ error: true, message: "Unable to load restaurants" });
+    }
+};
+
+const getPendingRestaurants = async (req, res) => {
+    try {
+        const restaurants = await Resturent.find({ status: "PENDING" })
+            .sort({ createdAt: -1 })
+            .limit(100)
+            .populate("district")
+            .select("-__v");
+        return res.status(200).json(restaurants);
+    } catch (_error) {
+        return res.status(500).json({ message: "Unable to load pending restaurants" });
+    }
+};
+
+const updateRestaurantStatus = async (req, res) => {
+    const status = req.body?.status;
+    if (!["APPROVED", "DECLINED", "PENDING"].includes(status)) {
+        return res.status(400).json({ message: "Status must be APPROVED, DECLINED, or PENDING" });
+    }
+    try {
+        const restaurant = await Resturent.findByIdAndUpdate(
+            req.params.id,
+            { $set: { status } },
+            { new: true, runValidators: true }
+        ).select("-__v");
+        if (!restaurant) return res.status(404).json({ message: "Restaurant not found" });
+        return res.status(200).json(restaurant);
+    } catch (_error) {
+        return res.status(400).json({ message: "Unable to update restaurant status" });
     }
 };
 
@@ -62,5 +110,7 @@ module.exports = {
     createResturent,
     findResturentByName,
     findFirstFiveResturents,
-    findResturentById
+    findResturentById,
+    getPendingRestaurants,
+    updateRestaurantStatus
 };

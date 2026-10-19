@@ -1,34 +1,55 @@
 const customForm = require("../models/tourCustomForm");
+const User = require("../models/userModel");
+
+const ALLOWED_DURATIONS = new Set([1, 2, 3, 5, 7, 9, 12]);
 
 const createForm = async (req, res) => {
+  const body = req.body || {};
+  const whereFrom = typeof body.whereFrom === "string" ? body.whereFrom.trim() : "";
+  const whereTo = typeof body.whereTo === "string" ? body.whereTo.trim() : "";
+  const days = Number(body.days);
+
+  if (!whereFrom || whereFrom.length > 120 || !whereTo || whereTo.length > 120) {
+    return res.status(400).json({ status: "Unsuccess", message: "Enter valid origin and destination names (maximum 120 characters)." });
+  }
+  if (!Number.isInteger(days) || !ALLOWED_DURATIONS.has(days)) {
+    return res.status(400).json({ status: "Unsuccess", message: "Choose a supported trip duration." });
+  }
+
   try {
-    const newForm = new customForm(req.body);
+    const user = await User.findById(req.user).select("email");
+    if (!user) return res.status(401).json({ status: "Unsuccess", message: "Please sign in again." });
+
+    // Store the authenticated account's email; never trust currentUser from the client.
+    const newForm = new customForm({
+      currentUser: user.email,
+      whereFrom,
+      whereTo,
+      days,
+    });
     const savedForm = await newForm.save();
 
-    res.status(200).json({
+    return res.status(201).json({
       status: "success",
-      message: "Details Saved! Our Agent will contact you",
-      data: {
-        form: savedForm,
-      },
+      message: "Details saved. Our agent will contact you.",
+      data: { form: savedForm },
     });
-  } catch (err) {
-    res.status(400).json({
+  } catch (_error) {
+    return res.status(400).json({
       status: "Unsuccess",
-      message: err.message,
+      message: "Unable to save the tour customization request.",
     });
   }
 };
 
 const getCustomForm = async (req, res) => {
   try {
-    const allcustom = await customForm.find();
-    res.status(200).send(allcustom);
-  } catch (err) {
-    console.log(err.message);
-    res.status(404).json({
+    const allcustom = await customForm.find().limit(500);
+    return res.status(200).json(allcustom);
+  } catch (_error) {
+    return res.status(500).json({
       status: "unsuccess",
-      message: err.message,
+      message: "Unable to retrieve tour customization requests.",
     });
   }
 };

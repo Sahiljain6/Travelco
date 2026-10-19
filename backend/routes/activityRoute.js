@@ -9,6 +9,15 @@ const {
     adminMiddleware,
 } = require('../middleware/authMiddleware.js');
 
+// Public visitors may view approved activities. Authenticated owners/admins may
+// also preview their own pending or declined submissions.
+const optionalUserMiddleware = (req, res, next) => {
+  const authorization = req.headers.authorization;
+  const hasBearer = typeof authorization === "string" && authorization.startsWith("Bearer ");
+  if (!hasBearer && !(req.cookies && req.cookies.access_token)) return next();
+  return userMiddleware(req, res, next);
+};
+
 // Routes
 router.get('/', getApprovedActivities);
 
@@ -23,6 +32,6 @@ router.get('/approved', getApprovedActivities);
 router.get('/pending', adminMiddleware, getPendingActivities);
 router.get('/filter', filterActivities);
 
-router.get('/:id', getActivity);
+router.get('/:id', optionalUserMiddleware, getActivity);
 
 module.exports = router;

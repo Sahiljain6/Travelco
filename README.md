@@ -27,6 +27,7 @@ Travelco is a MERN-stack travel and tourism platform and a learning project for 
 - [Smoke tests and rollback](#smoke-tests-and-rollback)
 - [Monitoring and troubleshooting](#monitoring-and-troubleshooting)
 - [Security checklist](#security-checklist)
+- [Security hardening notes](docs/SECURITY_HARDENING.md)
 - [Hardening runbooks and contributions](#hardening-runbooks-and-contributions)
 - [Roadmap](#roadmap)
 

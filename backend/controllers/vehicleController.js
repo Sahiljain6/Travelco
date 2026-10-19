@@ -1,6 +1,7 @@
 const multer = require("multer");
 const Vehicle = require("../models/Vehicle");
 const { parsePositiveNumber, parsePositiveInteger } = require("../utils/validation");
+const { escapeRegex } = require("../utils/securityValidation");
 //const AcceptedVehicle = require("../models/AcceptedVehicle");
 const path = require("path");
 
@@ -217,7 +218,7 @@ exports.availableVehicles = async (req, res) => {
 exports.getVehiclesByTypeAndLocation = async(req, res) => {
     const { vehicleType, location } = req.params;
     try{
-        const safeLocation = String(location).replace(/[.*+?^${}()|[\]\\]/g, "\\const vehicles = await Vehicle.find({vehicleType: vehicleType, location: location});");
+        const safeLocation = escapeRegex(location);
         const vehicles = await Vehicle.find({ vehicleType, location: { $regex: safeLocation, $options: "i" }, isAccepted: true }).limit(100);
         if(!vehicles){
             res.status(404).send("No vehicles found");
@@ -247,7 +248,7 @@ exports.getVehicleByType = async (req, res) => {
 exports.getVehicleByLocation = async (req, res) => {
     const {location} = req.params;
     try{
-        const safeLocation = String(location).replace(/[.*+?^${}()|[\]\\]/g, "\\const vehicles = await Vehicle.find({location: location});");
+        const safeLocation = escapeRegex(location);
         const vehicles = await Vehicle.find({ location: { $regex: safeLocation, $options: "i" }, isAccepted: true }).limit(100);
         if(!vehicles){
             res.status(404).send("No vehicles found");

@@ -6,6 +6,14 @@ function userOrIpKey(req) {
   return req.ip || (req.socket && req.socket.remoteAddress) || "unknown";
 }
 
+// Broad API guard for endpoints without a route-specific limiter. This is an
+// in-process backstop; use CloudFront/WAF for distributed and volumetric attacks.
+const globalApiLimit = createRateLimiter({
+  windowMs: 5 * 60 * 1000,
+  max: 600,
+  message: "Too many requests. Please wait before trying again.",
+});
+
 const authRegisterLimit = createRateLimiter({
   windowMs: 15 * 60 * 1000,
   max: 10,
@@ -50,6 +58,12 @@ const privateImageUploadLimit = createRateLimiter({
   message: "Too many image uploads. Please wait before trying again.",
 });
 
+const contactMessageLimit = createRateLimiter({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  message: "Too many contact messages. Please wait before trying again.",
+});
+
 const flightSearchLimit = createRateLimiter({
   windowMs: 10 * 60 * 1000,
   max: 30,
@@ -57,6 +71,7 @@ const flightSearchLimit = createRateLimiter({
 });
 
 module.exports = {
+  globalApiLimit,
   authRegisterLimit,
   authLoginLimit,
   passwordRecoveryLimit,
@@ -65,5 +80,6 @@ module.exports = {
   bookingCreationLimit,
   privateImageUploadLimit,
   flightSearchLimit,
+  contactMessageLimit,
   userOrIpKey,
 };

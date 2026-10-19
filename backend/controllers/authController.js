@@ -5,6 +5,7 @@ const crypto = require("crypto");
 const nodemailer = require("nodemailer");
 const { isValidInternationalPhone } = require("../utils/validation");
 const { getAuthCookieOptions } = require("../utils/securityConfig");
+const { escapeHtml } = require("../utils/securityValidation");
 
 const FRONTEND_URL = (process.env.FRONTEND_URL || process.env.CLIENT_URL || "https://travelxco.netlify.app").replace(/\/+$/, "");
 const TERMS_VERSION = "2026-10";
@@ -69,7 +70,7 @@ const verificationEmail = async (user) => {
     to: user.email,
     subject: "Verify your Travelco email",
     text: `Hi ${user.name}, verify your Travelco account using this link (valid for 24 hours): ${link}`,
-    html: `<p>Hi ${user.name},</p><p>Verify your Travelco email address by clicking the link below. It expires in 24 hours.</p><p><a href="${link}">Verify my email</a></p><p>If you did not create this account, you can ignore this message.</p>`,
+    html: `<p>Hi ${escapeHtml(user.name)},</p><p>Verify your Travelco email address by clicking the link below. It expires in 24 hours.</p><p><a href="${link}">Verify my email</a></p><p>If you did not create this account, you can ignore this message.</p>`,
   });
 };
 
