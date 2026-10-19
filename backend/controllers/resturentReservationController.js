@@ -1,4 +1,5 @@
 const ResturentReservation = require("../models/resturentReservationModel");
+const Resturent = require("../models/resturentModel");
 
 const getRestaurantReservations = async (req, res, next) => {
     try {
@@ -22,6 +23,10 @@ const createReservation = async (req, res, next) => {
             user: req.user,
             status: "PENDING",
         });
+        const approvedRestaurant = await Resturent.findOne({ _id: newReservation.resturent, status: "APPROVED" }).select("_id");
+        if (!approvedRestaurant) return res.status(404).json({ message: "Restaurant not found" });
+        newReservation.resturent = approvedRestaurant._id;
+
         const existingReservation = await ResturentReservation.find({
             resturent: newReservation.resturent,
             tableNo: newReservation.tableNo,
