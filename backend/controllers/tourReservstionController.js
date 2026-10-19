@@ -1,4 +1,5 @@
 const tourReserve = require("../models/tourBook");
+const User = require("../models/userModel");
 const { isValidInternationalPhone, parsePositiveInteger } = require("../utils/validation");
 
 const bookTour = async (req, res) => {
@@ -22,9 +23,12 @@ const bookTour = async (req, res) => {
   }
 
   try {
-    // Never accept currentUser (or other server-owned fields) from the browser.
+    // Preserve the admin table's email display, but resolve it from the session
+    // user record instead of trusting the currentUser value sent by the browser.
+    const user = await User.findById(req.user).select("email");
+    if (!user) return res.status(401).json({ status: "Unsuccess", message: "Please sign in again." });
     const newRes = new tourReserve({
-      currentUser: String(req.user),
+      currentUser: user.email,
       firstName,
       lastName,
       date,
