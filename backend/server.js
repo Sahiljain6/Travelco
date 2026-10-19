@@ -18,6 +18,8 @@ const {
   parseTrustProxyHops,
 } = require("./utils/securityConfig");
 const securityHeaders = require("./middleware/securityHeaders");
+const { globalApiLimit } = require("./middleware/routeLimits");
+const { rejectUnsafeInputKeys } = require("./utils/securityValidation");
 
 // Preserve the existing deployment behavior (one trusted proxy hop) unless an
 // operator explicitly configures and validates a different value for the AWS path.
@@ -68,6 +70,13 @@ app.use((req, res, next) => {
   next();
 });
 
+// Throttle API traffic before parsing bodies to reduce avoidable application work.
+// Health checks and CORS preflights stay available; this is not a substitute for WAF.
+app.use((req, res, next) => {
+  if (!req.path.startsWith("/api/") || req.method === "OPTIONS") return next();
+  return globalApiLimit(req, res, next);
+});
+
 // Keep existing CORS request behavior while normalizing configured origins.
 // This middleware only controls browser-readable CORS responses; application
 // authentication and authorization remain the security boundary.
@@ -84,6 +93,7 @@ app.use(express.urlencoded({ limit: "5mb", extended: true }));
 app.use(bodyParser.json({ limit: "5mb" }));
 app.use(bodyParser.urlencoded({ limit: "5mb", extended: true }));
 app.use(cookieParser());
+app.use(rejectUnsafeInputKeys);
 
 let shuttingDown = false;
 app.get("/health/live", (req, res) => {
