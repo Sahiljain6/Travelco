@@ -56,7 +56,7 @@ test("regex search input is treated literally", () => {
 
 test("HTML escaping prevents a user name from becoming markup in email HTML", () => {
   assert.equal(
-    escapeHtml('<script>alert("x")</script> & 'name''),
+    escapeHtml("<script>alert(\"x\")</script> & 'name'"),
     "&lt;script&gt;alert(&quot;x&quot;)&lt;/script&gt; &amp; &#x27;name&#x27;"
   );
 });
