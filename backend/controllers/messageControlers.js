@@ -56,7 +56,7 @@ const allMessages = AsyncHandler(async (req, res) => {
   if (!chat) return res.status(404).json({ message: "Chat not found." });
 
   const messages = await Message.find({ chat: chat._id })
-    .sort({ createdAt: 1 })
+    .sort({ createdAt: -1 })
     .limit(MESSAGE_HISTORY_LIMIT)
     .populate("sender", "name pic")
     .populate({
@@ -64,7 +64,7 @@ const allMessages = AsyncHandler(async (req, res) => {
       select: "chatName isGroupChat users",
       populate: { path: "users", select: "name pic email" },
     });
-  return res.status(200).json(messages);
+  return res.status(200).json(messages.reverse());
 });
 
 module.exports = { sendMessage, allMessages };
