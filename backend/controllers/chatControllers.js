@@ -19,8 +19,11 @@ const accessChat = AsyncHandler(async (req, res) => {
   if (!participant) return res.status(404).json({ message: "Chat participant not found." });
 
   const existingChat = await Chat.findOne({
-    isGroupChat: false,
-    users: { $all: [req.user._id, participant._id], $size: 2 },
+    $and: [
+      // Older chat documents predate the isGroupChat schema field.
+      { $or: [{ isGroupChat: false }, { isGroupChat: { $exists: false } }] },
+      { users: { $all: [req.user._id, participant._id], $size: 2 } },
+    ],
   })
     .populate("users", USER_PUBLIC_FIELDS)
     .populate({
