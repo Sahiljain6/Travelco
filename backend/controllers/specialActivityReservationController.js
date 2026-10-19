@@ -1,5 +1,6 @@
 const Reservation = require('../models/reservationModel.js');
-const SpecialActivity = require('../models/SpecialActivityModel.js')
+const SpecialActivity = require('../models/SpecialActivityModel.js');
+const { isOwnerOrAdmin } = require('../utils/authorization.js');
 
 const getMyReservations = async (req, res) => {
     try {
@@ -34,44 +35,26 @@ const getPendingReservations = async (req, res) => {
 };
 
 
-const declineReservation = async (req, res) => {
-    const { id } = req.params;
+async function changeReservationStatus(req, res, status) {
     try {
-        const reservation = await Reservation.findByIdAndUpdate(
-            id,
-            { status: 'DECLINED' },
-            { new: true }
-        );
-
-        if (!reservation) {
-            return res.status(404).json({ message: 'Reservation not found' });
+        const reservation = await Reservation.findById(req.params.id).populate('activity', 'user');
+        if (!reservation) return res.status(404).json({ message: 'Reservation not found' });
+        if (!isOwnerOrAdmin(reservation.activity && reservation.activity.user, req)) {
+            return res.status(403).json({ message: 'You cannot manage another organizer\'s reservations' });
         }
-        res.status(200).json({ reservation });
-    } catch (err) {
-        console.log(err);
-        res.status(500).json({ message: 'Internal server error' });
-    }
-};
-
-const approveReservation = async (req, res) => {
-    const { id } = req.params;
-    try {
-        const reservation = await Reservation.findByIdAndUpdate(
-            id,
-            { status: 'APPROVED' },
-            { new: true }
-        );
-
-        if (!reservation) {
-            return res.status(404).json({ message: 'Reservation not found' });
+        if (reservation.status !== 'PENDING') {
+            return res.status(409).json({ message: 'Only pending reservations can be changed' });
         }
-
-        res.status(200).json({ reservation });
-    } catch (err) {
-        console.log(err);
-        res.status(500).json({ message: 'Internal server error' });
+        reservation.status = status;
+        await reservation.save();
+        return res.status(200).json({ reservation });
+    } catch (_error) {
+        return res.status(400).json({ message: 'Unable to update reservation status' });
     }
-};
+}
+
+const declineReservation = (req, res) => changeReservationStatus(req, res, 'DECLINED');
+const approveReservation = (req, res) => changeReservationStatus(req, res, 'APPROVED');
 
 
 
